@@ -1,7 +1,11 @@
+import { RouterProvider } from 'react-router-dom'
+import { router } from './routes'
+import { AuthProvider } from './features/auth/AuthContext'
+
 export default function App() {
   return (
-    <div className="min-h-screen bg-neutral-950 text-white flex items-center justify-center">
-      <h1 className="text-4xl font-bold tracking-tight">Skpat VIP</h1>
-    </div>
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
   )
 }

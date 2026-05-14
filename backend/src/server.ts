@@ -7,6 +7,7 @@ import { runMigrations } from './lib/migrations.js'
 import { registerRateLimiter } from './plugins/rateLimiter.js'
 import { authRoutes } from './routes/auth/index.js'
 import { profileRoutes } from './routes/profile/index.js'
+import { adminRoutes } from './routes/admin/index.js'
 
 export async function buildServer() {
   // Run SQLite schema migrations before accepting any requests
@@ -33,6 +34,7 @@ export async function buildServer() {
 
   await app.register(authRoutes, { prefix: '/auth' })
   await app.register(profileRoutes, { prefix: '/profile' })
+  await app.register(adminRoutes, { prefix: '/admin' })
 
   return app
 }

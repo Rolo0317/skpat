@@ -32,3 +32,13 @@ export type RegisterInput = z.infer<typeof registerSchema>
 export type LoginInput = z.infer<typeof loginSchema>
 export type RefreshInput = z.infer<typeof refreshSchema>
 export type RecoverInput = z.infer<typeof recoverSchema>
+
+export const SKPAT_ROLES = ['cliente', 'mesero', 'portero', 'admin'] as const
+export const skpatRoleSchema = z.enum(SKPAT_ROLES)
+
+export const assignRoleSchema = z.object({
+  userId: z.string().uuid(),
+  role: skpatRoleSchema,
+})
+
+export type AssignRoleInput = z.infer<typeof assignRoleSchema>

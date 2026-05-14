@@ -1,17 +1,48 @@
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3001'
+const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3001'
+
+function authHeader(): Record<string, string> {
+  const token = localStorage.getItem('skpat_access')
+  return token ? { Authorization: `Bearer ${token}` } : {}
+}
+
+export interface ApiError {
+  status: number
+  error: string
+  message?: string
+  issues?: unknown
+}
+
+async function request<T>(
+  method: 'GET' | 'POST' | 'PATCH' | 'DELETE',
+  path: string,
+  body?: unknown
+): Promise<T> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...authHeader(),
+  }
+  const res = await fetch(`${BASE}${path}`, {
+    method,
+    headers,
+    body: body ? JSON.stringify(body) : undefined,
+  })
+  const isJson = (res.headers.get('content-type') ?? '').includes('application/json')
+  const payload = isJson ? await res.json() : null
+  if (!res.ok) {
+    const err: ApiError = {
+      status: res.status,
+      error: payload?.error ?? 'HttpError',
+      message: payload?.message,
+      issues: payload?.issues,
+    }
+    throw err
+  }
+  return payload as T
+}
 
 export const api = {
-  get: (path: string, token?: string) =>
-    fetch(`${BASE_URL}${path}`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {}
-    }),
-  post: (path: string, body: unknown, token?: string) =>
-    fetch(`${BASE_URL}${path}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {})
-      },
-      body: JSON.stringify(body)
-    })
+  get: <T>(path: string) => request<T>('GET', path),
+  post: <T>(path: string, body?: unknown) => request<T>('POST', path, body),
+  patch: <T>(path: string, body?: unknown) => request<T>('PATCH', path, body),
+  del: <T>(path: string) => request<T>('DELETE', path),
 }

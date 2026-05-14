@@ -56,3 +56,5 @@ backend/data/*.db-wal
 # Vite config compiled outputs
 vite.config.d.ts
 vite.config.js
+vitest.config.d.ts
+vitest.config.js

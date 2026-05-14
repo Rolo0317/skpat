@@ -1,7 +1,8 @@
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import helmet from '@fastify/helmet'
-import { env } from './lib/env'
+import { env } from './lib/env.js'
+import { db } from './lib/db.js'
 
 export async function buildServer() {
   const app = Fastify({
@@ -14,7 +15,10 @@ export async function buildServer() {
     credentials: true,
   })
 
-  app.get('/health', async () => ({ status: 'ok', env: env.NODE_ENV }))
+  app.get('/health', async () => {
+    db.prepare('SELECT 1').get()
+    return { status: 'ok', env: env.NODE_ENV }
+  })
 
   return app
 }

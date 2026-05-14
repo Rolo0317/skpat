@@ -4,6 +4,6 @@ import { describe, it } from 'vitest'
 // Implementation lands in plan 01-01.
 describe('env / secrets exposure', () => {
   it.todo('refuses to start if ENCRYPTION_KEY is missing')
-  it.todo('refuses to start if SUPABASE_SERVICE_ROLE_KEY is missing')
-  it.todo('does not log SUPABASE_SERVICE_ROLE_KEY value on boot')
+  it.todo('refuses to start if JWT_SECRET is missing')
+  it.todo('does not log JWT_SECRET value on boot')
 })

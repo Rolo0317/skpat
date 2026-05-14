@@ -112,12 +112,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       async signUp(input) {
         try {
           await api.post('/auth/register', input)
-          // After register, log in automatically
-          const loginResult = await value.signIn(input.email, input.password)
-          return loginResult
         } catch (e: unknown) {
           const err = e as { message?: string }
           return { error: err?.message ?? 'Registro fallo' }
+        }
+        // After register, log in automatically
+        try {
+          const out = await api.post<LoginResponse>('/auth/login', {
+            email: input.email,
+            password: input.password,
+          })
+          localStorage.setItem(ACCESS_KEY, out.access_token)
+          localStorage.setItem(REFRESH_KEY, out.refresh_token)
+          const me = await api.get<MeResponse>('/auth/me')
+          setUser({ id: me.id, email: me.email, role: me.role, nombre: me.nombre })
+          return { error: null }
+        } catch (e: unknown) {
+          const err = e as { message?: string }
+          return { error: err?.message ?? 'Login fallo tras registro' }
         }
       },
       async signOut() {

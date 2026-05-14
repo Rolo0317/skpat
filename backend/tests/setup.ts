@@ -5,3 +5,6 @@ process.env.JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'test-refresh
 process.env.ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || '00000000000000000000000000000000000000000000000000000000000000aa'
 process.env.NODE_ENV = 'test'
 process.env.PORT = '3001'
+
+// Run SQLite migrations once so tables exist before any test's beforeEach runs
+import('../src/lib/migrations.js').then(({ runMigrations }) => runMigrations())

@@ -1,0 +1,16 @@
+{
+  "name": "skpat",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": ["frontend", "backend"],
+  "scripts": {
+    "dev:frontend": "npm --workspace frontend run dev",
+    "dev:backend": "npm --workspace backend run dev",
+    "build:frontend": "npm --workspace frontend run build",
+    "build:backend": "npm --workspace backend run build",
+    "test": "npm --workspaces run test",
+    "test:frontend": "npm --workspace frontend run test",
+    "test:backend": "npm --workspace backend run test"
+  }
+}

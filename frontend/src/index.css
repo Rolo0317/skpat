@@ -1,1 +1,60 @@
 @import "tailwindcss";
+
+@theme {
+  --color-skpat-bg:     #07070f;
+  --color-skpat-bg2:    #0f0f1e;
+  --color-skpat-bg3:    #16162a;
+  --color-skpat-card:   #1a1a30;
+  --color-skpat-border: #2a2a4a;
+  --color-skpat-purple: #8b5cf6;
+  --color-skpat-purple2:#6d28d9;
+  --color-skpat-pink:   #ec4899;
+  --color-skpat-cyan:   #06b6d4;
+  --color-skpat-gold:   #f59e0b;
+  --color-skpat-green:  #10b981;
+  --color-skpat-red:    #ef4444;
+  --color-skpat-white:  #f8fafc;
+  --color-skpat-muted:  #94a3b8;
+  --color-skpat-text:   #e2e8f0;
+}
+
+@layer utilities {
+  .glow-purple { box-shadow: 0 0 24px #8b5cf640, 0 0 60px #8b5cf620; }
+  .glow-pink   { box-shadow: 0 0 24px #ec489940, 0 0 60px #ec489920; }
+  .glow-cyan   { box-shadow: 0 0 20px #06b6d440; }
+  .text-glow   { text-shadow: 0 0 20px #8b5cf680; }
+  .gradient-text {
+    background: linear-gradient(135deg, #fff 0%, #8b5cf6 50%, #ec4899 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .gradient-stat {
+    background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .gradient-section-title {
+    background: linear-gradient(90deg, #f8fafc, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+@keyframes bounce-scroll {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50%       { transform: translateX(-50%) translateY(8px); }
+}
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 4px 20px #8b5cf660; }
+  50%       { box-shadow: 0 4px 32px #8b5cf6a0; }
+}
+@keyframes ai-pulse {
+  0%, 100% { box-shadow: 0 4px 20px #8b5cf660; }
+  50%       { box-shadow: 0 4px 32px #8b5cf6a0; }
+}
+
+html { scroll-behavior: smooth; }
+body { background: #07070f; color: #e2e8f0; font-family: 'Segoe UI', system-ui, sans-serif; }

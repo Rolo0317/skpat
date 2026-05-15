@@ -44,4 +44,22 @@ export function runMigrations(): void {
 
     CREATE INDEX IF NOT EXISTS idx_reset_tokens_token_hash ON reset_tokens(token_hash);
   `)
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS events (
+      id              TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+      title           TEXT NOT NULL,
+      date            TEXT NOT NULL,
+      description     TEXT,
+      price           INTEGER NOT NULL DEFAULT 0,
+      image_url       TEXT,
+      available_spots INTEGER NOT NULL DEFAULT 100,
+      is_vip          INTEGER NOT NULL DEFAULT 0,
+      is_active       INTEGER NOT NULL DEFAULT 1,
+      created_at      TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_events_date ON events(date);
+    CREATE INDEX IF NOT EXISTS idx_events_is_active ON events(is_active);
+  `)
 }

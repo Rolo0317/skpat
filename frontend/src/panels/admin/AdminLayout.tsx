@@ -6,12 +6,13 @@ export default function AdminLayout() {
   return (
     <div className="min-h-screen bg-neutral-950 text-white">
       <header className="border-b border-neutral-800 p-4 flex items-center justify-between">
-        <Link to="/admin" className="text-xl font-bold">Skpat — Admin</Link>
+        <div className="flex items-center gap-6">
+          <Link to="/admin" className="text-xl font-bold">Skpat — Admin</Link>
+          <Link to="/admin/eventos" className="text-sm text-neutral-300 hover:text-white">Eventos</Link>
+        </div>
         <div className="flex items-center gap-4 text-sm">
           <span>{user?.email}</span>
-          <button onClick={signOut} className="rounded bg-neutral-800 px-3 py-1 hover:bg-neutral-700">
-            Salir
-          </button>
+          <button onClick={signOut} className="rounded bg-neutral-800 px-3 py-1 hover:bg-neutral-700">Salir</button>
         </div>
       </header>
       <main className="p-6">

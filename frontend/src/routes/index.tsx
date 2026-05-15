@@ -2,7 +2,8 @@ import { createBrowserRouter } from 'react-router-dom'
 import { RoleGuard } from './guards/RoleGuard'
 import UnauthorizedPage from './UnauthorizedPage'
 import NotFoundPage from './NotFoundPage'
-import { RootRedirect } from './RootRedirect'
+import LandingPage from '@/features/landing/LandingPage'
+import AdminEventsPage from '@/panels/admin/AdminEventsPage'
 
 import LoginPage from '@/features/auth/LoginPage'
 import RegisterPage from '@/features/auth/RegisterPage'
@@ -19,7 +20,7 @@ import ClienteLayout from '@/panels/cliente/ClienteLayout'
 import ClienteHome from '@/panels/cliente/ClienteHome'
 
 export const router = createBrowserRouter([
-  { path: '/', element: <RootRedirect /> },
+  { path: '/', element: <LandingPage /> },
   { path: '/login', element: <LoginPage /> },
   { path: '/register', element: <RegisterPage /> },
   { path: '/recover', element: <RecoverPage /> },
@@ -28,7 +29,13 @@ export const router = createBrowserRouter([
   {
     path: '/admin',
     element: <RoleGuard allowedRoles={['admin']} />,
-    children: [{ element: <AdminLayout />, children: [{ index: true, element: <AdminHome /> }] }],
+    children: [{
+      element: <AdminLayout />,
+      children: [
+        { index: true, element: <AdminHome /> },
+        { path: 'eventos', element: <AdminEventsPage /> },
+      ],
+    }],
   },
   {
     path: '/mesero',

@@ -1,6 +1,16 @@
-import { describe, it } from 'vitest'
+import { describe, it, expect } from 'vitest'
+import { render, screen } from '@testing-library/react'
+import { MapSection } from '../MapSection'
+
 describe('MapSection', () => {
-  it.todo('renders an iframe with title containing "Ubicación"')
-  it.todo('renders address Cra. 15 #93-47, Bogotá, Colombia')
-  it.todo('renders hours block (Viernes y Sábados 9:00 PM)')
+  it('renders an iframe with title "Ubicación Skpat VIP"', () => {
+    render(<MapSection />)
+    const iframe = screen.getByTitle(/Ubicación/i)
+    expect(iframe.tagName).toBe('IFRAME')
+  })
+
+  it('renders address Cra. 15 #93-47', () => {
+    render(<MapSection />)
+    expect(screen.getByText(/Cra\. 15 #93-47/)).toBeInTheDocument()
+  })
 })

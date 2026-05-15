@@ -62,4 +62,41 @@ export function runMigrations(): void {
     CREATE INDEX IF NOT EXISTS idx_events_date ON events(date);
     CREATE INDEX IF NOT EXISTS idx_events_is_active ON events(is_active);
   `)
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS tickets (
+      id           TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+      event_id     TEXT NOT NULL REFERENCES events(id),
+      user_id      TEXT REFERENCES users(id),
+      nombre       TEXT NOT NULL,
+      cedula_enc   TEXT NOT NULL,
+      email        TEXT NOT NULL,
+      telefono_enc TEXT,
+      qr_token     TEXT NOT NULL UNIQUE,
+      qr_used      INTEGER NOT NULL DEFAULT 0,
+      qr_used_at   INTEGER,
+      ticket_type  TEXT NOT NULL DEFAULT 'general',
+      price_cents  INTEGER NOT NULL,
+      status       TEXT NOT NULL DEFAULT 'confirmed',
+      created_at   INTEGER NOT NULL DEFAULT (unixepoch())
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_tickets_event_id  ON tickets(event_id);
+    CREATE INDEX IF NOT EXISTS idx_tickets_qr_token  ON tickets(qr_token);
+    CREATE INDEX IF NOT EXISTS idx_tickets_user_id   ON tickets(user_id);
+
+    CREATE TABLE IF NOT EXISTS palco_reservations (
+      id           TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+      event_id     TEXT NOT NULL REFERENCES events(id),
+      palco_tier   TEXT NOT NULL CHECK(palco_tier IN ('silver','gold','platinum')),
+      nombre       TEXT NOT NULL,
+      email        TEXT NOT NULL,
+      telefono_enc TEXT,
+      price_cents  INTEGER NOT NULL,
+      status       TEXT NOT NULL DEFAULT 'pending',
+      created_at   INTEGER NOT NULL DEFAULT (unixepoch())
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_palcos_event_id ON palco_reservations(event_id);
+  `)
 }

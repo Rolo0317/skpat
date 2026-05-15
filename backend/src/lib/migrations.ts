@@ -31,5 +31,17 @@ export function runMigrations(): void {
 
     CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id ON refresh_tokens(user_id);
     CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+
+    -- reset_tokens: single-use password recovery tokens with 1h expiry
+    CREATE TABLE IF NOT EXISTS reset_tokens (
+      id          TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+      user_id     TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      token_hash  TEXT NOT NULL UNIQUE,
+      expires_at  INTEGER NOT NULL,
+      used        INTEGER NOT NULL DEFAULT 0,
+      created_at  INTEGER NOT NULL DEFAULT (unixepoch())
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_reset_tokens_token_hash ON reset_tokens(token_hash);
   `)
 }

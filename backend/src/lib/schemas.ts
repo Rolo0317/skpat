@@ -28,10 +28,16 @@ export const recoverSchema = z.object({
   email: emailSchema,
 })
 
+export const resetPasswordSchema = z.object({
+  token: z.string().min(64).max(64),
+  password: passwordSchema,
+})
+
 export type RegisterInput = z.infer<typeof registerSchema>
 export type LoginInput = z.infer<typeof loginSchema>
 export type RefreshInput = z.infer<typeof refreshSchema>
 export type RecoverInput = z.infer<typeof recoverSchema>
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>
 
 export const SKPAT_ROLES = ['cliente', 'mesero', 'portero', 'admin'] as const
 export const skpatRoleSchema = z.enum(SKPAT_ROLES)

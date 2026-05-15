@@ -12,7 +12,15 @@ El asistente o cliente puede comprar su tiquete desde la web con QR de entrada, 
 
 ### Validated
 
-(None yet — ship to validate)
+- ✓ AUTH-01: Registro con email+password — Phase 1
+- ✓ AUTH-02: JWT sesión persistente (access 15min + refresh 7d) — Phase 1
+- ✓ AUTH-03: Recuperación de contraseña con reset token SQLite — Phase 1
+- ✓ AUTH-04: 4 roles (cliente/mesero/portero/admin) con paneles y RoleGuard — Phase 1
+- ✓ AUTH-05: Hashing argon2id — Phase 1
+- ✓ AUTH-06: Encriptación AES-256-GCM para cédula/teléfono — Phase 1
+- ✓ AUTH-07: Rate limiting 5 req/15min en /auth/* — Phase 1
+- ✓ AUTH-08: Validación zod en frontend y backend — Phase 1
+- ✓ AUTH-09: Secretos en variables de entorno, nunca en código — Phase 1
 
 ### Active
 
@@ -59,11 +67,11 @@ El asistente o cliente puede comprar su tiquete desde la web con QR de entrada, 
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Vite + React en lugar de Next.js | Requerimiento explícito del desarrollador | — Pending |
-| Supabase como BaaS | Auth + realtime + PostgreSQL en uno, dentro del presupuesto | — Pending |
+| Vite + React en lugar de Next.js | Requerimiento explícito del desarrollador | ✓ Good |
+| SQLite (better-sqlite3) en lugar de Supabase | Simplicidad de desarrollo local; Supabase diferido o eliminado | ✓ Good |
 | PWA para meseros en lugar de app nativa | Sin instalación, funciona en cualquier teléfono del personal | — Pending |
 | WhatsApp diferido a v2 | Número nuevo requiere proceso oficial de Meta, no bloquea el core | — Pending |
 | Número nuevo de WhatsApp cuando se implemente | Número existente migrado pierde historial y no puede usarse simultáneamente | — Pending |
 
 ---
-*Last updated: 2026-05-14 after initialization*
+*Last updated: 2026-05-15 after Phase 1 — Fundacion y Seguridad*

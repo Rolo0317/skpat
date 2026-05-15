@@ -12,6 +12,8 @@ import { profileRoutes } from './routes/profile/index.js'
 import { adminRoutes } from './routes/admin/index.js'
 import { eventsRoutes } from './routes/events/index.js'
 import { aiRoutes } from './routes/ai/index.js'
+import { ticketsRoutes } from './routes/tickets/index.js'
+import { palcosRoutes } from './routes/palcos/index.js'
 import { ensureUploadsDir, UPLOADS_DIR } from './lib/uploads.js'
 
 export async function buildServer() {
@@ -53,6 +55,8 @@ export async function buildServer() {
   await app.register(adminRoutes, { prefix: '/admin' })
   await app.register(eventsRoutes, { prefix: '/events' })
   await app.register(aiRoutes, { prefix: '/ai' })
+  await app.register(ticketsRoutes, { prefix: '/tickets' })
+  await app.register(palcosRoutes, { prefix: '/palcos' })
 
   return app
 }

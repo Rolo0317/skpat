@@ -11,6 +11,14 @@ const envSchema = z.object({
   CORS_ORIGINS: z.string().default('http://localhost:5173'),
   ANTHROPIC_API_KEY: z.string().min(10, 'ANTHROPIC_API_KEY is required for /ai/chat').optional(),
   AI_MODEL: z.string().default('claude-haiku-4-5-20251001'),
+  // Email / SMTP (all optional — if missing, emails are logged to console only)
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.coerce.number().int().positive().default(587),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  FROM_EMAIL: z.string().default('noreply@skpatvip.com'),
+  // Frontend base URL for links in emails
+  FRONTEND_URL: z.string().default('http://localhost:5173'),
 })
 
 export const env = envSchema.parse(process.env)

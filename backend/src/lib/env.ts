@@ -9,6 +9,8 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(3001),
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   CORS_ORIGINS: z.string().default('http://localhost:5173'),
+  ANTHROPIC_API_KEY: z.string().min(10, 'ANTHROPIC_API_KEY is required for /ai/chat').optional(),
+  AI_MODEL: z.string().default('claude-haiku-4-5-20251001'),
 })
 
 export const env = envSchema.parse(process.env)

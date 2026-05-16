@@ -66,7 +66,7 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 03-01: Backend de eventos y boletería — modelo de datos, CRUD de eventos por admin, precios base
+- [x] 03-01: Atomic ticket purchase — db.transaction() spot-check + decrement + insert, 422 SoldOut, qr/email unit tests [TICK-01, TICK-02, TICK-03, TICK-04, TICK-06, TICK-07]
 - [ ] 03-02: Flujo de compra de tiquetes — checkout, generación de QR único, envío por email
 - [ ] 03-03: Validación en puerta y palcos VIP — panel del portero con escáner QR, reserva de palcos, lista de asistentes para admin
 
@@ -109,7 +109,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Fundacion y Seguridad | 3/3 | Complete    | 2026-05-15 |
-| 2. Landing Publica | 2/2 | Complete   | 2026-05-15 |
-| 3. Boleteria y Acceso | 0/3 | Not started | - |
+| 2. Landing Publica | 2/2 | Complete    | 2026-05-15 |
+| 3. Boleteria y Acceso | 1/3 | In Progress | - |
 | 4. Mesas y Meseros | 0/2 | Not started | - |
 | 5. Inventario y Dashboard | 0/2 | Not started | - |

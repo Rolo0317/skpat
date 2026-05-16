@@ -27,13 +27,13 @@
 
 ### Boletería
 
-- [ ] **TICK-01**: Cliente puede comprar tiquete de entrada desde la web (flujo de checkout)
-- [ ] **TICK-02**: Sistema genera QR único e intransferible por persona al completar compra
-- [ ] **TICK-03**: QR enviado al email del cliente con datos de la entrada
-- [ ] **TICK-04**: Portero puede escanear el QR en la entrada para validar acceso
+- [x] **TICK-01**: Cliente puede comprar tiquete de entrada desde la web (flujo de checkout)
+- [x] **TICK-02**: Sistema genera QR único e intransferible por persona al completar compra
+- [x] **TICK-03**: QR enviado al email del cliente con datos de la entrada
+- [x] **TICK-04**: Portero puede escanear el QR en la entrada para validar acceso
 - [ ] **TICK-05**: Admin puede crear y configurar eventos con precio base de entrada
-- [ ] **TICK-06**: Sistema de palcos VIP: cliente puede reservar palco con precio especial desde la web
-- [ ] **TICK-07**: Admin ve lista de asistentes por evento (nombre, cédula, hora de compra, estado QR)
+- [x] **TICK-06**: Sistema de palcos VIP: cliente puede reservar palco con precio especial desde la web
+- [x] **TICK-07**: Admin ve lista de asistentes por evento (nombre, cédula, hora de compra, estado QR)
 
 ### Mesas y Meseros
 
@@ -106,13 +106,13 @@
 | LAND-03 | Phase 2 — Landing Publica | Complete |
 | LAND-04 | Phase 2 — Landing Publica | Complete |
 | LAND-05 | Phase 2 — Landing Publica | Complete |
-| TICK-01 | Phase 3 — Boleteria y Acceso | Pending |
-| TICK-02 | Phase 3 — Boleteria y Acceso | Pending |
-| TICK-03 | Phase 3 — Boleteria y Acceso | Pending |
-| TICK-04 | Phase 3 — Boleteria y Acceso | Pending |
+| TICK-01 | Phase 3 — Boleteria y Acceso | Complete |
+| TICK-02 | Phase 3 — Boleteria y Acceso | Complete |
+| TICK-03 | Phase 3 — Boleteria y Acceso | Complete |
+| TICK-04 | Phase 3 — Boleteria y Acceso | Complete |
 | TICK-05 | Phase 3 — Boleteria y Acceso | Pending |
-| TICK-06 | Phase 3 — Boleteria y Acceso | Pending |
-| TICK-07 | Phase 3 — Boleteria y Acceso | Pending |
+| TICK-06 | Phase 3 — Boleteria y Acceso | Complete |
+| TICK-07 | Phase 3 — Boleteria y Acceso | Complete |
 | MESA-01 | Phase 4 — Mesas y Meseros | Pending |
 | MESA-02 | Phase 4 — Mesas y Meseros | Pending |
 | MESA-03 | Phase 4 — Mesas y Meseros | Pending |

@@ -1,0 +1,171 @@
+import { useState, useEffect, useCallback } from 'react'
+import { useParams, Link } from 'react-router-dom'
+import { useAuth } from '@/features/auth/useAuth'
+
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3001'
+
+interface Attendee {
+  id: string
+  nombre: string
+  email: string
+  cedula: string
+  ticket_type: string
+  price_cents: number
+  status: string
+  qr_used: boolean
+  qr_used_at: string | null
+  created_at: string
+}
+
+interface AttendeeData {
+  event_id: string
+  event_title: string
+  total: number
+  scanned: number
+  attendees: Attendee[]
+}
+
+const TICKET_LABELS: Record<string, string> = {
+  general: 'General',
+  palco_silver: 'Palco Silver',
+  palco_gold: 'Palco Gold',
+  palco_platinum: 'Palco Platinum',
+}
+
+function formatCOP(cents: number) {
+  return (cents / 100).toLocaleString('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 })
+}
+
+export default function AttendeeListPage() {
+  const { event_id } = useParams<{ event_id: string }>()
+  const { user } = useAuth()
+  const [data, setData] = useState<AttendeeData | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  const fetchAttendees = useCallback(async () => {
+    if (!event_id) return
+    const token = localStorage.getItem('skpat_access')
+    try {
+      const res = await fetch(`${API_URL}/tickets/event/${event_id}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
+      if (!res.ok) {
+        setError(res.status === 404 ? 'Evento no encontrado' : 'Error al cargar asistentes')
+        return
+      }
+      setData(await res.json())
+      setError(null)
+    } catch {
+      setError('Error de conexión')
+    } finally {
+      setLoading(false)
+    }
+  }, [event_id])
+
+  // Initial fetch
+  useEffect(() => { fetchAttendees() }, [fetchAttendees])
+
+  // Poll every 5 seconds (refetchInterval: 5000)
+  useEffect(() => {
+    const refetchInterval = setInterval(fetchAttendees, 5000)
+    return () => clearInterval(refetchInterval)
+  }, [fetchAttendees])
+
+  if (loading) return (
+    <div style={{ padding: 32, color: '#94a3b8' }}>Cargando asistentes...</div>
+  )
+  if (error) return (
+    <div style={{ padding: 32 }}>
+      <p style={{ color: '#ef4444' }}>{error}</p>
+      <Link to="/admin/eventos" style={{ color: '#8b5cf6', fontSize: 13 }}>← Volver a eventos</Link>
+    </div>
+  )
+  if (!data) return null
+
+  const pending = data.total - data.scanned
+
+  return (
+    <div style={{ padding: '24px 32px', maxWidth: 1000 }}>
+      {/* Header */}
+      <div style={{ marginBottom: 24 }}>
+        <Link to="/admin/eventos" style={{ color: '#8b5cf6', fontSize: 13, textDecoration: 'none' }}>
+          ← Volver a eventos
+        </Link>
+        <h1 style={{ fontSize: 24, fontWeight: 800, color: '#f8fafc', margin: '10px 0 4px' }}>
+          {data.event_title}
+        </h1>
+        <p style={{ color: '#94a3b8', fontSize: 13 }}>Lista de asistentes · Actualización automática cada 5s</p>
+      </div>
+
+      {/* Stats */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 24 }}>
+        {[
+          { label: 'Total tiquetes', value: data.total, color: '#f8fafc' },
+          { label: 'Ingresaron', value: data.scanned, color: '#10b981' },
+          { label: 'Pendientes', value: pending, color: '#f59e0b' },
+        ].map(s => (
+          <div key={s.label} style={{ background: '#1c1c2e', border: '1px solid rgba(255,255,255,.08)', borderRadius: 12, padding: '16px 20px' }}>
+            <div style={{ fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 6 }}>{s.label}</div>
+            <div style={{ fontSize: 28, fontWeight: 800, color: s.color }}>{s.value}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Table */}
+      <div style={{ background: '#1c1c2e', border: '1px solid rgba(255,255,255,.08)', borderRadius: 12, overflow: 'hidden' }}>
+        <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontWeight: 700, color: '#f8fafc' }}>Asistentes ({data.total})</span>
+        </div>
+        {data.attendees.length === 0 ? (
+          <div style={{ padding: 32, textAlign: 'center', color: '#64748b' }}>
+            Aún no hay asistentes para este evento.
+          </div>
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ background: '#111118' }}>
+                  {['Nombre', 'Email', 'Cédula', 'Tipo', 'Valor', 'Estado', 'Comprado', 'Ingreso'].map(h => (
+                    <th key={h} style={{ padding: '10px 16px', fontSize: 10, fontWeight: 700, color: '#64748b', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '1px', whiteSpace: 'nowrap' }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {data.attendees.map(a => (
+                  <tr key={a.id} style={{ borderTop: '1px solid rgba(255,255,255,.06)' }}>
+                    <td style={{ padding: '12px 16px', color: '#f1f5f9', fontWeight: 600, whiteSpace: 'nowrap' }}>{a.nombre}</td>
+                    <td style={{ padding: '12px 16px', color: '#94a3b8', fontSize: 12 }}>{a.email}</td>
+                    <td style={{ padding: '12px 16px', color: '#94a3b8', fontFamily: 'monospace', fontSize: 12 }}>{a.cedula}</td>
+                    <td style={{ padding: '12px 16px' }}>
+                      <span style={{ background: 'rgba(139,92,246,.15)', color: '#a78bfa', padding: '2px 8px', borderRadius: 6, fontSize: 11, fontWeight: 600 }}>
+                        {TICKET_LABELS[a.ticket_type] ?? a.ticket_type}
+                      </span>
+                    </td>
+                    <td style={{ padding: '12px 16px', color: '#10b981', fontWeight: 700, whiteSpace: 'nowrap' }}>{formatCOP(a.price_cents)}</td>
+                    <td style={{ padding: '12px 16px' }}>
+                      <span style={{
+                        background: a.qr_used ? 'rgba(16,185,129,.12)' : 'rgba(245,158,11,.12)',
+                        color: a.qr_used ? '#10b981' : '#f59e0b',
+                        border: `1px solid ${a.qr_used ? 'rgba(16,185,129,.3)' : 'rgba(245,158,11,.3)'}`,
+                        padding: '2px 8px', borderRadius: 6, fontSize: 11, fontWeight: 600,
+                      }}>
+                        {a.qr_used ? 'Ingresó' : 'Pendiente'}
+                      </span>
+                    </td>
+                    <td style={{ padding: '12px 16px', color: '#64748b', fontSize: 11, whiteSpace: 'nowrap' }}>
+                      {new Date(a.created_at).toLocaleString('es-CO', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                    </td>
+                    <td style={{ padding: '12px 16px', color: '#64748b', fontSize: 11, whiteSpace: 'nowrap' }}>
+                      {a.qr_used_at ? new Date(a.qr_used_at).toLocaleString('es-CO', { hour: '2-digit', minute: '2-digit' }) : '—'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}

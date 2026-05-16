@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { SkpatEvent } from '@/features/landing/types'
 
@@ -9,6 +10,7 @@ function getAccessToken(): string | null {
 }
 
 export default function AdminEventsPage() {
+  const navigate = useNavigate()
   const qc = useQueryClient()
   const { data: events = [], isLoading } = useQuery({
     queryKey: ['events'],
@@ -100,7 +102,15 @@ export default function AdminEventsPage() {
               <div className="font-semibold">{ev.title}</div>
               <div className="text-sm text-neutral-400">{new Date(ev.date).toLocaleString('es-CO')} · ${(ev.price / 100).toLocaleString('es-CO')} COP · cupos {ev.available_spots}</div>
             </div>
-            <button onClick={() => deleteMut.mutate(ev.id)} className="text-red-400 hover:text-red-300 text-sm">Eliminar</button>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <button
+                onClick={() => navigate(`/admin/eventos/${ev.id}/asistentes`)}
+                style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(139,92,246,.3)', background: 'rgba(139,92,246,.1)', color: '#a78bfa', fontSize: 12, cursor: 'pointer' }}
+              >
+                Ver asistentes
+              </button>
+              <button onClick={() => deleteMut.mutate(ev.id)} className="text-red-400 hover:text-red-300 text-sm">Eliminar</button>
+            </div>
           </li>
         ))}
       </ul>

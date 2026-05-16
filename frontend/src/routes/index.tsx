@@ -20,6 +20,7 @@ import PorteroLayout from '@/panels/portero/PorteroLayout'
 import PorteroHome from '@/panels/portero/PorteroHome'
 import ClienteLayout from '@/panels/cliente/ClienteLayout'
 import ClienteHome from '@/panels/cliente/ClienteHome'
+import CartaPage from '@/features/carta/CartaPage'
 
 export const router = createBrowserRouter([
   { path: '/', element: <LandingPage /> },
@@ -28,6 +29,7 @@ export const router = createBrowserRouter([
   { path: '/recover', element: <RecoverPage /> },
   { path: '/auth/reset-password', element: <ResetPasswordPage /> },
   { path: '/comprar/:event_id', element: <TicketPurchasePage /> },
+  { path: '/mesa/:table_number', element: <CartaPage /> },
   { path: '/unauthorized', element: <UnauthorizedPage /> },
   {
     path: '/admin',

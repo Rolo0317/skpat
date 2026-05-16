@@ -31,7 +31,7 @@
 - [x] **TICK-02**: Sistema genera QR único e intransferible por persona al completar compra
 - [x] **TICK-03**: QR enviado al email del cliente con datos de la entrada
 - [x] **TICK-04**: Portero puede escanear el QR en la entrada para validar acceso
-- [ ] **TICK-05**: Admin puede crear y configurar eventos con precio base de entrada
+- [x] **TICK-05**: Admin puede crear y configurar eventos con precio base de entrada
 - [x] **TICK-06**: Sistema de palcos VIP: cliente puede reservar palco con precio especial desde la web
 - [x] **TICK-07**: Admin ve lista de asistentes por evento (nombre, cédula, hora de compra, estado QR)
 
@@ -110,7 +110,7 @@
 | TICK-02 | Phase 3 — Boleteria y Acceso | Complete |
 | TICK-03 | Phase 3 — Boleteria y Acceso | Complete |
 | TICK-04 | Phase 3 — Boleteria y Acceso | Complete |
-| TICK-05 | Phase 3 — Boleteria y Acceso | Pending |
+| TICK-05 | Phase 3 — Boleteria y Acceso | Complete |
 | TICK-06 | Phase 3 — Boleteria y Acceso | Complete |
 | TICK-07 | Phase 3 — Boleteria y Acceso | Complete |
 | MESA-01 | Phase 4 — Mesas y Meseros | Pending |

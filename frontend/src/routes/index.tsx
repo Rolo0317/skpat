@@ -5,6 +5,7 @@ import NotFoundPage from './NotFoundPage'
 import LandingPage from '@/features/landing/LandingPage'
 import TicketPurchasePage from '@/features/tickets/TicketPurchasePage'
 import AdminEventsPage from '@/panels/admin/AdminEventsPage'
+import AdminMenuPage from '@/panels/admin/AdminMenuPage'
 import AttendeeListPage from '@/panels/admin/AttendeeListPage'
 
 import LoginPage from '@/features/auth/LoginPage'
@@ -40,6 +41,7 @@ export const router = createBrowserRouter([
         { index: true, element: <AdminHome /> },
         { path: 'eventos', element: <AdminEventsPage /> },
         { path: 'eventos/:event_id/asistentes', element: <AttendeeListPage /> },
+        { path: 'menu', element: <AdminMenuPage /> },
       ],
     }],
   },

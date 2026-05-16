@@ -9,6 +9,7 @@ export default function AdminLayout() {
         <div className="flex items-center gap-6">
           <Link to="/admin" className="text-xl font-bold">Skpat — Admin</Link>
           <Link to="/admin/eventos" className="text-sm text-neutral-300 hover:text-white">Eventos</Link>
+          <Link to="/admin/menu" className="text-sm text-neutral-300 hover:text-white">Carta Digital</Link>
         </div>
         <div className="flex items-center gap-4 text-sm">
           <span>{user?.email}</span>

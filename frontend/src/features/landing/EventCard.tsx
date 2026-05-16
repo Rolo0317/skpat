@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import type { SkpatEvent } from './types'
 
 export function EventCard({ event }: { event: SkpatEvent }) {
@@ -37,13 +38,22 @@ export function EventCard({ event }: { event: SkpatEvent }) {
           <span className="text-skpat-green font-black text-xl">
             ${priceCop} <small className="text-skpat-muted font-normal text-xs">COP</small>
           </span>
-          <a
-            href={isSoldOut ? undefined : '/login'}
-            className={`px-4 py-2 rounded-full border border-skpat-purple text-skpat-purple text-xs font-semibold transition-all hover:bg-skpat-purple hover:text-white ${isSoldOut ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
-            style={{ background: '#8b5cf610' }}
-          >
-            {isSoldOut ? 'Agotado' : 'Comprar'}
-          </a>
+          {isSoldOut ? (
+            <span
+              className="px-4 py-2 rounded-full border border-skpat-purple text-skpat-purple text-xs font-semibold opacity-50 cursor-not-allowed"
+              style={{ background: '#8b5cf610' }}
+            >
+              Agotado
+            </span>
+          ) : (
+            <Link
+              to={`/comprar/${event.id}`}
+              className="px-4 py-2 rounded-full border border-skpat-purple text-skpat-purple text-xs font-semibold transition-all hover:bg-skpat-purple hover:text-white"
+              style={{ background: '#8b5cf610' }}
+            >
+              Comprar
+            </Link>
+          )}
         </div>
       </div>
     </article>

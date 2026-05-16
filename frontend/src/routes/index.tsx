@@ -3,6 +3,7 @@ import { RoleGuard } from './guards/RoleGuard'
 import UnauthorizedPage from './UnauthorizedPage'
 import NotFoundPage from './NotFoundPage'
 import LandingPage from '@/features/landing/LandingPage'
+import TicketPurchasePage from '@/features/tickets/TicketPurchasePage'
 import AdminEventsPage from '@/panels/admin/AdminEventsPage'
 
 import LoginPage from '@/features/auth/LoginPage'
@@ -25,6 +26,7 @@ export const router = createBrowserRouter([
   { path: '/register', element: <RegisterPage /> },
   { path: '/recover', element: <RecoverPage /> },
   { path: '/auth/reset-password', element: <ResetPasswordPage /> },
+  { path: '/comprar/:event_id', element: <TicketPurchasePage /> },
   { path: '/unauthorized', element: <UnauthorizedPage /> },
   {
     path: '/admin',

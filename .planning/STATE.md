@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 04-01-PLAN.md — tables/menu/sales backend + CartaPage public + 93 tests
-last_updated: "2026-05-15T20:45:00.000Z"
+stopped_at: Completed 04-02-PLAN.md — MeseroHome sales panel + AdminMenuPage CRUD + AdminHome tonight dashboard
+last_updated: "2026-05-16T01:33:12.115Z"
 progress:
   total_phases: 5
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 10
-  completed_plans: 9
+  completed_plans: 10
 ---
 
 # Project State
@@ -23,8 +23,8 @@ See: .planning/PROJECT.md (updated 2026-05-14)
 
 ## Current Position
 
-Phase: 4 (Mesas y Meseros) — EXECUTING
-Plan: 2 of 2
+Phase: 4 (Mesas y Meseros) — COMPLETE
+Plan: 2 of 2 (all plans complete)
 
 ## Performance Metrics
 
@@ -55,6 +55,7 @@ Plan: 2 of 2
 | Phase 03-boleteria-y-acceso P02 | 10min | 3 tasks | 9 files |
 | Phase 03-boleteria-y-acceso P03-03 | 12min | 3 tasks | 6 files |
 | Phase 04-mesas-y-meseros P01 | 25min | 3 tasks | 17 files |
+| Phase 04-mesas-y-meseros P04-02 | 4min | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -93,6 +94,8 @@ Recent decisions affecting current work:
 - [Phase 04-mesas-y-meseros]: signAccessToken (async, jose-based) used in tests — plan referenced non-existent signJwt sync helper
 - [Phase 04-mesas-y-meseros]: tablesRoutes registered without prefix so GET /tables resolves at root level
 - [Phase 04-mesas-y-meseros]: requireRole('mesero', 'admin') multi-role guard pattern established for mesero endpoints
+- [Phase 04-mesas-y-meseros]: Inline styles (React.CSSProperties) for mesero/admin panels — avoids Tailwind class conflicts, consistent with PorteroHome
+- [Phase 04-mesas-y-meseros]: AdminHome polls /sales/tonight every 10s via setInterval — TanStack Query not installed, mirrors AttendeeListPage pattern
 
 ### Pending Todos
 
@@ -104,6 +107,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-15T20:45:00.000Z
-Stopped at: Completed 04-01-PLAN.md — tables/menu/sales backend + CartaPage public + 93 tests
+Last session: 2026-05-16T01:33:12.108Z
+Stopped at: Completed 04-02-PLAN.md — MeseroHome sales panel + AdminMenuPage CRUD + AdminHome tonight dashboard
 Resume file: None

@@ -113,10 +113,10 @@
 | TICK-05 | Phase 3 — Boleteria y Acceso | Complete |
 | TICK-06 | Phase 3 — Boleteria y Acceso | Complete |
 | TICK-07 | Phase 3 — Boleteria y Acceso | Complete |
-| MESA-01 | Phase 4 — Mesas y Meseros | Pending |
-| MESA-02 | Phase 4 — Mesas y Meseros | Pending |
-| MESA-03 | Phase 4 — Mesas y Meseros | Pending |
-| MESA-04 | Phase 4 — Mesas y Meseros | Pending |
+| MESA-01 | Phase 4 — Mesas y Meseros | Complete |
+| MESA-02 | Phase 4 — Mesas y Meseros | Complete |
+| MESA-03 | Phase 4 — Mesas y Meseros | Complete |
+| MESA-04 | Phase 4 — Mesas y Meseros | Complete |
 | INV-01 | Phase 5 — Inventario y Dashboard | Pending |
 | INV-02 | Phase 5 — Inventario y Dashboard | Pending |
 | INV-03 | Phase 5 — Inventario y Dashboard | Pending |

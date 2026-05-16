@@ -56,5 +56,10 @@
   50%       { box-shadow: 0 4px 32px #8b5cf6a0; }
 }
 
+@keyframes scan {
+  0%, 100% { top: 0%; }
+  50% { top: 100%; }
+}
+
 html { scroll-behavior: smooth; }
 body { background: #07070f; color: #e2e8f0; font-family: 'Segoe UI', system-ui, sans-serif; }

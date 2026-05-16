@@ -150,6 +150,14 @@ export function runMigrations(): void {
     CREATE INDEX IF NOT EXISTS idx_sale_items_sale ON sale_items(sale_id);
   `)
 
+  // Inventario: add stock tracking columns to menu_items
+  try {
+    db.exec(`ALTER TABLE menu_items ADD COLUMN stock_qty INTEGER NOT NULL DEFAULT -1`)
+  } catch { /* column already exists */ }
+  try {
+    db.exec(`ALTER TABLE menu_items ADD COLUMN min_stock INTEGER NOT NULL DEFAULT 0`)
+  } catch { /* column already exists */ }
+
   // Seed 10 default tables if empty
   const tableCount = (db.prepare('SELECT COUNT(*) as c FROM tables').get() as { c: number }).c
   if (tableCount === 0) {

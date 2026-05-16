@@ -35,14 +35,22 @@ export async function createSaleRoute(app: FastifyInstance) {
       let total_cents = 0
       const resolvedItems = items.map(item => {
         const mi = db.prepare(
-          'SELECT id, name, price_cents, is_active FROM menu_items WHERE id = ?'
-        ).get(item.menu_item_id) as { id: string; name: string; price_cents: number; is_active: number } | undefined
+          'SELECT id, name, price_cents, is_active, stock_qty FROM menu_items WHERE id = ?'
+        ).get(item.menu_item_id) as { id: string; name: string; price_cents: number; is_active: number; stock_qty: number } | undefined
 
         if (!mi) throw Object.assign(new Error('MenuItemNotFound'), { statusCode: 404, item_id: item.menu_item_id })
         if (!mi.is_active) throw Object.assign(new Error('MenuItemInactive'), { statusCode: 422, item_id: item.menu_item_id })
 
         const subtotal = mi.price_cents * item.quantity
         total_cents += subtotal
+
+        // Decrement stock_qty if tracked (>= 0)
+        if (mi.stock_qty >= 0) {
+          db.prepare(
+            'UPDATE menu_items SET stock_qty = MAX(0, stock_qty - ?) WHERE id = ?'
+          ).run(item.quantity, mi.id)
+        }
+
         return { menu_item_id: mi.id, item_name: mi.name, item_price_cents: mi.price_cents, quantity: item.quantity, subtotal_cents: subtotal }
       })
 

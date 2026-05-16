@@ -17,6 +17,7 @@ import { palcosRoutes } from './routes/palcos/index.js'
 import { tablesRoutes } from './routes/tables/index.js'
 import { menuRoutes } from './routes/menu/index.js'
 import { salesRoutes } from './routes/sales/index.js'
+import { inventoryRoutes } from './routes/inventory/index.js'
 import { ensureUploadsDir, UPLOADS_DIR } from './lib/uploads.js'
 
 export async function buildServer() {
@@ -63,6 +64,7 @@ export async function buildServer() {
   await app.register(tablesRoutes)
   await app.register(menuRoutes, { prefix: '/menu' })
   await app.register(salesRoutes, { prefix: '/sales' })
+  await app.register(inventoryRoutes, { prefix: '/inventory' })
 
   return app
 }

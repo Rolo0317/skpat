@@ -10,6 +10,8 @@ const updateMenuItemSchema = z.object({
   price_cents: z.number().int().nonnegative().optional(),
   sort_order: z.number().int().nonnegative().optional(),
   is_active: z.boolean().optional(),
+  stock_qty: z.number().int().min(-1).optional(),
+  min_stock: z.number().int().nonnegative().optional(),
 })
 
 export async function updateMenuItemRoute(app: FastifyInstance) {
@@ -30,6 +32,8 @@ export async function updateMenuItemRoute(app: FastifyInstance) {
         price_cents = COALESCE(@price_cents, price_cents),
         sort_order = COALESCE(@sort_order, sort_order),
         is_active = COALESCE(@is_active, is_active),
+        stock_qty = COALESCE(@stock_qty, stock_qty),
+        min_stock = COALESCE(@min_stock, min_stock),
         updated_at = unixepoch()
       WHERE id = @id
     `).run({
@@ -40,9 +44,11 @@ export async function updateMenuItemRoute(app: FastifyInstance) {
       price_cents: data.price_cents ?? null,
       sort_order: data.sort_order ?? null,
       is_active: data.is_active !== undefined ? (data.is_active ? 1 : 0) : null,
+      stock_qty: data.stock_qty ?? null,
+      min_stock: data.min_stock ?? null,
     })
 
-    const updated = db.prepare('SELECT id, name, description, category, price_cents, sort_order, is_active FROM menu_items WHERE id = ?').get(id)
+    const updated = db.prepare('SELECT id, name, description, category, price_cents, sort_order, is_active, stock_qty, min_stock FROM menu_items WHERE id = ?').get(id)
     return reply.send(updated)
   })
 }

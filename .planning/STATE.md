@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 03-01-PLAN.md — Atomic ticket purchase + spot decrement + qr/email tests
-last_updated: "2026-05-15T19:44:00.000Z"
+stopped_at: "Completed 03-02-PLAN.md — Frontend wiring: /comprar route, EventCard CTA, QrScannerWidget, PorteroHome scanner"
+last_updated: "2026-05-16T00:57:27.492Z"
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 8
-  completed_plans: 5
+  completed_plans: 7
 ---
 
 # Project State
@@ -52,6 +52,7 @@ Plan: 2 of 3
 | Phase 02-landing-publica P01 | 90min | 4 tasks | 26 files |
 | Phase 02-landing-publica P02 | 15min | 3 tasks | 11 files |
 | Phase 03-boleteria-y-acceso P01 | 5min | 3 tasks | 5 files |
+| Phase 03-boleteria-y-acceso P02 | 10min | 3 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -82,6 +83,9 @@ Recent decisions affecting current work:
 - [Phase 03-boleteria-y-acceso]: db.transaction() wraps check+decrement+insert atomically; async QR/email run after commit
 - [Phase 03-boleteria-y-acceso]: Throw-inside-transaction pattern — errors tagged with statusCode field trigger automatic rollback and clean HTTP mapping
 - [Phase 03-boleteria-y-acceso]: available_spots <= 0 guard (not === 0) for safety against negative values from data corruption
+- [Phase 03-boleteria-y-acceso]: qr-scanner mock uses ES class syntax not vi.fn().mockImplementation — required for new QrScanner() constructor calls in jsdom
+- [Phase 03-boleteria-y-acceso]: PorteroHome default mode is 'manual' not 'camera' — avoids camera permission errors in dev/local
+- [Phase 03-boleteria-y-acceso]: Vite ?url worker import pattern: import workerUrl from 'qr-scanner/qr-scanner-worker.min.js?url' + QrScanner.WORKER_PATH = workerUrl — required for Web Worker resolution
 
 ### Pending Todos
 
@@ -93,6 +97,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-15T19:44:00.000Z
-Stopped at: Completed 03-01-PLAN.md — Atomic ticket purchase + spot decrement + qr/email tests
+Last session: 2026-05-16T00:57:27.486Z
+Stopped at: Completed 03-02-PLAN.md — Frontend wiring: /comprar route, EventCard CTA, QrScannerWidget, PorteroHome scanner
 Resume file: None

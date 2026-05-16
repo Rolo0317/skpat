@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 03-03-PLAN.md — Admin AttendeeListPage, ClienteHome tickets, VipSection palco form
-last_updated: "2026-05-16T01:08:53.917Z"
+stopped_at: Completed 04-01-PLAN.md — tables/menu/sales backend + CartaPage public + 93 tests
+last_updated: "2026-05-15T20:45:00.000Z"
 progress:
   total_phases: 5
   completed_phases: 3
-  total_plans: 8
-  completed_plans: 8
+  total_plans: 10
+  completed_plans: 9
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-14)
 
 **Core value:** Cliente compra tiquete con QR desde la web; dueño ve ventas en tiempo real — sin manillas físicas ni procesos manuales.
-**Current focus:** Phase 3 — Boleteria y Acceso
+**Current focus:** Phase 4 — Mesas y Meseros
 
 ## Current Position
 
-Phase: 3 (Boleteria y Acceso) — EXECUTING
-Plan: 2 of 3
+Phase: 4 (Mesas y Meseros) — EXECUTING
+Plan: 2 of 2
 
 ## Performance Metrics
 
@@ -54,6 +54,7 @@ Plan: 2 of 3
 | Phase 03-boleteria-y-acceso P01 | 5min | 3 tasks | 5 files |
 | Phase 03-boleteria-y-acceso P02 | 10min | 3 tasks | 9 files |
 | Phase 03-boleteria-y-acceso P03-03 | 12min | 3 tasks | 6 files |
+| Phase 04-mesas-y-meseros P01 | 25min | 3 tasks | 17 files |
 
 ## Accumulated Context
 
@@ -89,6 +90,9 @@ Recent decisions affecting current work:
 - [Phase 03-boleteria-y-acceso]: Vite ?url worker import pattern: import workerUrl from 'qr-scanner/qr-scanner-worker.min.js?url' + QrScanner.WORKER_PATH = workerUrl — required for Web Worker resolution
 - [Phase 03-boleteria-y-acceso]: setInterval with refetchInterval variable for AttendeeListPage polling — TanStack Query not installed
 - [Phase 03-boleteria-y-acceso]: VipSection Reservar CTAs changed from /login links to buttons opening inline palco reservation form
+- [Phase 04-mesas-y-meseros]: signAccessToken (async, jose-based) used in tests — plan referenced non-existent signJwt sync helper
+- [Phase 04-mesas-y-meseros]: tablesRoutes registered without prefix so GET /tables resolves at root level
+- [Phase 04-mesas-y-meseros]: requireRole('mesero', 'admin') multi-role guard pattern established for mesero endpoints
 
 ### Pending Todos
 
@@ -100,6 +104,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-16T01:08:53.913Z
-Stopped at: Completed 03-03-PLAN.md — Admin AttendeeListPage, ClienteHome tickets, VipSection palco form
+Last session: 2026-05-15T20:45:00.000Z
+Stopped at: Completed 04-01-PLAN.md — tables/menu/sales backend + CartaPage public + 93 tests
 Resume file: None

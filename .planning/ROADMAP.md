@@ -82,7 +82,7 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 04-01: QR de mesas y carta digital — generación de QR fijo por mesa, vista pública de carta, gestión de carta por admin
+- [x] 04-01: QR de mesas y carta digital — generación de QR fijo por mesa, vista pública de carta, gestión de carta por admin
 - [ ] 04-02: Panel PWA del mesero — registro de ventas, vista de ventas propias de la noche, dashboard comparativo en admin
 
 ### Phase 5: Inventario y Dashboard
@@ -110,6 +110,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Fundacion y Seguridad | 3/3 | Complete    | 2026-05-15 |
 | 2. Landing Publica | 2/2 | Complete    | 2026-05-15 |
-| 3. Boleteria y Acceso | 3/3 | Complete   | 2026-05-16 |
-| 4. Mesas y Meseros | 0/2 | Not started | - |
+| 3. Boleteria y Acceso | 3/3 | Complete    | 2026-05-16 |
+| 4. Mesas y Meseros | 1/2 | In Progress | - |
 | 5. Inventario y Dashboard | 0/2 | Not started | - |

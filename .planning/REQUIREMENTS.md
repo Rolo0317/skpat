@@ -37,10 +37,10 @@
 
 ### Mesas y Meseros
 
-- [ ] **MESA-01**: Cada mesa tiene un QR fijo que el cliente escanea para ver la carta digital
-- [ ] **MESA-02**: Carta digital actualizable por el admin (productos, precios, disponibilidad)
-- [ ] **MESA-03**: Mesero ve en su panel las ventas de la noche (lo que él ha registrado)
-- [ ] **MESA-04**: Admin ve dashboard de ventas por mesero (comparativo en la noche)
+- [x] **MESA-01**: Cada mesa tiene un QR fijo que el cliente escanea para ver la carta digital
+- [x] **MESA-02**: Carta digital actualizable por el admin (productos, precios, disponibilidad)
+- [x] **MESA-03**: Mesero ve en su panel las ventas de la noche (lo que él ha registrado)
+- [x] **MESA-04**: Admin ve dashboard de ventas por mesero (comparativo en la noche)
 
 ### Inventario y Dashboard
 

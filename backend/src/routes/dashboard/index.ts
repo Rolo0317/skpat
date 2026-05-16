@@ -29,10 +29,10 @@ function periodBounds(period: string): { start: number; label: string } {
 
 export async function dashboardRoutes(app: FastifyInstance) {
 
-  // GET /dashboard/summary?period=tonight|week|month&mesero_id=&menu_item_id=
+  // GET /dashboard/summary?period=tonight|week|month&mesero_id=&menu_item_id=&hour=HH&event_id=
   app.get('/summary', { preHandler: [verifyAuth, requireRole('admin')] }, async (req, reply) => {
-    const { period = 'tonight', mesero_id, menu_item_id } = req.query as {
-      period?: string; mesero_id?: string; menu_item_id?: string
+    const { period = 'tonight', mesero_id, menu_item_id, hour, event_id } = req.query as {
+      period?: string; mesero_id?: string; menu_item_id?: string; hour?: string; event_id?: string
     }
     const { start, label } = periodBounds(period)
 
@@ -49,11 +49,21 @@ export async function dashboardRoutes(app: FastifyInstance) {
       salesQuery += ' AND EXISTS (SELECT 1 FROM sale_items si WHERE si.sale_id = s.id AND si.menu_item_id = ?)'
       salesParams.push(menu_item_id)
     }
+    if (hour) {
+      salesQuery += ` AND strftime('%H', datetime(s.sold_at, 'unixepoch')) = ?`
+      salesParams.push(hour.padStart(2, '0'))
+    }
     const salesRow = db.prepare(salesQuery).get(...salesParams as [number | string, ...(number | string)[]]) as { total: number; count: number }
 
-    // Ticket revenue (boletería)
-    const ticketQuery = `SELECT COALESCE(SUM(price_cents), 0) as total, COUNT(id) as count FROM tickets WHERE created_at >= ?`
-    const ticketsRow = db.prepare(ticketQuery).get(start) as { total: number; count: number }
+    // Ticket revenue (boletería) — filterable by event_id and hour
+    let ticketQuery = `SELECT COALESCE(SUM(price_cents), 0) as total, COUNT(id) as count FROM tickets WHERE created_at >= ?`
+    const ticketParams: (number | string)[] = [start]
+    if (event_id) { ticketQuery += ' AND event_id = ?'; ticketParams.push(event_id) }
+    if (hour) {
+      ticketQuery += ` AND strftime('%H', datetime(created_at, 'unixepoch')) = ?`
+      ticketParams.push(hour.padStart(2, '0'))
+    }
+    const ticketsRow = db.prepare(ticketQuery).get(...ticketParams as [number | string, ...(number | string)[]]) as { total: number; count: number }
 
     // Top selling items
     const topItems = db.prepare(`

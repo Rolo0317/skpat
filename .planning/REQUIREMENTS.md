@@ -47,9 +47,9 @@
 - [x] **INV-01**: Admin carga inventario base de productos (bebidas, combos) con stock inicial
 - [x] **INV-02**: Cada venta/pedido confirmado descuenta automáticamente del inventario
 - [x] **INV-03**: Alerta visual al admin cuando un producto cae por debajo del stock mínimo
-- [ ] **INV-04**: Dashboard con ventas en tiempo real: gráficas por noche, semana y mes
-- [ ] **INV-05**: Filtros en dashboard: por producto, por mesero, por hora, por evento
-- [ ] **INV-06**: Dashboard muestra ingresos totales por boletería vs ventas en mesa
+- [x] **INV-04**: Dashboard con ventas en tiempo real: gráficas por noche, semana y mes
+- [x] **INV-05**: Filtros en dashboard: por producto, por mesero, por hora, por evento
+- [x] **INV-06**: Dashboard muestra ingresos totales por boletería vs ventas en mesa
 
 ## v2 Requirements
 
@@ -120,9 +120,9 @@
 | INV-01 | Phase 5 — Inventario y Dashboard | Complete |
 | INV-02 | Phase 5 — Inventario y Dashboard | Complete |
 | INV-03 | Phase 5 — Inventario y Dashboard | Complete |
-| INV-04 | Phase 5 — Inventario y Dashboard | Pending |
-| INV-05 | Phase 5 — Inventario y Dashboard | Pending |
-| INV-06 | Phase 5 — Inventario y Dashboard | Pending |
+| INV-04 | Phase 5 — Inventario y Dashboard | Complete |
+| INV-05 | Phase 5 — Inventario y Dashboard | Complete |
+| INV-06 | Phase 5 — Inventario y Dashboard | Complete |
 
 **Coverage:**
 - v1 requirements: 30 total

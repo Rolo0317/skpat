@@ -99,4 +99,65 @@ export function runMigrations(): void {
 
     CREATE INDEX IF NOT EXISTS idx_palcos_event_id ON palco_reservations(event_id);
   `)
+
+  // Mesas y Carta
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS tables (
+      id          TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+      number      INTEGER NOT NULL UNIQUE CHECK(number >= 1),
+      label       TEXT,
+      qr_token    TEXT NOT NULL UNIQUE DEFAULT (lower(hex(randomblob(16)))),
+      is_active   INTEGER NOT NULL DEFAULT 1,
+      created_at  INTEGER NOT NULL DEFAULT (unixepoch())
+    );
+
+    CREATE TABLE IF NOT EXISTS menu_items (
+      id          TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+      name        TEXT NOT NULL,
+      description TEXT,
+      category    TEXT NOT NULL DEFAULT 'general',
+      price_cents INTEGER NOT NULL CHECK(price_cents >= 0),
+      is_active   INTEGER NOT NULL DEFAULT 1,
+      sort_order  INTEGER NOT NULL DEFAULT 0,
+      created_at  INTEGER NOT NULL DEFAULT (unixepoch()),
+      updated_at  INTEGER NOT NULL DEFAULT (unixepoch())
+    );
+
+    CREATE TABLE IF NOT EXISTS sales (
+      id           TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+      mesero_id    TEXT NOT NULL REFERENCES users(id),
+      table_id     TEXT REFERENCES tables(id),
+      table_number INTEGER,
+      payment_method TEXT NOT NULL DEFAULT 'efectivo'
+                     CHECK(payment_method IN ('efectivo','nequi','transferencia')),
+      total_cents  INTEGER NOT NULL DEFAULT 0,
+      notes        TEXT,
+      sold_at      INTEGER NOT NULL DEFAULT (unixepoch())
+    );
+
+    CREATE TABLE IF NOT EXISTS sale_items (
+      id            TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+      sale_id       TEXT NOT NULL REFERENCES sales(id) ON DELETE CASCADE,
+      menu_item_id  TEXT NOT NULL REFERENCES menu_items(id),
+      item_name     TEXT NOT NULL,
+      item_price_cents INTEGER NOT NULL,
+      quantity      INTEGER NOT NULL DEFAULT 1 CHECK(quantity >= 1),
+      subtotal_cents INTEGER NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_sales_mesero_id ON sales(mesero_id);
+    CREATE INDEX IF NOT EXISTS idx_sales_sold_at   ON sales(sold_at);
+    CREATE INDEX IF NOT EXISTS idx_sale_items_sale ON sale_items(sale_id);
+  `)
+
+  // Seed 10 default tables if empty
+  const tableCount = (db.prepare('SELECT COUNT(*) as c FROM tables').get() as { c: number }).c
+  if (tableCount === 0) {
+    const insertTable = db.prepare(
+      'INSERT OR IGNORE INTO tables (number, label) VALUES (?, ?)'
+    )
+    for (let i = 1; i <= 10; i++) {
+      insertTable.run(i, `Mesa ${i}`)
+    }
+  }
 }

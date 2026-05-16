@@ -29,12 +29,12 @@ describe('VipSection', () => {
     expect(screen.getByText('MÁS POPULAR')).toBeInTheDocument()
   })
 
-  it('renders 3 Reservar CTAs linking to /login', () => {
+  it('renders 3 Reservar CTA buttons that open reservation form', () => {
     render(<MemoryRouter><VipSection /></MemoryRouter>)
     const ctas = screen.getAllByText('Reservar')
     expect(ctas).toHaveLength(3)
     ctas.forEach((cta) => {
-      expect(cta.getAttribute('href')).toBe('/login')
+      expect(cta.tagName.toLowerCase()).toBe('button')
     })
   })
 })

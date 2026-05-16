@@ -1,3 +1,7 @@
+import { useState, useEffect } from 'react'
+
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3001'
+
 interface PalcoTier {
   icon: string
   name: string
@@ -7,6 +11,7 @@ interface PalcoTier {
   priceColor: string
   popular?: boolean
   ctaGradient?: string
+  tier: 'silver' | 'gold' | 'platinum'
 }
 
 const TIERS: PalcoTier[] = [
@@ -17,6 +22,7 @@ const TIERS: PalcoTier[] = [
     price: '$450.000',
     borderColor: '#f59e0b',
     priceColor: '#f59e0b',
+    tier: 'silver',
   },
   {
     icon: '💎',
@@ -26,6 +32,7 @@ const TIERS: PalcoTier[] = [
     borderColor: '#8b5cf6',
     priceColor: '#8b5cf6',
     popular: true,
+    tier: 'gold',
   },
   {
     icon: '👑',
@@ -35,10 +42,26 @@ const TIERS: PalcoTier[] = [
     borderColor: '#ec4899',
     priceColor: '#ec4899',
     ctaGradient: 'linear-gradient(135deg, #ec4899, #8b5cf6)',
+    tier: 'platinum',
   },
 ]
 
 export function VipSection() {
+  const [showForm, setShowForm] = useState(false)
+  const [selectedTier, setSelectedTier] = useState<'silver' | 'gold' | 'platinum'>('gold')
+  const [events, setEvents] = useState<Array<{ id: string; title: string }>>([])
+  const [formState, setFormState] = useState({ nombre: '', email: '', telefono: '', event_id: '' })
+  const [submitting, setSubmitting] = useState(false)
+  const [success, setSuccess] = useState(false)
+  const [formError, setFormError] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch(`${API_URL}/events`)
+      .then(r => r.json())
+      .then(data => setEvents(Array.isArray(data) ? data : []))
+      .catch(() => {})
+  }, [])
+
   return (
     <section
       id="palcos"
@@ -93,20 +116,75 @@ export function VipSection() {
               >
                 {tier.price}
               </div>
-              <a
-                href="/login"
-                className="block text-center w-full mt-4 py-3.5 rounded-full text-white font-bold text-[15px]"
+              <button
+                onClick={() => { setSelectedTier(tier.tier); setShowForm(true); setSuccess(false); setFormError(null) }}
+                className="block text-center w-full mt-4 py-3.5 rounded-full text-white font-bold text-[15px] cursor-pointer"
                 style={{
                   background:
                     tier.ctaGradient ?? 'linear-gradient(135deg, #8b5cf6, #ec4899)',
                   boxShadow: '0 4px 20px #8b5cf640',
+                  border: 'none',
                 }}
               >
                 Reservar
-              </a>
+              </button>
             </div>
           ))}
         </div>
+
+        {showForm && (
+          <div style={{ marginTop: 32, background: 'rgba(0,0,0,.3)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 16, padding: 28, maxWidth: 480, margin: '32px auto 0' }}>
+            <h3 style={{ fontWeight: 700, marginBottom: 4, color: '#f1f5f9' }}>Reservar Palco {selectedTier.charAt(0).toUpperCase() + selectedTier.slice(1)}</h3>
+            <p style={{ color: '#64748b', fontSize: 13, marginBottom: 20 }}>Completa tus datos y el equipo Skpat te contactará para confirmar.</p>
+            {success ? (
+              <div style={{ textAlign: 'center', padding: 20, color: '#10b981' }}>
+                <div style={{ fontSize: 32, marginBottom: 8 }}>✓</div>
+                <p style={{ fontWeight: 700 }}>Reserva enviada con éxito</p>
+                <p style={{ fontSize: 13, color: '#64748b', marginTop: 4 }}>Recibirás confirmación en tu email.</p>
+                <button onClick={() => { setSuccess(false); setShowForm(false) }} style={{ marginTop: 16, padding: '8px 20px', borderRadius: 8, background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.12)', color: '#94a3b8', cursor: 'pointer' }}>Cerrar</button>
+              </div>
+            ) : (
+              <form onSubmit={async (e) => {
+                e.preventDefault()
+                setSubmitting(true); setFormError(null)
+                try {
+                  const res = await fetch(`${API_URL}/palcos/reserve`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ...formState, palco_tier: selectedTier }),
+                  })
+                  if (!res.ok) { const b = await res.json(); setFormError(b.error ?? 'Error'); return }
+                  setSuccess(true)
+                } catch { setFormError('Error de conexión') }
+                finally { setSubmitting(false) }
+              }} style={{ display: 'grid', gap: 14 }}>
+                <select value={formState.event_id} onChange={e => setFormState(s => ({ ...s, event_id: e.target.value }))} required
+                  style={{ padding: '10px 12px', background: '#111118', border: '1px solid rgba(255,255,255,.1)', borderRadius: 8, color: formState.event_id ? '#f1f5f9' : '#64748b', fontSize: 13 }}>
+                  <option value="">Selecciona el evento</option>
+                  {events.map(ev => <option key={ev.id} value={ev.id}>{ev.title}</option>)}
+                </select>
+                {([['nombre', 'Nombre completo', 'text', true], ['email', 'Email de contacto', 'email', true], ['telefono', 'Teléfono (opcional)', 'tel', false]] as const).map(([field, label, type, req]) => (
+                  <div key={field}>
+                    <label style={{ display: 'block', fontSize: 11, color: '#64748b', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '1px' }}>{label}</label>
+                    <input type={type} required={req} value={formState[field]}
+                      onChange={e => setFormState(s => ({ ...s, [field]: e.target.value }))}
+                      style={{ width: '100%', padding: '10px 12px', background: '#111118', border: '1px solid rgba(255,255,255,.1)', borderRadius: 8, color: '#f1f5f9', fontSize: 13, boxSizing: 'border-box' }} />
+                  </div>
+                ))}
+                {formError && <p style={{ color: '#ef4444', fontSize: 13, margin: 0 }}>{formError}</p>}
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <button type="submit" disabled={submitting}
+                    style={{ flex: 1, padding: '12px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#7c3aed,#e11d48)', color: '#fff', fontWeight: 700, cursor: submitting ? 'not-allowed' : 'pointer' }}>
+                    {submitting ? 'Enviando...' : 'Confirmar reserva'}
+                  </button>
+                  <button type="button" onClick={() => setShowForm(false)}
+                    style={{ padding: '12px 16px', borderRadius: 8, border: '1px solid rgba(255,255,255,.1)', background: 'transparent', color: '#94a3b8', cursor: 'pointer' }}>
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        )}
       </div>
     </section>
   )

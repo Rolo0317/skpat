@@ -255,3 +255,78 @@ describe('GET /tickets/event/:event_id (admin attendee list)', () => {
     expect(res.statusCode).toBe(404)
   })
 })
+
+describe('POST /tickets/purchase — concurrency and spot decrement', () => {
+  it('decrements available_spots by 1 on successful purchase', async () => {
+    const evt = db.prepare(
+      "INSERT INTO events (title, date, price, available_spots, is_active) VALUES ('Decrement Night', '2026-12-15T22:00:00Z', 1000, 50, 1) RETURNING id"
+    ).get() as { id: string }
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/tickets/purchase',
+      payload: {
+        event_id: evt.id,
+        nombre: 'Dec User',
+        email: 'dec@test.co',
+        cedula: '11112222',
+        ticket_type: 'general',
+      },
+    })
+    expect(res.statusCode).toBe(201)
+
+    const after = db.prepare('SELECT available_spots FROM events WHERE id = ?').get(evt.id) as { available_spots: number }
+    expect(after.available_spots).toBe(49)
+  })
+
+  it('returns 422 SoldOut when available_spots is 0', async () => {
+    const evt = db.prepare(
+      "INSERT INTO events (title, date, price, available_spots, is_active) VALUES ('Sold Out Night', '2026-12-16T22:00:00Z', 1000, 0, 1) RETURNING id"
+    ).get() as { id: string }
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/tickets/purchase',
+      payload: {
+        event_id: evt.id,
+        nombre: 'Sold User',
+        email: 'sold@test.co',
+        cedula: '22223333',
+        ticket_type: 'general',
+      },
+    })
+    expect(res.statusCode).toBe(422)
+    expect(res.json().error).toBe('SoldOut')
+
+    const count = db.prepare('SELECT COUNT(*) AS n FROM tickets WHERE event_id = ?').get(evt.id) as { n: number }
+    expect(count.n).toBe(0)
+  })
+
+  it('exhausts available_spots sequentially without going negative', async () => {
+    const evt = db.prepare(
+      "INSERT INTO events (title, date, price, available_spots, is_active) VALUES ('Last Spot Night', '2026-12-17T22:00:00Z', 1000, 1, 1) RETURNING id"
+    ).get() as { id: string }
+
+    const ok = await app.inject({
+      method: 'POST',
+      url: '/tickets/purchase',
+      payload: {
+        event_id: evt.id, nombre: 'A', email: 'a@test.co', cedula: '33334444', ticket_type: 'general',
+      },
+    })
+    expect(ok.statusCode).toBe(201)
+
+    const fail = await app.inject({
+      method: 'POST',
+      url: '/tickets/purchase',
+      payload: {
+        event_id: evt.id, nombre: 'B', email: 'b@test.co', cedula: '44445555', ticket_type: 'general',
+      },
+    })
+    expect(fail.statusCode).toBe(422)
+    expect(fail.json().error).toBe('SoldOut')
+
+    const after = db.prepare('SELECT available_spots FROM events WHERE id = ?').get(evt.id) as { available_spots: number }
+    expect(after.available_spots).toBe(0)
+  })
+})

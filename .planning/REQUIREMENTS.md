@@ -44,9 +44,9 @@
 
 ### Inventario y Dashboard
 
-- [ ] **INV-01**: Admin carga inventario base de productos (bebidas, combos) con stock inicial
-- [ ] **INV-02**: Cada venta/pedido confirmado descuenta automáticamente del inventario
-- [ ] **INV-03**: Alerta visual al admin cuando un producto cae por debajo del stock mínimo
+- [x] **INV-01**: Admin carga inventario base de productos (bebidas, combos) con stock inicial
+- [x] **INV-02**: Cada venta/pedido confirmado descuenta automáticamente del inventario
+- [x] **INV-03**: Alerta visual al admin cuando un producto cae por debajo del stock mínimo
 - [ ] **INV-04**: Dashboard con ventas en tiempo real: gráficas por noche, semana y mes
 - [ ] **INV-05**: Filtros en dashboard: por producto, por mesero, por hora, por evento
 - [ ] **INV-06**: Dashboard muestra ingresos totales por boletería vs ventas en mesa
@@ -117,9 +117,9 @@
 | MESA-02 | Phase 4 — Mesas y Meseros | Complete |
 | MESA-03 | Phase 4 — Mesas y Meseros | Complete |
 | MESA-04 | Phase 4 — Mesas y Meseros | Complete |
-| INV-01 | Phase 5 — Inventario y Dashboard | Pending |
-| INV-02 | Phase 5 — Inventario y Dashboard | Pending |
-| INV-03 | Phase 5 — Inventario y Dashboard | Pending |
+| INV-01 | Phase 5 — Inventario y Dashboard | Complete |
+| INV-02 | Phase 5 — Inventario y Dashboard | Complete |
+| INV-03 | Phase 5 — Inventario y Dashboard | Complete |
 | INV-04 | Phase 5 — Inventario y Dashboard | Pending |
 | INV-05 | Phase 5 — Inventario y Dashboard | Pending |
 | INV-06 | Phase 5 — Inventario y Dashboard | Pending |

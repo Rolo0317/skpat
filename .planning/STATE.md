@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 04-02-PLAN.md — MeseroHome sales panel + AdminMenuPage CRUD + AdminHome tonight dashboard
-last_updated: "2026-05-16T01:33:12.115Z"
+stopped_at: "Completed 05-01-PLAN.md — inventory tracking: stock_qty/min_stock + atomic decrement + alerts endpoint"
+last_updated: "2026-05-16T14:17:37.065Z"
 progress:
   total_phases: 5
   completed_phases: 4
-  total_plans: 10
-  completed_plans: 10
+  total_plans: 12
+  completed_plans: 11
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-14)
 
 **Core value:** Cliente compra tiquete con QR desde la web; dueño ve ventas en tiempo real — sin manillas físicas ni procesos manuales.
-**Current focus:** Phase 4 — Mesas y Meseros
+**Current focus:** Phase 5 — Inventario y Dashboard
 
 ## Current Position
 
-Phase: 4 (Mesas y Meseros) — COMPLETE
-Plan: 2 of 2 (all plans complete)
+Phase: 5 (Inventario y Dashboard) — EXECUTING
+Plan: 1 of 2
 
 ## Performance Metrics
 
@@ -96,6 +96,9 @@ Recent decisions affecting current work:
 - [Phase 04-mesas-y-meseros]: requireRole('mesero', 'admin') multi-role guard pattern established for mesero endpoints
 - [Phase 04-mesas-y-meseros]: Inline styles (React.CSSProperties) for mesero/admin panels — avoids Tailwind class conflicts, consistent with PorteroHome
 - [Phase 04-mesas-y-meseros]: AdminHome polls /sales/tonight every 10s via setInterval — TanStack Query not installed, mirrors AttendeeListPage pattern
+- [Phase 05-inventario-y-dashboard]: stock_qty = -1 sentinel for untracked items — items with stock_qty >= 0 are the only ones decremented on sale
+- [Phase 05-inventario-y-dashboard]: MAX(0, stock_qty - quantity) prevents negative stock values on atomic decrement
+- [Phase 05-inventario-y-dashboard]: Try/catch per ALTER TABLE ADD COLUMN makes each migration idempotent across server restarts
 
 ### Pending Todos
 
@@ -107,6 +110,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-05-16T01:33:12.108Z
-Stopped at: Completed 04-02-PLAN.md — MeseroHome sales panel + AdminMenuPage CRUD + AdminHome tonight dashboard
+Last session: 2026-05-16T14:17:11.043Z
+Stopped at: Completed 05-01-PLAN.md — inventory tracking: stock_qty/min_stock + atomic decrement + alerts endpoint
 Resume file: None

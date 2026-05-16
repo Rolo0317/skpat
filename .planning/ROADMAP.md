@@ -111,5 +111,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Fundacion y Seguridad | 3/3 | Complete    | 2026-05-15 |
 | 2. Landing Publica | 2/2 | Complete    | 2026-05-15 |
 | 3. Boleteria y Acceso | 3/3 | Complete    | 2026-05-16 |
-| 4. Mesas y Meseros | 2/2 | Complete   | 2026-05-16 |
-| 5. Inventario y Dashboard | 0/2 | Not started | - |
+| 4. Mesas y Meseros | 2/2 | Complete    | 2026-05-16 |
+| 5. Inventario y Dashboard | 1/2 | In Progress|  |

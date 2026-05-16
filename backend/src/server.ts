@@ -18,6 +18,7 @@ import { tablesRoutes } from './routes/tables/index.js'
 import { menuRoutes } from './routes/menu/index.js'
 import { salesRoutes } from './routes/sales/index.js'
 import { inventoryRoutes } from './routes/inventory/index.js'
+import { dashboardRoutes } from './routes/dashboard/index.js'
 import { ensureUploadsDir, UPLOADS_DIR } from './lib/uploads.js'
 
 export async function buildServer() {
@@ -65,6 +66,7 @@ export async function buildServer() {
   await app.register(menuRoutes, { prefix: '/menu' })
   await app.register(salesRoutes, { prefix: '/sales' })
   await app.register(inventoryRoutes, { prefix: '/inventory' })
+  await app.register(dashboardRoutes, { prefix: '/dashboard' })
 
   return app
 }

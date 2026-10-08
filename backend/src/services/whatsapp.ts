@@ -1,4 +1,7 @@
 import { db, type SqlClient } from '../lib/db.js'
+import { buildWhatsappUrl } from '../lib/whatsappLink.js'
+
+export { buildWhatsappUrl }
 
 export interface PromoterRow {
   id: string
@@ -17,9 +20,6 @@ export interface WhatsappContext {
   referencia?: string | null
 }
 
-export function buildWhatsappUrl(whatsapp: string, message: string): string {
-  return `https://wa.me/${whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`
-}
 
 export async function resolvePromoter(context: WhatsappContext, executor: SqlClient = db): Promise<PromoterRow | null> {
   if (context.guestListId) {

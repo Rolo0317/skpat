@@ -2,7 +2,18 @@
 import Seccion from '../ui/Seccion.astro'
 import BotonNeon from '../ui/BotonNeon.astro'
 import Icono, { type NombreIcono } from '../ui/Icono.astro'
-import { ENLACES_MAPA, NEGOCIO } from '../contenido/negocio'
+import type { AjustesLugar } from '~/lib/data'
+import { NEGOCIO } from '../contenido/negocio'
+import { SECTOR, enlacesMapa, textoDireccion, whatsappPrincipal } from '../utilidades/contacto'
+
+interface Props {
+  ajustes: AjustesLugar
+}
+
+const { ajustes } = Astro.props
+const direccion = textoDireccion(ajustes)
+const mapa = enlacesMapa(ajustes)
+const pedirDireccion = whatsappPrincipal(ajustes, 'Hola Skpat VIP, ¿me compartes la dirección exacta?')
 
 const TAMANO_PIN = 28
 const TAMANO_ICONO = 22
@@ -12,14 +23,14 @@ const PORCENTAJE = 100
 const posicionPin = `--pin-x: ${(CRUCE.x / LIENZO.ancho) * PORCENTAJE}%; --pin-y: ${(CRUCE.y / LIENZO.alto) * PORCENTAJE}%`
 
 const DATOS: { icono: NombreIcono; titulo: string; texto: string }[] = [
-  { icono: 'pin', titulo: NEGOCIO.direccion.calle, texto: `${NEGOCIO.direccion.ciudad}, Colombia` },
+  { icono: 'pin', titulo: direccion, texto: [ajustes.referencia, `${NEGOCIO.direccion.ciudad}, Colombia`].filter(Boolean).join(' · ') },
   { icono: 'reloj', titulo: NEGOCIO.horario.dias, texto: NEGOCIO.horario.texto },
   { icono: 'instagram', titulo: NEGOCIO.redes.instagram.usuario, texto: 'Line-ups, fotos y anuncios' },
 ]
 ---
-<Seccion id="ubicacion" titulo="En la 93, Bogotá">
+<Seccion id="ubicacion" titulo={SECTOR}>
   <div class="ubicacion">
-    <div class="mapa" style={posicionPin} role="img" aria-label={`Mapa esquemático: Skpat VIP en ${NEGOCIO.direccion.calle}, ${NEGOCIO.direccion.ciudad}`}>
+    <div class="mapa" style={posicionPin} role="img" aria-label={`Mapa esquemático: ${NEGOCIO.nombre} en el sector ${NEGOCIO.direccion.sector}, ${NEGOCIO.direccion.ciudad}`}>
       <svg viewBox={`0 0 ${LIENZO.ancho} ${LIENZO.alto}`} aria-hidden="true" class="mapa__dibujo">
         <defs>
           <pattern id="mapa-cuadricula" width="40" height="40" patternUnits="userSpaceOnUse">
@@ -29,8 +40,7 @@ const DATOS: { icono: NombreIcono; titulo: string; texto: string }[] = [
         <rect width={LIENZO.ancho} height={LIENZO.alto} fill="url(#mapa-cuadricula)" />
         <path d={`M0 ${CRUCE.y}h${LIENZO.ancho}`} class="mapa__via mapa__via--calle" />
         <path d={`M${CRUCE.x} 0v${LIENZO.alto}`} class="mapa__via mapa__via--carrera" />
-        <text x="16" y={CRUCE.y - 12} class="mapa__rotulo">Calle 93</text>
-        <text x={CRUCE.x + 12} y={LIENZO.alto - 10} class="mapa__rotulo">Cra. 15</text>
+        <text x="16" y={CRUCE.y - 12} class="mapa__rotulo">{NEGOCIO.direccion.sector}</text>
       </svg>
       <span class="mapa__pin"><Icono nombre="pin" tamano={TAMANO_PIN} /></span>
     </div>
@@ -50,8 +60,9 @@ const DATOS: { icono: NombreIcono; titulo: string; texto: string }[] = [
         }
       </ul>
       <div class="ubicacion__acciones">
-        <BotonNeon href={ENLACES_MAPA.google} externo icono="navegar">Abrir en Google Maps</BotonNeon>
-        <BotonNeon href={ENLACES_MAPA.waze} externo variante="secundario">Ir con Waze</BotonNeon>
+        <BotonNeon href={mapa.google} externo icono="navegar">Abrir en Google Maps</BotonNeon>
+        <BotonNeon href={mapa.waze} externo variante="secundario">Ir con Waze</BotonNeon>
+        {!ajustes.direccion && <BotonNeon href={pedirDireccion} externo variante="secundario" icono="whatsapp">Pedir dirección exacta</BotonNeon>}
       </div>
     </div>
   </div>

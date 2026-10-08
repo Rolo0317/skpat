@@ -66,6 +66,26 @@ describe('PorteroHome', () => {
     expect(screen.getByTestId('stat-ingresados').textContent).toContain('0')
   })
 
+  it.each([
+    ['PendingPayment', 'PAGO PENDIENTE', /cerrar el pago con su gestor por WhatsApp/],
+    ['NotYetValid', 'AUN NO VALIDO', /volver el día de su evento/],
+    ['Expired', 'VENCIDO', /fecha anterior/],
+  ])('explica qué hacer cuando el motivo es %s', async (reason, label, action) => {
+    vi.stubGlobal('fetch', vi.fn(async () => jsonResponse({
+      valid: false, reason, message: 'detalle del backend', nombre: 'Ana Ruiz', event_title: 'Maratoneados en Springfield',
+    })))
+    render(<PorteroHome />)
+
+    fireEvent.change(screen.getByPlaceholderText(/Pega aqui el token/i), { target: { value: 'c'.repeat(64) } })
+    fireEvent.click(screen.getByText('Validar'))
+
+    const result = await screen.findByTestId('scan-result')
+    expect(result).toHaveTextContent(label)
+    expect(result).toHaveTextContent(action)
+    expect(result).toHaveTextContent('Ana Ruiz · Maratoneados en Springfield')
+    expect(screen.getByTestId('stat-rechazados').textContent).toContain('1')
+  })
+
   it('rejects empty/short token without calling backend', () => {
     const fetchSpy = vi.fn()
     vi.stubGlobal('fetch', fetchSpy)

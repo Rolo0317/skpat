@@ -3,32 +3,32 @@ import type { Cartelera } from '../utilidades/agenda'
 import Seccion from '../ui/Seccion.astro'
 import EventoCartel from '../ui/EventoCartel.astro'
 import BotonNeon from '../ui/BotonNeon.astro'
-import { NEGOCIO, RUTAS_APP } from '../contenido/negocio'
+import { NEGOCIO } from '../contenido/negocio'
 
 interface Props {
   cartelera: Cartelera
 }
 
+/** Solo el evento activo (y, si los hay, otros activos próximos): la web no muestra fechas pasadas ni ficticias. */
 const { cartelera } = Astro.props
-const [destacado, ...resto] = cartelera.eventos
+const { destacado, otros } = cartelera
 ---
-<Seccion id="cartelera" titulo={cartelera.titulo}>
+<Seccion id="cartelera" titulo={destacado ? 'Evento activo' : 'Próxima fecha'}>
   {
     destacado ? (
       <div class="cartelera">
-        <EventoCartel evento={destacado} destacado />
-        {resto.length > 0 && (
+        <EventoCartel activo={destacado} destacado />
+        {otros.length > 0 && (
           <div class="cartelera__resto">
-            {resto.map((evento) => <EventoCartel evento={evento} />)}
+            {otros.map((activo) => <EventoCartel activo={activo} />)}
           </div>
         )}
       </div>
     ) : (
       <div class="cartelera__vacia">
-        <p>Estamos armando el próximo line-up. Las fechas salen primero en Instagram y en tu cuenta.</p>
+        <p>Estamos armando el próximo evento. Las fechas salen primero en Instagram.</p>
         <div class="cartelera__acciones">
           <BotonNeon href={NEGOCIO.redes.instagram.url} externo icono="instagram">Seguir {NEGOCIO.redes.instagram.usuario}</BotonNeon>
-          <BotonNeon href={RUTAS_APP.registro} variante="secundario">Crear cuenta</BotonNeon>
         </div>
       </div>
     )

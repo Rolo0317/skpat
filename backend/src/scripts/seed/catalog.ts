@@ -1,21 +1,10 @@
 import type { SkpatRole } from '../../lib/schemas.js'
 
 const CENTS_PER_PESO = 100
-const pesos = (amount: number) => amount * CENTS_PER_PESO
+export const pesos = (amount: number) => amount * CENTS_PER_PESO
 
 /** Sin control de inventario (columna stock_qty = -1). */
 export const UNTRACKED_STOCK = -1
-
-export interface DemoEvent {
-  slug: string
-  title: string
-  description: string
-  genre: string
-  lineup: string[]
-  price: number
-  available_spots: number
-  is_vip: boolean
-}
 
 export interface DemoMenuItem {
   name: string
@@ -31,61 +20,6 @@ export interface DemoStaffUser {
   nombre: string
   role: SkpatRole
 }
-
-
-/** Se asignan en orden a los próximos viernes/sábados. */
-export const DEMO_EVENTS: DemoEvent[] = [
-  {
-    slug: 'guaracha-inferno',
-    title: 'Guaracha Inferno',
-    description: 'La noche más caliente de Bogotá: guaracha, aleteo y zapateo hasta el amanecer.',
-    genre: 'guaracha',
-    lineup: ['DJ Kalaña', 'Zapateo Brothers', 'La Mona Aleteo'],
-    price: pesos(60_000),
-    available_spots: 400,
-    is_vip: false,
-  },
-  {
-    slug: 'techno-subterraneo',
-    title: 'Techno Subterráneo',
-    description: 'Cuarto oscuro, luces estroboscópicas y techno industrial sin concesiones.',
-    genre: 'techno',
-    lineup: ['Nocturna', 'Bunker 2600', 'Ferro'],
-    price: pesos(70_000),
-    available_spots: 350,
-    is_vip: false,
-  },
-  {
-    slug: 'afro-house-ritual',
-    title: 'Afro House Ritual',
-    description: 'Percusión, voces ancestrales y grooves profundos para bailar descalzo el alma.',
-    genre: 'afro house',
-    lineup: ['Baobab Sound', 'Selva Negra', 'Kuumba'],
-    price: pesos(65_000),
-    available_spots: 300,
-    is_vip: false,
-  },
-  {
-    slug: 'tribal-fever',
-    title: 'Tribal Fever',
-    description: 'Tribal guarachero a 130 BPM con show de percusión en vivo.',
-    genre: 'tribal',
-    lineup: ['Tambó', 'DJ Chamán', 'Tribu 57'],
-    price: pesos(55_000),
-    available_spots: 400,
-    is_vip: false,
-  },
-  {
-    slug: 'skpat-vip-guaracha-vs-tribal',
-    title: 'Skpat VIP: Guaracha vs Tribal',
-    description: 'Noche VIP con palcos, botella de bienvenida y back to back de guaracha contra tribal.',
-    genre: 'guaracha',
-    lineup: ['DJ Kalaña', 'Tambó', 'Zapateo Brothers', 'DJ Chamán'],
-    price: pesos(120_000),
-    available_spots: 200,
-    is_vip: true,
-  },
-]
 
 /** Algunos ítems quedan por debajo de min_stock a propósito para que el panel muestre alertas. */
 export const DEMO_MENU: DemoMenuItem[] = [

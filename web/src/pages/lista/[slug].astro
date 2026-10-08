@@ -1,0 +1,114 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro'
+import '~/components/landing/landing.css'
+import Logo from '~/components/landing/ui/Logo.astro'
+import BotonNeon from '~/components/landing/ui/BotonNeon.astro'
+import CamposPersona from '~/components/landing/ui/CamposPersona.astro'
+import { NEGOCIO } from '~/components/landing/contenido/negocio'
+import { estadoDeLista, MENSAJES_LISTA, textoDeCupo } from '~/components/landing/utilidades/listaPublica'
+import { partesDeFecha } from '~/components/landing/utilidades/formato'
+import { enlaceWhatsapp } from '~/components/landing/utilidades/whatsapp'
+import { obtenerListaPublica } from '~/lib/data'
+
+export const prerender = false
+
+const ESTADO_NO_ENCONTRADA = 404
+const slug = Astro.params.slug ?? ''
+const lista = await obtenerListaPublica(slug)
+if (!lista) Astro.response.status = ESTADO_NO_ENCONTRADA
+Astro.response.headers.set('Cache-Control', 'no-store')
+
+const estado = lista ? estadoDeLista(lista, new Date()) : null
+const mensaje = estado ? MENSAJES_LISTA[estado] : null
+const fecha = lista ? partesDeFecha(lista.evento.fecha) : null
+const contactoGestor = lista?.gestor
+  ? enlaceWhatsapp(lista.gestor.whatsapp, `Hola ${lista.gestor.nombre}, vengo de la lista "${lista.nombre}" de ${lista.evento.titulo}.`)
+  : NEGOCIO.redes.whatsapp.url
+const titulo = lista ? `${lista.nombre} · ${lista.evento.titulo}` : 'Lista no encontrada'
+---
+<BaseLayout title={`${titulo} · Skpat VIP`} description="Inscríbete gratis en la lista y recibe tu QR al instante.">
+  <meta slot="head" name="robots" content="noindex" />
+  <main class="contenedor lista">
+    <a href="/" class="lista__marca" aria-label="Skpat VIP, inicio"><Logo class="lista__logo" sizes="12rem" /></a>
+    {
+      lista && fecha && mensaje && estado ? (
+        <section class="lista__tarjeta" aria-labelledby="lista-titulo" data-lista data-slug={slug}>
+          <p class="lista__evento">{lista.evento.titulo}</p>
+          <h1 id="lista-titulo" class="lista__titulo">{lista.nombre}</h1>
+          <dl class="lista__datos">
+            <div><dt>Fecha</dt><dd><time datetime={lista.evento.fecha.toISOString()}>{fecha.completa}, {fecha.hora}</time></dd></div>
+            {lista.gestor && <div><dt>Gestor</dt><dd>{lista.gestor.nombre}</dd></div>}
+            <div><dt>Cupo</dt><dd>{textoDeCupo(lista)}</dd></div>
+          </dl>
+          <h2 class="lista__estado">{mensaje.titulo}</h2>
+          <p class="lista__texto">{mensaje.texto}</p>
+
+          {estado === 'abierta' ? (
+            <>
+              <form class="lista__formulario" data-lista-formulario>
+                <CamposPersona prefijo="lista" />
+                <p class="lista__error" role="alert" data-lista-error></p>
+                <BotonNeon tipo="submit" icono="qr">Recibir mi QR</BotonNeon>
+              </form>
+              <div class="lista__exito" tabindex="-1" data-lista-exito hidden>
+                <h2 class="lista__estado">¡Estás en la lista!</h2>
+                <img class="lista__qr" alt="" width="280" height="280" data-lista-qr />
+                <p class="lista__texto">Guárdalo o tómale captura: es tu entrada y vale solo para esta fecha. También te llega al correo.</p>
+                <BotonNeon href="#" icono="flecha" data-lista-descarga descargar={`skpat-qr-${slug}.png`}>Guardar QR</BotonNeon>
+              </div>
+            </>
+          ) : (
+            <BotonNeon href={contactoGestor} externo icono="whatsapp">Escribir al gestor</BotonNeon>
+          )}
+        </section>
+      ) : (
+        <section class="lista__tarjeta" aria-labelledby="lista-titulo">
+          <h1 id="lista-titulo" class="lista__titulo">Lista no encontrada</h1>
+          <p class="lista__texto">Este enlace no existe o la lista ya no está disponible. Pídele a tu gestor el enlace correcto.</p>
+          <div class="lista__acciones">
+            <BotonNeon href={contactoGestor} externo icono="whatsapp">Escribir por WhatsApp</BotonNeon>
+            <BotonNeon href="/" variante="secundario">Ir al inicio</BotonNeon>
+          </div>
+        </section>
+      )
+    }
+  </main>
+</BaseLayout>
+
+<script>
+  import { iniciarRegistroLista } from '~/components/landing/ui/registroLista'
+
+  document.querySelectorAll<HTMLElement>('[data-lista]').forEach(iniciarRegistroLista)
+</script>
+
+<style>
+  .lista { display: grid; justify-items: center; gap: 1.5rem; min-height: 100dvh; padding-block: 2rem 4rem; }
+  .lista__marca { text-decoration: none; }
+  .lista :global(.lista__logo) { width: 12rem; }
+  .lista__tarjeta {
+    display: grid;
+    gap: 1rem;
+    width: min(100%, 32rem);
+    padding: 1.5rem 1.25rem;
+    border-radius: var(--radio);
+    border: 1px solid color-mix(in oklab, var(--primario) 45%, var(--linea));
+    background: linear-gradient(160deg, color-mix(in oklab, var(--primario) 14%, var(--fondo-2)), var(--fondo-2) 60%);
+    box-shadow: var(--sombra-profunda);
+  }
+  .lista__evento { font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.85rem; color: var(--acento-claro); }
+  .lista__titulo { font-family: var(--fuente-display); font-weight: 900; font-size: clamp(2.5rem, 11vw, 3.5rem); line-height: 0.95; text-transform: uppercase; color: var(--tinta); text-wrap: balance; }
+  .lista__datos { display: grid; gap: 0.5rem; margin: 0; }
+  .lista__datos div { display: flex; justify-content: space-between; gap: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--linea); }
+  .lista__datos dt { color: var(--tinta-suave); }
+  .lista__datos dd { margin: 0; text-align: right; color: var(--tinta); font-weight: 500; }
+  .lista__datos dd time::first-letter { text-transform: uppercase; }
+  .lista__estado { font-family: var(--fuente-display); font-weight: 900; font-size: 1.75rem; text-transform: uppercase; color: var(--primario-claro); }
+  .lista__texto { color: var(--color-skpat-text); }
+  .lista__formulario { display: grid; gap: 1rem; }
+  .lista__formulario[hidden], .lista__exito[hidden] { display: none; }
+  .lista__error { color: var(--color-skpat-red); font-weight: 700; }
+  .lista__error:empty { display: none; }
+  .lista__exito { display: grid; gap: 1rem; justify-items: center; text-align: center; outline: none; }
+  .lista__qr { width: min(100%, 17.5rem); height: auto; padding: 0.75rem; border-radius: var(--radio-pequeno); background: white; }
+  .lista__acciones { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+</style>

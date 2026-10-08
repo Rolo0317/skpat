@@ -11,15 +11,29 @@ interface ScanResultValid {
   ticket_type: string
   event_title: string
 }
+type ScanRejection = 'InvalidQR' | 'AlreadyUsed' | 'TicketNotConfirmed' | 'PendingPayment' | 'NotYetValid' | 'Expired'
+
 interface ScanResultInvalid {
   valid: false
-  reason: 'InvalidQR' | 'AlreadyUsed' | 'TicketNotConfirmed'
+  reason: ScanRejection
   message: string
   nombre?: string
   ticket_type?: string
   event_title?: string
 }
 type ScanResult = ScanResultValid | ScanResultInvalid
+
+const VALID_LABEL = 'VALIDO'
+
+/** Titular grande y qué hacer con la persona en la puerta, por cada motivo de rechazo. */
+const REJECTION_GUIDE: Record<ScanRejection, { label: string; action: string }> = {
+  InvalidQR: { label: 'INVALIDO', action: 'No ingresa. El código no es de Skpat VIP.' },
+  AlreadyUsed: { label: 'YA USADO', action: 'No ingresa. Este QR ya entró esta noche.' },
+  TicketNotConfirmed: { label: 'NO CONFIRMADO', action: 'No ingresa. La compra no está activa.' },
+  PendingPayment: { label: 'PAGO PENDIENTE', action: 'No ingresa todavía: debe cerrar el pago con su gestor por WhatsApp o pagar en taquilla.' },
+  NotYetValid: { label: 'AUN NO VALIDO', action: 'Es para una fecha posterior. Debe volver el día de su evento.' },
+  Expired: { label: 'VENCIDO', action: 'Era para una fecha anterior. Puede comprar en taquilla.' },
+}
 
 export default function PorteroHome() {
   const [mode, setMode] = useState<ScanMode>('manual')
@@ -70,7 +84,8 @@ export default function PorteroHome() {
   }, [])
 
   const resultColor = result?.valid ? '#10b981' : '#ef4444'
-  const resultLabel = !result ? '' : result.valid ? 'VALIDO' : (result.reason === 'AlreadyUsed' ? 'YA USADO' : 'INVALIDO')
+  const rejection = result && !result.valid ? REJECTION_GUIDE[result.reason] ?? REJECTION_GUIDE.InvalidQR : null
+  const resultLabel = !result ? '' : rejection?.label ?? VALID_LABEL
 
   return (
     <section style={{ maxWidth: 720, margin: '0 auto', padding: 24, color: '#ece6da' }}>
@@ -170,9 +185,12 @@ export default function PorteroHome() {
           )}
           {!result.valid && (
             <>
-              <div style={{ fontSize: 14, color: '#fca5a5' }}>{result.message}</div>
+              <div style={{ fontSize: 15, color: '#faf7f0', fontWeight: 600 }}>{rejection?.action}</div>
+              <div style={{ fontSize: 13, color: '#fca5a5', marginTop: 4 }}>{result.message}</div>
               {result.nombre && (
-                <div style={{ fontSize: 13, color: '#a89f8f', marginTop: 4 }}>{result.nombre}</div>
+                <div style={{ fontSize: 13, color: '#a89f8f', marginTop: 4 }}>
+                  {result.nombre}{result.event_title ? ` · ${result.event_title}` : ''}
+                </div>
               )}
             </>
           )}

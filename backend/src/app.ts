@@ -21,7 +21,11 @@ import { salesRoutes } from './routes/sales/index.js'
 import { inventoryRoutes } from './routes/inventory/index.js'
 import { dashboardRoutes } from './routes/dashboard/index.js'
 import { ordersRoutes } from './routes/orders/index.js'
+import { galleryRoutes } from './routes/gallery/index.js'
+import { announcementsRoutes } from './routes/announcements/index.js'
+import { listsRoutes } from './routes/lists/index.js'
 import { ensureUploadsDir, isDiskUploadEnabled, UPLOADS_DIR } from './lib/uploads.js'
+import { MAX_IMAGE_BYTES } from './lib/storage/index.js'
 
 export async function buildServer() {
   // Ensure uploads directory exists
@@ -50,9 +54,9 @@ export async function buildServer() {
   })
 
   await app.register(fastifyMultipart, {
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+    limits: { fileSize: MAX_IMAGE_BYTES },
   })
-  // En Vercel no hay disco persistente: las imágenes llegan como URL y no se sirven archivos locales.
+  // En Vercel no hay disco persistente: las imágenes van a Vercel Blob y no se sirven archivos locales.
   if (isDiskUploadEnabled()) {
     await app.register(fastifyStatic, {
       root: UPLOADS_DIR,
@@ -81,6 +85,9 @@ export async function buildServer() {
   await app.register(inventoryRoutes, { prefix: '/inventory' })
   await app.register(dashboardRoutes, { prefix: '/dashboard' })
   await app.register(ordersRoutes, { prefix: '/orders' })
+  await app.register(galleryRoutes, { prefix: '/gallery' })
+  await app.register(announcementsRoutes, { prefix: '/announcements' })
+  await app.register(listsRoutes, { prefix: '/lists' })
 
   return app
 }

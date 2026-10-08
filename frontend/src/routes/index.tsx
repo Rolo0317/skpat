@@ -8,6 +8,12 @@ import AdminEventsPage from '@/panels/admin/AdminEventsPage'
 import AdminMenuPage from '@/panels/admin/AdminMenuPage'
 import AdminInventoryPage from '@/panels/admin/AdminInventoryPage'
 import AttendeeListPage from '@/panels/admin/AttendeeListPage'
+import AdminPaymentsPage from '@/panels/admin/pagos/AdminPaymentsPage'
+import AdminListsPage from '@/panels/admin/listas/AdminListsPage'
+import AdminPromotersPage from '@/panels/admin/gestores/AdminPromotersPage'
+import AdminGalleryPage from '@/panels/admin/galeria/AdminGalleryPage'
+import AdminAnnouncementsPage from '@/panels/admin/anuncios/AdminAnnouncementsPage'
+import AdminSettingsPage from '@/panels/admin/configuracion/AdminSettingsPage'
 
 import LoginPage from '@/features/auth/LoginPage'
 import RegisterPage from '@/features/auth/RegisterPage'
@@ -40,6 +46,12 @@ const appRoutes: RouteObject[] = [
       element: <AdminLayout />,
       children: [
         { index: true, element: <AdminHome /> },
+        { path: 'pagos', element: <AdminPaymentsPage /> },
+        { path: 'listas', element: <AdminListsPage /> },
+        { path: 'gestores', element: <AdminPromotersPage /> },
+        { path: 'galeria', element: <AdminGalleryPage /> },
+        { path: 'anuncios', element: <AdminAnnouncementsPage /> },
+        { path: 'configuracion', element: <AdminSettingsPage /> },
         { path: 'eventos', element: <AdminEventsPage /> },
         { path: 'eventos/:event_id/asistentes', element: <AttendeeListPage /> },
         { path: 'menu', element: <AdminMenuPage /> },

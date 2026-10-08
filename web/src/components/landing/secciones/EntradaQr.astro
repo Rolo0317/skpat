@@ -12,9 +12,9 @@ interface Props {
 
 const { enlaceCompra, enlaceLista } = Astro.props
 const PASOS: readonly Paso[] = [
-  { icono: 'boleto', titulo: 'Anótate o compra en un minuto', texto: 'La lista es gratis y el cover lo pagas en la puerta según tu hora de llegada. Sin filas en taquilla.' },
-  { icono: 'correo', titulo: 'Tu QR llega al correo', texto: 'Cada entrada trae su código único. También lo ves en tu cuenta.' },
-  { icono: 'escanear', titulo: 'Lo escaneamos en la puerta', texto: 'Muestras el QR desde el celular, sube el brillo y entras.' },
+  { icono: 'boleto', titulo: 'Anótate o compra en un minuto', texto: 'La lista es gratis y te da tu QR al instante. La entrada general va por etapas y el pago se cierra por WhatsApp con un gestor.' },
+  { icono: 'correo', titulo: 'Tu QR, uno por persona', texto: 'Cuando el gestor confirma tu pago, el QR llega al correo. También lo ves en tu cuenta.' },
+  { icono: 'escanear', titulo: 'Lo escaneamos en la puerta', texto: 'Vale solo para la fecha de tu evento. Muestras el QR desde el celular, sube el brillo y entras.' },
 ]
 ---
 <Seccion id="entrada" titulo="Entra por lista con tu propio QR" class="entrada-seccion">
@@ -30,7 +30,7 @@ const PASOS: readonly Paso[] = [
         <span class="boleta__escaner" aria-hidden="true"></span>
       </div>
       <figcaption class="boleta__pie">
-        <span>{NEGOCIO.direccion.calle}</span>
+        <span>{NEGOCIO.direccion.sector}</span>
         <span>Ejemplo ilustrativo</span>
       </figcaption>
     </figure>

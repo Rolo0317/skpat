@@ -5,25 +5,29 @@ interface Props {
   objetivo: Date
   ahora: Date
   enVivo: boolean
+  /** Qué mide el reloj (para lectores de pantalla). */
+  etiqueta?: string
+  /** Lo que se muestra cuando el reloj llega a cero. */
+  textoFinal?: string
 }
 
-const { objetivo, ahora, enVivo } = Astro.props
+const { objetivo, ahora, enVivo, etiqueta = 'Tiempo para que empiece', textoFinal = 'Está pasando ahora' } = Astro.props
 const inicial = tiempoRestante(objetivo, ahora)
-const UNIDADES: { clave: UnidadTiempo; etiqueta: string }[] = [
-  { clave: 'dias', etiqueta: 'días' },
-  { clave: 'horas', etiqueta: 'horas' },
-  { clave: 'minutos', etiqueta: 'min' },
-  { clave: 'segundos', etiqueta: 'seg' },
+const UNIDADES: { clave: UnidadTiempo; unidad: string }[] = [
+  { clave: 'dias', unidad: 'días' },
+  { clave: 'horas', unidad: 'horas' },
+  { clave: 'minutos', unidad: 'min' },
+  { clave: 'segundos', unidad: 'seg' },
 ]
 ---
 <div class="cuenta" data-cuenta-regresiva data-objetivo={objetivo.toISOString()} data-estado={enVivo ? 'en-vivo' : 'contando'}>
-  <p class="cuenta__vivo"><span class="cuenta__punto"></span>Está pasando ahora</p>
-  <ol class="cuenta__reloj" aria-label="Tiempo para que empiece">
+  <p class="cuenta__vivo"><span class="cuenta__punto"></span>{textoFinal}</p>
+  <ol class="cuenta__reloj" aria-label={etiqueta}>
     {
-      UNIDADES.map(({ clave, etiqueta }) => (
+      UNIDADES.map(({ clave, unidad }) => (
         <li class="cuenta__celda">
           <span class="cuenta__cifra cifra" data-unidad={clave}>{inicial[clave]}</span>
-          <span class="cuenta__etiqueta">{etiqueta}</span>
+          <span class="cuenta__etiqueta">{unidad}</span>
         </li>
       ))
     }

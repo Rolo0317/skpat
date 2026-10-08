@@ -60,6 +60,9 @@ export function requireRole(...roles: SkpatRole[]) {
   }
 }
 
+/** Opciones de ruta para endpoints exclusivos del staff administrador. */
+export const adminOnly = { preHandler: [verifyAuth, requireRole('admin')] }
+
 // No-op plugin export so it can be registered if desired
 export default async function authPlugin(_app: FastifyInstance) {
   // Nothing to register — exports are imported directly by route files.

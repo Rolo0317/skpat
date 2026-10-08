@@ -1,42 +1,46 @@
-import type { EventoPublico } from '~/lib/data'
+import type { AjustesLugar, EventoPublico } from '~/lib/data'
 import { NEGOCIO, REDES, RUTAS_APP } from '../contenido/negocio'
 import { finDelEvento } from './agenda'
+import { contactosWhatsapp } from './contacto'
 import { CENTAVOS_POR_PESO } from './formato'
+import { jsonSeguro } from './jsonSeguro'
 
-const DIAS_ABIERTOS_SCHEMA = ['https://schema.org/Friday', 'https://schema.org/Saturday']
+/** Sin hora de cierre: schema.org representa "abierto todo el día" con 00:00–23:59. */
+const ABRE_TODO_EL_DIA = { opens: '00:00', closes: '23:59' } as const
 
-function direccionPostal() {
+function direccionPostal(ajustes: AjustesLugar) {
   return {
     '@type': 'PostalAddress',
-    streetAddress: NEGOCIO.direccion.calle,
+    ...(ajustes.direccion ? { streetAddress: ajustes.direccion } : {}),
     addressLocality: NEGOCIO.direccion.ciudad,
     addressRegion: NEGOCIO.direccion.region,
     addressCountry: NEGOCIO.direccion.pais,
   }
 }
 
-function discoteca(origen: string) {
+function discoteca(origen: string, ajustes: AjustesLugar) {
+  const [contacto] = contactosWhatsapp(ajustes)
   return {
     '@type': 'NightClub',
     '@id': `${origen}/#discoteca`,
     name: NEGOCIO.nombre,
-    description: NEGOCIO.eslogan,
+    description: `${NEGOCIO.eslogan}. ${NEGOCIO.horario.dias}, ${NEGOCIO.horario.texto.toLowerCase()}. Agencia de DJs y academia.`,
     url: origen,
     image: `${origen}/marca/og-skpat.jpg`,
     logo: `${origen}/marca/icon-skpat-512.png`,
-    telephone: NEGOCIO.telefono.internacional,
-    address: direccionPostal(),
+    ...(contacto ? { telephone: contacto.whatsapp } : {}),
+    address: direccionPostal(ajustes),
     sameAs: REDES.filter(({ id }) => id !== 'whatsapp').map(({ url }) => url),
     openingHoursSpecification: {
       '@type': 'OpeningHoursSpecification',
-      dayOfWeek: DIAS_ABIERTOS_SCHEMA,
-      opens: NEGOCIO.horario.apertura,
-      closes: NEGOCIO.horario.cierre,
+      dayOfWeek: NEGOCIO.horario.diasSchema.map((dia) => `https://schema.org/${dia}`),
+      ...ABRE_TODO_EL_DIA,
     },
   }
 }
 
 function eventoSchema(evento: EventoPublico, origen: string) {
+  const precio = evento.precioVigente?.precioCentavos ?? evento.precioCentavos
   return {
     '@type': 'Event',
     name: evento.titulo,
@@ -51,18 +55,18 @@ function eventoSchema(evento: EventoPublico, origen: string) {
     offers: {
       '@type': 'Offer',
       url: `${origen}${RUTAS_APP.comprar(evento.id)}`,
-      price: evento.precioCentavos / CENTAVOS_POR_PESO,
+      price: precio / CENTAVOS_POR_PESO,
       priceCurrency: 'COP',
       availability: evento.cuposDisponibles > 0 ? 'https://schema.org/InStock' : 'https://schema.org/SoldOut',
     },
   }
 }
 
-/** JSON-LD listo para incrustar; escapa "<" para que ningún texto pueda cerrar el <script>. */
-export function datosEstructurados(eventos: EventoPublico[], origen: string): string {
+/** JSON-LD listo para incrustar en la cabecera. */
+export function datosEstructurados(eventos: EventoPublico[], ajustes: AjustesLugar, origen: string): string {
   const grafo = {
     '@context': 'https://schema.org',
-    '@graph': [discoteca(origen), ...eventos.map((evento) => eventoSchema(evento, origen))],
+    '@graph': [discoteca(origen, ajustes), ...eventos.map((evento) => eventoSchema(evento, origen))],
   }
-  return JSON.stringify(grafo).replace(/</g, '\\u003c')
+  return jsonSeguro(grafo)
 }

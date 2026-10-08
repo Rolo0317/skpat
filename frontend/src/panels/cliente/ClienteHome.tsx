@@ -1,124 +1,76 @@
-import { useState, useEffect } from 'react'
-import { useAuth } from '@/features/auth/useAuth'
-import { Link } from 'react-router-dom'
-import { api } from '@/lib/api'
-import { formatCOP } from '@/lib/format'
+import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { ticketLabel } from '@skpat/backend/src/lib/ticketPrices'
+import { useAuth } from '@/features/auth/useAuth'
+import { api } from '@/lib/api'
+import { formatCOP, formatDateTime } from '@/lib/format'
+import { Alert } from '@/components/ui/Alert'
+import { Button } from '@/components/ui/Button'
+import { WhatsAppLink } from '@/components/ui/WhatsAppLink'
+import { displayStateOf, TICKET_STATE_PRESENTATION, type MyTicket } from './ticketStatus'
 
-interface MyTicket {
-  id: string
-  event_title: string
-  event_date: string
-  ticket_type: string
-  price_cents: number
-  status: string
-  qr_data_url: string
-  qr_token: string
-  qr_used: boolean
-  created_at: string
+const MY_TICKETS_PATH = '/tickets/mine'
+
+function TicketCard({ ticket }: { ticket: MyTicket }) {
+  const [showQr, setShowQr] = useState(false)
+  const state = displayStateOf(ticket)
+  const { label, badgeClass, help } = TICKET_STATE_PRESENTATION[state]
+  const kind = ticket.price_stage ? `${ticketLabel(ticket.ticket_type)} · ${ticket.price_stage}` : ticketLabel(ticket.ticket_type)
+
+  return (
+    <li className={`overflow-hidden rounded-2xl border bg-skpat-card ${state === 'valido' ? 'border-skpat-oro/40' : 'border-skpat-border'}`}>
+      <div className="flex flex-wrap items-start justify-between gap-3 p-4">
+        <div className="min-w-0">
+          <h2 className="font-bold text-skpat-white">{ticket.event_title}</h2>
+          <p className="text-xs text-skpat-muted">{formatDateTime(ticket.event_date)}</p>
+          <div className="mt-2 flex flex-wrap gap-2 text-[11px] font-semibold">
+            <span className="rounded-md bg-skpat-oro/15 px-2 py-0.5 text-skpat-champan">{kind}</span>
+            <span className={`rounded-md border px-2 py-0.5 ${badgeClass}`}>{label}</span>
+          </div>
+        </div>
+        <p className="text-lg font-extrabold text-skpat-champan">{formatCOP(ticket.price_cents)}</p>
+      </div>
+      <div className="space-y-3 border-t border-skpat-border bg-skpat-bg3 px-4 py-3">
+        <p className="text-xs text-skpat-muted">{help}</p>
+        {state === 'pendiente' && ticket.whatsapp_url && <WhatsAppLink href={ticket.whatsapp_url} label="Pagar por WhatsApp" />}
+        {state === 'valido' && ticket.qr_data_url && (
+          <>
+            <Button variant="secondary" aria-expanded={showQr} onClick={() => setShowQr((open) => !open)}>
+              {showQr ? 'Ocultar QR' : 'Ver QR'}
+            </Button>
+            {showQr && <img src={ticket.qr_data_url} alt={`QR de ${ticket.event_title}`} className="mx-auto size-48 rounded-lg bg-white p-2" />}
+          </>
+        )}
+      </div>
+    </li>
+  )
 }
 
 export default function ClienteHome() {
   const { user } = useAuth()
-  const [tickets, setTickets] = useState<MyTicket[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [openQr, setOpenQr] = useState<string | null>(null)
-
-  useEffect(() => {
-    api
-      .get<MyTicket[]>('/tickets/mine')
-      .then(data => setTickets(Array.isArray(data) ? data : []))
-      .catch(() => setError('No se pudieron cargar tus tiquetes'))
-      .finally(() => setLoading(false))
-  }, [])
+  const { data: tickets = [], isLoading, isError } = useQuery({
+    queryKey: [MY_TICKETS_PATH],
+    queryFn: () => api.get<MyTicket[]>(MY_TICKETS_PATH),
+  })
 
   return (
-    <div style={{ padding: '24px 32px', maxWidth: 700 }}>
-      <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 800, color: '#faf7f0', margin: '0 0 4px' }}>
-          Mis tiquetes
-        </h1>
-        <p style={{ color: '#64748b', fontSize: 13 }}>
-          Hola, {user?.nombre ?? user?.email}. Aquí están tus entradas.
-        </p>
-      </div>
+    <section className="mx-auto max-w-2xl p-4 sm:p-6">
+      <header className="mb-6">
+        <h1 className="text-2xl font-extrabold text-skpat-white">Mis tiquetes</h1>
+        <p className="text-sm text-skpat-muted">Hola, {user?.nombre ?? user?.email}. Aquí están tus entradas.</p>
+      </header>
 
-      {loading && <p style={{ color: '#64748b' }}>Cargando...</p>}
-      {error && <p style={{ color: '#ef4444' }}>{error}</p>}
-
-      {!loading && tickets.length === 0 && (
-        <div style={{ background: '#1c1c2e', border: '1px solid rgba(255,255,255,.08)', borderRadius: 12, padding: 32, textAlign: 'center' }}>
-          <p style={{ color: '#64748b', marginBottom: 16 }}>Aún no tienes tiquetes comprados.</p>
-          <Link to="/" reloadDocument style={{ color: '#d4a63a', fontWeight: 600, textDecoration: 'none', fontSize: 14 }}>
-            Ver eventos disponibles
-          </Link>
+      {isLoading && <p className="text-skpat-muted">Cargando…</p>}
+      {isError && <Alert>No se pudieron cargar tus tiquetes.</Alert>}
+      {!isLoading && !isError && tickets.length === 0 && (
+        <div className="rounded-2xl border border-skpat-border bg-skpat-card p-8 text-center">
+          <p className="mb-4 text-skpat-muted">Aún no tienes tiquetes.</p>
+          <a href="/" className="font-semibold text-skpat-oro hover:text-skpat-champan">Ver el evento de esta semana</a>
         </div>
       )}
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-        {tickets.map(ticket => (
-          <div key={ticket.id} style={{
-            background: '#1c1c2e',
-            border: `1px solid ${ticket.qr_used ? 'rgba(100,116,139,.3)' : 'rgba(212,166,58,.25)'}`,
-            borderRadius: 14,
-            overflow: 'hidden',
-          }}>
-            <div style={{ padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
-              <div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: ticket.qr_used ? '#64748b' : '#f1f5f9' }}>
-                  {ticket.event_title}
-                </div>
-                <div style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>
-                  {new Date(ticket.event_date).toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-                </div>
-                <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
-                  <span style={{ background: 'rgba(212,166,58,.15)', color: '#e6c56e', padding: '2px 8px', borderRadius: 6, fontSize: 11, fontWeight: 600 }}>
-                    {ticketLabel(ticket.ticket_type)}
-                  </span>
-                  <span style={{
-                    background: ticket.qr_used ? 'rgba(100,116,139,.15)' : 'rgba(16,185,129,.1)',
-                    color: ticket.qr_used ? '#64748b' : '#10b981',
-                    border: `1px solid ${ticket.qr_used ? 'rgba(100,116,139,.2)' : 'rgba(16,185,129,.2)'}`,
-                    padding: '2px 8px', borderRadius: 6, fontSize: 11, fontWeight: 600,
-                  }}>
-                    {ticket.qr_used ? 'Utilizado' : 'Válido'}
-                  </span>
-                </div>
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: 18, fontWeight: 800, color: '#10b981' }}>
-                  {formatCOP(ticket.price_cents)}
-                </div>
-                {!ticket.qr_used && (
-                  <button
-                    onClick={() => setOpenQr(openQr === ticket.id ? null : ticket.id)}
-                    style={{ marginTop: 8, padding: '6px 14px', borderRadius: 8, border: '1px solid rgba(212,166,58,.4)', background: 'rgba(212,166,58,.1)', color: '#e6c56e', fontSize: 12, cursor: 'pointer' }}
-                  >
-                    {openQr === ticket.id ? 'Ocultar QR' : 'Ver QR'}
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {openQr === ticket.id && (
-              <div style={{ borderTop: '1px solid rgba(255,255,255,.06)', padding: '20px', textAlign: 'center', background: '#111118' }}>
-                <p style={{ color: '#64748b', fontSize: 12, marginBottom: 12 }}>
-                  Presenta este código en la entrada. Es intransferible.
-                </p>
-                <img
-                  src={ticket.qr_data_url}
-                  alt="QR Tiquete"
-                  style={{ width: 180, height: 180, border: '3px solid rgba(255,255,255,.1)', borderRadius: 10, background: '#fff' }}
-                />
-                <p style={{ color: '#374151', fontSize: 10, marginTop: 8, fontFamily: 'monospace', wordBreak: 'break-all' }}>
-                  {ticket.qr_token}
-                </p>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
+      <ul className="space-y-4">
+        {tickets.map((ticket) => <TicketCard key={ticket.id} ticket={ticket} />)}
+      </ul>
+    </section>
   )
 }

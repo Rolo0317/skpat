@@ -1,0 +1,120 @@
+---
+import type { FotoGaleria } from '~/lib/data'
+import Seccion from '../ui/Seccion.astro'
+import BotonNeon from '../ui/BotonNeon.astro'
+import Icono from '../ui/Icono.astro'
+import { NEGOCIO } from '../contenido/negocio'
+import { jsonSeguro } from '../utilidades/jsonSeguro'
+
+interface Props {
+  fotos: FotoGaleria[]
+}
+
+const MAX_FOTOS = 24
+const TAMANO_ICONO = 28
+const { fotos } = Astro.props
+const visibles = fotos.slice(0, MAX_FOTOS)
+const descripcion = (foto: FotoGaleria) => foto.leyenda ?? (foto.eventoTitulo ? `Foto de ${foto.eventoTitulo}` : `Noche en ${NEGOCIO.nombre}`)
+---
+<Seccion id="galeria" titulo="Así se vive Skpat" intro="Fotos reales de nuestras noches. Toca una para verla en grande.">
+  {
+    visibles.length > 0 ? (
+      <div data-galeria>
+        <ul class="galeria">
+          {visibles.map((foto, indice) => (
+            <li>
+              <button type="button" class="galeria__foto" data-galeria-abrir={indice} aria-label={`Ampliar: ${descripcion(foto)}`}>
+                <img src={foto.url} alt="" loading="lazy" decoding="async" />
+              </button>
+            </li>
+          ))}
+        </ul>
+
+        <dialog class="caja-luz" aria-label="Galería de fotos" data-galeria-visor>
+          <button type="button" class="caja-luz__boton caja-luz__cerrar" aria-label="Cerrar galería" data-dialogo-cerrar><Icono nombre="cerrar" tamano={24} /></button>
+          <figure class="caja-luz__figura">
+            <img class="caja-luz__imagen" alt="" data-galeria-imagen />
+            <figcaption class="caja-luz__leyenda" aria-live="polite" data-galeria-leyenda></figcaption>
+          </figure>
+          <button type="button" class="caja-luz__boton caja-luz__anterior" aria-label="Foto anterior" data-visor-anterior><Icono nombre="anterior" tamano={TAMANO_ICONO} /></button>
+          <button type="button" class="caja-luz__boton caja-luz__siguiente" aria-label="Foto siguiente" data-visor-siguiente><Icono nombre="siguiente" tamano={TAMANO_ICONO} /></button>
+          <script type="application/json" data-galeria-fotos set:html={jsonSeguro(visibles.map((foto) => ({ url: foto.url, texto: descripcion(foto) })))} />
+        </dialog>
+      </div>
+    ) : (
+      <div class="galeria__vacia">
+        <p>Las fotos de cada noche salen primero en Instagram.</p>
+        <BotonNeon href={NEGOCIO.redes.instagram.url} externo icono="instagram">Ver fotos en {NEGOCIO.redes.instagram.usuario}</BotonNeon>
+      </div>
+    )
+  }
+</Seccion>
+
+<script>
+  import { iniciarGaleria } from '../ui/galeria'
+
+  document.querySelectorAll<HTMLElement>('[data-galeria]').forEach(iniciarGaleria)
+</script>
+
+<style>
+  /* Masonry con columnas CSS: cada foto conserva su proporción. */
+  .galeria { columns: 2 10rem; column-gap: 0.75rem; padding: 0; margin: 0; list-style: none; }
+  .galeria > li { break-inside: avoid; margin-bottom: 0.75rem; }
+  .galeria__foto {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 1px solid var(--linea);
+    border-radius: var(--radio-pequeno);
+    overflow: hidden;
+    background: var(--fondo-3);
+    cursor: zoom-in;
+  }
+  .galeria__foto img { display: block; width: 100%; height: auto; transition: transform 0.5s var(--curva-salida); }
+  .galeria__foto:hover img { transform: scale(1.04); }
+  .galeria__vacia {
+    display: grid;
+    gap: 1.25rem;
+    justify-items: start;
+    max-width: 40rem;
+    padding: 2rem;
+    border: 1px dashed color-mix(in oklab, var(--primario) 50%, transparent);
+    border-radius: var(--radio);
+  }
+  @media (min-width: 48rem) {
+    .galeria { columns: 3; }
+  }
+  @media (min-width: 72rem) {
+    .galeria { columns: 4; }
+  }
+
+  .caja-luz {
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: rgb(0 0 0 / 0.95);
+  }
+  .caja-luz::backdrop { background: rgb(0 0 0 / 0.9); }
+  .caja-luz__figura { display: grid; place-items: center; align-content: center; gap: 0.75rem; height: 100dvh; margin: 0; padding: 4rem 1rem 2rem; }
+  .caja-luz__imagen { max-width: 100%; max-height: calc(100dvh - 9rem); object-fit: contain; border-radius: var(--radio-pequeno); }
+  .caja-luz__leyenda { color: var(--color-skpat-text); text-align: center; }
+  .caja-luz__boton {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    border: 1px solid rgb(255 255 255 / 0.2);
+    border-radius: 50%;
+    background: rgb(0 0 0 / 0.6);
+    color: white;
+    cursor: pointer;
+  }
+  .caja-luz__cerrar { top: 0.75rem; right: 0.75rem; }
+  .caja-luz__anterior { left: 0.5rem; top: 50%; translate: 0 -50%; }
+  .caja-luz__siguiente { right: 0.5rem; top: 50%; translate: 0 -50%; }
+</style>

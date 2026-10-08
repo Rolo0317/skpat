@@ -19,6 +19,12 @@ const TRAZOS = {
   navegar: 'm3 11 18-8-8 18-2-8-8-2Z',
   check: 'm5 12 5 5 9-10',
   reproducir: 'M8 5.5v13l10.5-6.5L8 5.5Z',
+  cerrar: 'M6 6l12 12M18 6 6 18',
+  anterior: 'm15 6-6 6 6 6',
+  siguiente: 'm9 6 6 6-6 6',
+  auriculares: 'M4 15v-3a8 8 0 0 1 16 0v3M4 15a2 2 0 0 0 2 2h1v-5H6a2 2 0 0 0-2 2v1Zm16 0a2 2 0 0 1-2 2h-1v-5h1a2 2 0 0 1 2 2v1Z',
+  vinilo: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-7a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm0-7a5 5 0 0 0-5 5',
+  chat: 'M4 5h16v11H9l-5 4V5Zm4 5h.01M12 10h.01M16 10h.01',
 } as const
 
 export type NombreIcono = keyof typeof TRAZOS

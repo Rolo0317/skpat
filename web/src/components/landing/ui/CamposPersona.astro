@@ -1,0 +1,62 @@
+---
+/**
+ * Campos que pide el contrato para reservas y listas: nombre, correo, cédula y teléfono (opcional).
+ * Las reglas (patrones y longitudes) son las mismas que valida el backend con zod.
+ */
+interface Props {
+  /** Prefijo único para los id (varios formularios pueden convivir en la página). */
+  prefijo: string
+}
+
+const { prefijo } = Astro.props
+const CAMPOS = [
+  { nombre: 'nombre', etiqueta: 'Nombre completo', tipo: 'text', autocompletar: 'name', requerido: true, maximo: 80 },
+  { nombre: 'email', etiqueta: 'Correo', tipo: 'email', autocompletar: 'email', requerido: true, maximo: 255 },
+  { nombre: 'cedula', etiqueta: 'Cédula', tipo: 'text', autocompletar: 'off', requerido: true, patron: '\\d{5,15}', modo: 'numeric', ayuda: 'Solo números, sin puntos.' },
+  { nombre: 'telefono', etiqueta: 'Celular (opcional)', tipo: 'tel', autocompletar: 'tel-national', requerido: false, patron: '\\d{7,15}', modo: 'numeric' },
+] as const
+---
+<div class="campos">
+  {
+    CAMPOS.map((campo) => {
+      const id = `${prefijo}-${campo.nombre}`
+      const idAyuda = 'ayuda' in campo ? `${id}-ayuda` : undefined
+      return (
+        <div class="campo">
+          <label for={id} class="campo__etiqueta">{campo.etiqueta}</label>
+          <input
+            id={id}
+            name={campo.nombre}
+            type={campo.tipo}
+            class="campo__entrada"
+            autocomplete={campo.autocompletar}
+            required={campo.requerido}
+            maxlength={'maximo' in campo ? campo.maximo : undefined}
+            pattern={'patron' in campo ? campo.patron : undefined}
+            inputmode={'modo' in campo ? campo.modo : undefined}
+            aria-describedby={idAyuda}
+          />
+          {idAyuda && 'ayuda' in campo && <p id={idAyuda} class="campo__ayuda">{campo.ayuda}</p>}
+        </div>
+      )
+    })
+  }
+</div>
+
+<style>
+  .campos { display: grid; gap: 0.9rem; }
+  .campo { display: grid; gap: 0.3rem; }
+  .campo__etiqueta { font-weight: 700; font-size: 0.95rem; color: var(--tinta); }
+  .campo__entrada {
+    min-height: 3rem;
+    padding: 0.7rem 0.9rem;
+    border-radius: var(--radio-pequeno);
+    border: 1px solid var(--linea);
+    background: var(--fondo);
+    color: var(--tinta);
+    font: inherit;
+  }
+  .campo__entrada:focus-visible { outline: 2px solid var(--primario); outline-offset: 1px; border-color: var(--primario); }
+  .campo__entrada:user-invalid { border-color: var(--color-skpat-red); }
+  .campo__ayuda { font-size: 0.85rem; color: var(--tinta-suave); }
+</style>

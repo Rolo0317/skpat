@@ -1,0 +1,138 @@
+---
+import Icono from '~/components/landing/ui/Icono.astro'
+import { jsonSeguro } from '~/components/landing/utilidades/jsonSeguro'
+import type { DatosAsistente } from './respuestas'
+
+/** Asistente de evento sin IA: botón flotante con respuestas rápidas y cierre por WhatsApp con un gestor. */
+interface Props {
+  datos: DatosAsistente
+}
+
+const TAMANO_ICONO = 22
+const { datos } = Astro.props
+---
+<div class="asistente" data-asistente>
+  <section id="asistente-panel" class="asistente__panel" aria-labelledby="asistente-titulo" data-asistente-panel hidden>
+    <header class="asistente__cabecera">
+      <div>
+        <h2 id="asistente-titulo" class="asistente__titulo">Asistente Skpat</h2>
+        <p class="asistente__subtitulo">Respuestas rápidas con los datos del evento</p>
+      </div>
+      <button type="button" class="asistente__cerrar" aria-label="Cerrar asistente" data-asistente-cerrar><Icono nombre="cerrar" /></button>
+    </header>
+    <div class="asistente__conversacion" role="log" aria-live="polite" data-asistente-conversacion>
+      <p class="burbuja burbuja--skpat">¡Hola! ¿Qué quieres saber?</p>
+    </div>
+    <div class="asistente__cierre" data-asistente-cierre hidden>
+      <p class="asistente__rotulo">Continuar por WhatsApp</p>
+      <div class="asistente__gestores" data-asistente-gestores></div>
+    </div>
+    <ul class="asistente__temas" aria-label="Preguntas rápidas">
+      {datos.temas.map((tema) => (
+        <li><button type="button" class="asistente__tema" data-tema={tema.id}>{tema.pregunta}</button></li>
+      ))}
+    </ul>
+  </section>
+
+  <button type="button" class="asistente__lanzador" aria-expanded="false" aria-controls="asistente-panel" data-asistente-lanzador>
+    <Icono nombre="chat" tamano={TAMANO_ICONO} />
+    <span>¿Dudas?</span>
+  </button>
+  <script type="application/json" data-asistente-datos set:html={jsonSeguro(datos)} />
+</div>
+
+<script>
+  import { iniciarAsistente } from './asistente'
+
+  document.querySelectorAll<HTMLElement>('[data-asistente]').forEach(iniciarAsistente)
+</script>
+
+<style>
+  .asistente {
+    position: fixed;
+    right: max(1rem, env(safe-area-inset-right));
+    bottom: max(1rem, env(safe-area-inset-bottom));
+    z-index: 60;
+    display: grid;
+    justify-items: end;
+    gap: 0.75rem;
+  }
+  .asistente__lanzador {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 3.25rem;
+    padding: 0 1.25rem;
+    border: 0;
+    border-radius: 999px;
+    background: var(--degradado-oro);
+    color: var(--fondo);
+    font: inherit;
+    font-weight: 700;
+    box-shadow: 0 0.75rem 2rem -0.5rem color-mix(in oklab, var(--primario) 70%, transparent);
+    cursor: pointer;
+  }
+  .asistente__panel {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto auto;
+    width: min(calc(100vw - 2rem), 24rem);
+    max-height: min(36rem, calc(100dvh - 6rem));
+    border-radius: var(--radio);
+    border: 1px solid color-mix(in oklab, var(--primario) 45%, var(--linea));
+    background: var(--fondo-2);
+    box-shadow: var(--sombra-profunda);
+    overflow: hidden;
+  }
+  .asistente__panel[hidden] { display: none; }
+  .asistente__cabecera { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 1rem 1rem 0.75rem; border-bottom: 1px solid var(--linea); }
+  .asistente__titulo { font-family: var(--fuente-display); font-weight: 900; font-size: 1.5rem; line-height: 1; text-transform: uppercase; color: var(--tinta); }
+  .asistente__subtitulo { font-size: 0.8rem; color: var(--tinta-suave); }
+  .asistente__cerrar {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 1px solid var(--linea);
+    border-radius: 50%;
+    background: var(--fondo);
+    color: var(--tinta);
+    cursor: pointer;
+  }
+  .asistente__conversacion { display: grid; align-content: start; gap: 0.5rem; padding: 1rem; overflow-y: auto; overscroll-behavior: contain; }
+  .asistente__conversacion :global(.burbuja) { max-width: 88%; padding: 0.6rem 0.85rem; border-radius: 1rem; font-size: 0.95rem; line-height: 1.45; }
+  .asistente__conversacion :global(.burbuja--skpat) { justify-self: start; background: var(--fondo-3); color: var(--color-skpat-text); border-bottom-left-radius: 0.25rem; }
+  .asistente__conversacion :global(.burbuja--usuario) { justify-self: end; background: var(--degradado-oro); color: var(--fondo); font-weight: 700; border-bottom-right-radius: 0.25rem; }
+  .asistente__conversacion :global(.burbuja__enlace) { color: var(--acento-claro); font-weight: 700; white-space: nowrap; }
+
+  .asistente__cierre { display: grid; gap: 0.5rem; padding: 0.75rem 1rem; border-top: 1px solid var(--linea); }
+  .asistente__cierre[hidden] { display: none; }
+  .asistente__rotulo { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--tinta-suave); }
+  .asistente__gestores { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .asistente__gestores :global(.asistente__gestor) {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding: 0 1rem;
+    border-radius: 999px;
+    background: var(--degradado-oro);
+    color: var(--fondo);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .asistente__temas { display: flex; gap: 0.4rem; padding: 0.75rem 1rem 1rem; margin: 0; list-style: none; border-top: 1px solid var(--linea); overflow-x: auto; scrollbar-width: thin; }
+  .asistente__temas > li { flex: none; }
+  .asistente__tema {
+    min-height: 2.5rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in oklab, var(--primario) 55%, var(--linea));
+    background: var(--fondo);
+    color: var(--tinta);
+    font: inherit;
+    font-size: 0.875rem;
+    cursor: pointer;
+  }
+  .asistente__tema:hover { background: color-mix(in oklab, var(--primario) 20%, var(--fondo)); }
+</style>

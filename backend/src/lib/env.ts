@@ -21,6 +21,8 @@ const envSchema = z.object({
   FROM_EMAIL: z.string().default('noreply@skpatvip.com'),
   // Frontend base URL for links in emails
   FRONTEND_URL: z.string().default('http://localhost:5173'),
+  // Vercel Blob: si existe, las imágenes subidas van ahí; si no, a disco (o memoria en pruebas).
+  BLOB_READ_WRITE_TOKEN: z.string().min(1).optional(),
 })
 
 export const env = envSchema.parse(process.env)

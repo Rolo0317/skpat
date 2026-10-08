@@ -1,7 +1,17 @@
 ---
 import RedesSociales from '../ui/RedesSociales.astro'
 import Logo from '../ui/Logo.astro'
+import type { AjustesLugar } from '~/lib/data'
 import { NEGOCIO, RUTAS_APP } from '../contenido/negocio'
+import { contactosWhatsapp, textoDireccion } from '../utilidades/contacto'
+import { enlaceWhatsapp } from '../utilidades/whatsapp'
+
+interface Props {
+  ajustes: AjustesLugar
+}
+
+const { ajustes } = Astro.props
+const MENSAJE_RESERVAS = 'Hola Skpat VIP, quiero información y reservas'
 
 const ENLACES_CUENTA = [
   { href: RUTAS_APP.cliente, texto: 'Mis entradas' },
@@ -17,11 +27,15 @@ const anio = new Date().getFullYear()
       <p class="pie__lema">{NEGOCIO.eslogan}.</p>
     </div>
     <address class="pie__contacto">
-      <span>{NEGOCIO.direccion.calle}, {NEGOCIO.direccion.ciudad}</span>
+      <span>{textoDireccion(ajustes)}, {NEGOCIO.direccion.ciudad}</span>
       <span>{NEGOCIO.horario.dias} · {NEGOCIO.horario.texto}</span>
-      <a href={NEGOCIO.redes.whatsapp.url} target="_blank" rel="noopener noreferrer" class="pie__whatsapp">
-        Reservas: {NEGOCIO.redes.whatsapp.usuario}
-      </a>
+      {
+        contactosWhatsapp(ajustes).map((contacto) => (
+          <a href={enlaceWhatsapp(contacto.whatsapp, MENSAJE_RESERVAS)} target="_blank" rel="noopener noreferrer" class="pie__whatsapp">
+            WhatsApp {contacto.nombre}
+          </a>
+        ))
+      }
       <RedesSociales conTexto class="pie__redes" />
     </address>
     <nav aria-label="Tu cuenta" class="pie__cuenta">

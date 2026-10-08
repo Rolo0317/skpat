@@ -1,4 +1,6 @@
-/** Línea de reservas (WhatsApp) publicada en Instagram y en los flyers. */
+import { enlaceWhatsapp } from '../utilidades/whatsapp'
+
+/** Línea de reservas publicada en Instagram: respaldo cuando aún no hay gestores activos en /settings. */
 const TELEFONO = { visible: '319 543 5288', internacional: '+573195435288' } as const
 
 /** Datos públicos del negocio: una sola fuente para la landing, el SEO y el JSON-LD. */
@@ -6,18 +8,19 @@ export const NEGOCIO = {
   telefono: TELEFONO,
   nombre: 'Skpat VIP',
   eslogan: 'Electrónica y guaracha en Bogotá',
+  /** La dirección exacta la define el admin en /settings; aquí solo lo que no cambia. */
   direccion: {
-    calle: 'Cra. 15 #93-47',
+    sector: 'Plaza de las Américas',
     ciudad: 'Bogotá',
     region: 'Bogotá D.C.',
     pais: 'CO',
   },
   horario: {
-    dias: 'Viernes y sábado',
-    diasCortos: 'Vie–Sáb',
-    apertura: '21:00',
-    cierre: '04:00',
-    texto: '9 PM – 4 AM',
+    dias: 'Viernes a lunes',
+    diasCortos: 'Vie–Lun',
+    texto: 'Sin límite de horario',
+    /** Días abiertos según schema.org; sin hora de cierre se publica como abierto todo el día. */
+    diasSchema: ['Friday', 'Saturday', 'Sunday', 'Monday'],
   },
   redes: {
     instagram: { nombre: 'Instagram', usuario: '@skpat.vip', url: 'https://www.instagram.com/skpat.vip/' },
@@ -26,21 +29,15 @@ export const NEGOCIO = {
     whatsapp: {
       nombre: 'WhatsApp',
       usuario: TELEFONO.visible,
-      url: `https://wa.me/${TELEFONO.internacional.slice(1)}?text=${encodeURIComponent('Hola SKPAT, quiero información y reservas')}`,
+      url: enlaceWhatsapp(TELEFONO.internacional, 'Hola SKPAT, quiero información y reservas'),
     },
   },
   zonaHoraria: 'America/Bogota',
   edadMinima: 18,
+  consumoObligatorio: true,
 } as const
 
-const DIRECCION_BUSQUEDA = encodeURIComponent(`${NEGOCIO.direccion.calle}, ${NEGOCIO.direccion.ciudad}, Colombia`)
-
-export const ENLACES_MAPA = {
-  google: `https://www.google.com/maps/search/?api=1&query=${DIRECCION_BUSQUEDA}`,
-  waze: `https://waze.com/ul?q=${DIRECCION_BUSQUEDA}&navigate=yes`,
-} as const
-
-/** Rutas de la app React a las que apuntan los CTA. */
+/** Rutas de la app React y de Astro a las que apuntan los CTA. */
 export const RUTAS_APP = {
   comprar: (eventoId: string) => `/comprar/${encodeURIComponent(eventoId)}`,
   lista: (eventoId: string) => `/comprar/${encodeURIComponent(eventoId)}?tipo=lista`,

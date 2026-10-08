@@ -1,18 +1,10 @@
 import type { FastifyInstance } from 'fastify'
-import { z } from 'zod'
 import { db, HttpError } from '../../lib/db.js'
 import { encrypt } from '../../lib/encrypt.js'
 import { isUuid } from '../../lib/ids.js'
-import { parseOrThrow } from '../../lib/schemas.js'
+import { buyerSchema, parseOrThrow } from '../../lib/schemas.js'
 import { eventWhatsappUrl } from '../../services/whatsapp.js'
 import { isUniqueViolation } from '../../services/tickets.js'
-
-const reservationSchema = z.object({
-  nombre: z.string().trim().min(1).max(80),
-  email: z.string().trim().toLowerCase().email().max(255),
-  cedula: z.string().regex(/^\d{5,15}$/, 'Cedula must be 5-15 digits'),
-  telefono: z.string().regex(/^\d{7,15}$/).optional(),
-})
 
 async function findEvent(eventId: string) {
   const event = isUuid(eventId)
@@ -46,7 +38,7 @@ export async function spotsRoutes(app: FastifyInstance) {
 
   app.post<{ Params: { id: string; spotId: string } }>('/events/:id/ubicaciones/:spotId/reservar', async (req, reply) => {
     const event = await findEvent(req.params.id)
-    const input = parseOrThrow(reservationSchema, req.body)
+    const input = parseOrThrow(buyerSchema, req.body)
     const spot = isUuid(req.params.spotId)
       ? await db.one<{ id: string; tipo: 'palco' | 'mesa'; numero: number }>(
         'select id, tipo, numero from venue_spots where id = $1 and activo',

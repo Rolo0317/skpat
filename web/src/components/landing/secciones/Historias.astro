@@ -1,0 +1,180 @@
+---
+import type { Historia } from '../utilidades/historias'
+import ArteEvento from '../ui/ArteEvento.astro'
+import BotonNeon from '../ui/BotonNeon.astro'
+import Icono from '../ui/Icono.astro'
+
+/** Anuncios en círculos dorados (como las historias de Instagram) con visor a pantalla completa. */
+interface Props {
+  historias: Historia[]
+}
+
+const { historias } = Astro.props
+const esExterno = (url: string) => /^https?:\/\//.test(url)
+---
+{
+  historias.length > 0 && (
+    <section class="historias" aria-label="Anuncios" data-historias>
+      <ul class="contenedor historias__lista">
+        {historias.map((historia) => (
+          <li>
+            <button type="button" class="historia" data-historia-abrir data-id={historia.id}>
+              <span class="historia__anillo">
+                <ArteEvento class="historia__arte" semilla={historia.semilla} imagenUrl={historia.imagenUrl} alt="" />
+              </span>
+              <span class="historia__titulo">{historia.titulo}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      <dialog class="visor" aria-label="Historias" data-historias-visor>
+        <div class="visor__marco">
+          <ol class="visor__barras" aria-hidden="true">
+            {historias.map(() => (
+              <li class="visor__barra" data-historia-barra />
+            ))}
+          </ol>
+          <button type="button" class="visor__cerrar" aria-label="Cerrar historias" data-dialogo-cerrar><Icono nombre="cerrar" tamano={24} /></button>
+          {historias.map((historia, indice) => (
+            <article class="diapositiva" data-historia hidden aria-roledescription="historia" aria-label={`${indice + 1} de ${historias.length}: ${historia.titulo}`}>
+              <ArteEvento class="diapositiva__arte" semilla={historia.semilla} imagenUrl={historia.imagenUrl} alt={historia.titulo} />
+              <div class="diapositiva__texto">
+                <h2 class="diapositiva__titulo">{historia.titulo}</h2>
+                {historia.cuerpo && <p class="diapositiva__cuerpo">{historia.cuerpo}</p>}
+                {historia.llamado && (
+                  <BotonNeon href={historia.llamado.url} externo={esExterno(historia.llamado.url)} icono="flecha" data-dialogo-cerrar>
+                    {historia.llamado.texto}
+                  </BotonNeon>
+                )}
+              </div>
+            </article>
+          ))}
+          <button type="button" class="visor__zona visor__zona--anterior" aria-label="Historia anterior" data-visor-anterior>
+            <Icono nombre="anterior" tamano={28} />
+          </button>
+          <button type="button" class="visor__zona visor__zona--siguiente" aria-label="Historia siguiente" data-visor-siguiente>
+            <Icono nombre="siguiente" tamano={28} />
+          </button>
+        </div>
+      </dialog>
+    </section>
+  )
+}
+
+<script>
+  import { iniciarHistorias } from '../ui/historias'
+
+  document.querySelectorAll<HTMLElement>('[data-historias]').forEach(iniciarHistorias)
+</script>
+
+<style>
+  .historias { padding-block: 1.5rem; border-block: 1px solid var(--linea); background: var(--fondo); }
+  .historias__lista {
+    display: flex;
+    gap: 1rem;
+    margin: 0 auto;
+    list-style: none;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .historias__lista > li { scroll-snap-align: start; flex: none; }
+  .historia {
+    display: grid;
+    justify-items: center;
+    gap: 0.4rem;
+    width: 5.5rem;
+    padding: 0.25rem 0;
+    border: 0;
+    background: none;
+    color: var(--tinta);
+    font: inherit;
+    cursor: pointer;
+  }
+  .historia__anillo {
+    display: block;
+    width: 4.75rem;
+    height: 4.75rem;
+    padding: 3px;
+    border-radius: 50%;
+    background: var(--degradado-oro);
+    transition: transform 0.3s var(--curva-salida);
+  }
+  .historia[data-vista] .historia__anillo { background: var(--linea); }
+  .historia:hover .historia__anillo { transform: scale(1.05); }
+  .historia :global(.historia__arte) { width: 100%; height: 100%; border-radius: 50%; border: 3px solid var(--fondo); }
+  .historia__titulo { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.8rem; font-weight: 500; }
+
+  .visor {
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: #000;
+    color: var(--tinta);
+  }
+  .visor::backdrop { background: #000; }
+  .visor__marco { position: relative; width: min(100%, calc(100dvh * 9 / 16)); height: 100dvh; margin-inline: auto; }
+  .visor__barras { position: absolute; z-index: 3; inset: 0.75rem 0.75rem auto; display: flex; gap: 4px; padding: 0; margin: 0; list-style: none; }
+  .visor__barra { flex: 1; height: 3px; border-radius: 999px; background: rgb(255 255 255 / 0.3); overflow: hidden; }
+  .visor__barra::after { content: ''; display: block; height: 100%; width: 0; background: var(--acento); }
+  .visor__barra[data-estado='vista']::after { width: 100%; }
+  .visor__barra[data-estado='actual']::after { animation: llenar-barra var(--duracion-historia) linear forwards; }
+  @keyframes llenar-barra { to { width: 100%; } }
+
+  .visor__cerrar {
+    position: absolute;
+    z-index: 4;
+    top: 1.5rem;
+    right: 0.75rem;
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 0;
+    border-radius: 50%;
+    background: rgb(0 0 0 / 0.5);
+    color: white;
+    cursor: pointer;
+  }
+  .diapositiva { position: absolute; inset: 0; display: grid; align-items: end; }
+  .diapositiva[hidden] { display: none; }
+  .diapositiva :global(.diapositiva__arte) { position: absolute; inset: 0; }
+  .diapositiva :global(.diapositiva__arte img) { object-fit: contain; background: #000; }
+  .diapositiva__texto {
+    position: relative;
+    z-index: 3;
+    display: grid;
+    gap: 0.75rem;
+    justify-items: start;
+    padding: 6rem 1.25rem 2rem;
+    background: linear-gradient(transparent, rgb(0 0 0 / 0.85) 45%);
+  }
+  .diapositiva__titulo { font-family: var(--fuente-display); font-weight: 900; font-size: clamp(2.25rem, 10vw, 3rem); line-height: 0.95; text-transform: uppercase; color: var(--tinta); }
+  .diapositiva__cuerpo { color: var(--color-skpat-text); white-space: pre-line; }
+
+  /* Zonas de toque: mitad izquierda retrocede, mitad derecha avanza (encima del arte, debajo del texto). */
+  .visor__zona {
+    position: absolute;
+    z-index: 2;
+    top: 0;
+    bottom: 0;
+    width: 50%;
+    display: flex;
+    align-items: center;
+    padding: 0.5rem;
+    border: 0;
+    background: none;
+    color: rgb(255 255 255 / 0.8);
+    cursor: pointer;
+  }
+  .visor__zona--anterior { left: 0; justify-content: flex-start; }
+  .visor__zona--siguiente { right: 0; justify-content: flex-end; }
+  .visor__zona :global(svg) { opacity: 0; transition: opacity 0.2s; filter: drop-shadow(0 0 4px #000); }
+  .visor__zona:hover :global(svg),
+  .visor__zona:focus-visible :global(svg) { opacity: 1; }
+</style>

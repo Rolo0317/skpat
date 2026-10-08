@@ -28,3 +28,9 @@ export const tableOrderRateLimitConfig = {
   max: 10,
   timeWindow: '1 minute',
 } as const
+
+/** Registro público en listas: un grupo de amigos cabe de sobra, frena la inscripción masiva. */
+export const listRegistrationRateLimitConfig = {
+  max: 10,
+  timeWindow: '1 minute',
+} as const

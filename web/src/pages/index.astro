@@ -3,50 +3,63 @@ import BaseLayout from '~/layouts/BaseLayout.astro'
 import '~/components/landing/landing.css'
 import Cabecera from '~/components/landing/secciones/Cabecera.astro'
 import Portada from '~/components/landing/secciones/Portada.astro'
-import Tarifas from '~/components/landing/secciones/Tarifas.astro'
+import Historias from '~/components/landing/secciones/Historias.astro'
+import Etapas from '~/components/landing/secciones/Etapas.astro'
 import Cartelera from '~/components/landing/secciones/Cartelera.astro'
-import Aniversario from '~/components/landing/secciones/Aniversario.astro'
 import Palcos from '~/components/landing/secciones/Palcos.astro'
 import EntradaQr from '~/components/landing/secciones/EntradaQr.astro'
+import Galeria from '~/components/landing/secciones/Galeria.astro'
+import Agencia from '~/components/landing/secciones/Agencia.astro'
+import Aniversario from '~/components/landing/secciones/Aniversario.astro'
 import TuMesa from '~/components/landing/secciones/TuMesa.astro'
 import Ubicacion from '~/components/landing/secciones/Ubicacion.astro'
 import Preguntas from '~/components/landing/secciones/Preguntas.astro'
 import PiePagina from '~/components/landing/secciones/PiePagina.astro'
-import { RUTAS_APP } from '~/components/landing/contenido/negocio'
-import { armarCartelera } from '~/components/landing/utilidades/agenda'
+import Asistente from '~/components/asistente/Asistente.astro'
+import { armarAsistente } from '~/components/asistente/respuestas'
+import { NEGOCIO, RUTAS_APP } from '~/components/landing/contenido/negocio'
+import { armarCartelera, principalDe } from '~/components/landing/utilidades/agenda'
+import { armarHistorias } from '~/components/landing/utilidades/historias'
 import { datosEstructurados } from '~/components/landing/utilidades/datosEstructurados'
-import { obtenerDatosLanding } from '~/lib/data'
-import { AiChatWidget } from '@/features/landing/AiChatWidget'
+import { obtenerDatosLanding, obtenerDetallesDeFechas } from '~/lib/data'
 
 export const prerender = false
 
 Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300')
 
 const ahora = new Date()
-const { eventos, carta } = await obtenerDatosLanding()
+const { eventos, carta, ajustes, anuncios, galeria } = await obtenerDatosLanding()
 const cartelera = armarCartelera(eventos, ahora)
-const enlaceCompra = cartelera.proximo ? RUTAS_APP.comprar(cartelera.proximo.id) : RUTAS_APP.registro
-const enlaceLista = cartelera.proximo ? RUTAS_APP.lista(cartelera.proximo.id) : RUTAS_APP.registro
-const jsonLd = datosEstructurados(cartelera.eventos, Astro.url.origin)
+const activo = cartelera.destacado
+const detalles = activo ? await obtenerDetallesDeFechas(activo.fechas) : []
+const detallePrincipal = detalles[0] ?? null
+const principal = activo ? principalDe(activo) : null
+const enlaceCompra = principal ? RUTAS_APP.comprar(principal.id) : '#etapas'
+const enlaceLista = principal ? RUTAS_APP.lista(principal.id) : RUTAS_APP.registro
+const visibles = [...(activo?.fechas ?? []), ...cartelera.otros.flatMap((otro) => otro.fechas)]
+const jsonLd = datosEstructurados(visibles, ajustes, Astro.url.origin)
+const historias = armarHistorias(anuncios, activo, detallePrincipal)
+const asistente = armarAsistente({ activo, detalle: detallePrincipal, ajustes, ahora })
+const descripcion = `${NEGOCIO.eslogan}: ${NEGOCIO.horario.dias.toLowerCase()}, ${NEGOCIO.horario.texto.toLowerCase()}, sector ${NEGOCIO.direccion.sector}. Entradas por etapas con QR, palcos y mesas VIP, y agencia de DJs.`
 ---
-<BaseLayout
-  title="Skpat VIP · Electrónica y guaracha en Bogotá"
-  description="Viernes y sábado de 9 PM a 4 AM en la Cra. 15 #93-47. Entradas con QR, palcos VIP y cover más barato si llegas temprano."
->
+<BaseLayout title="Skpat VIP · Electrónica y guaracha en Bogotá" description={descripcion}>
   <script slot="head" type="application/ld+json" set:html={jsonLd} />
   <a href="#contenido" class="saltar-contenido">Saltar al contenido</a>
   <Cabecera enlaceCompra={enlaceCompra} />
   <main id="contenido">
-    <Portada proximo={cartelera.proximo} ahora={ahora} />
-    <Tarifas ahora={ahora} />
+    <Portada activo={activo} ajustes={ajustes} ahora={ahora} />
+    <Historias historias={historias} />
     <Cartelera cartelera={cartelera} />
-    <Aniversario />
-    <Palcos enlaceReserva={enlaceCompra} />
+    <Etapas activo={activo} detalle={detallePrincipal} ajustes={ajustes} ahora={ahora} />
+    <Palcos detalles={detalles} ajustes={ajustes} />
     <EntradaQr enlaceCompra={enlaceCompra} enlaceLista={enlaceLista} />
+    <Galeria fotos={galeria} />
+    <Agencia ajustes={ajustes} />
+    <Aniversario />
     <TuMesa carta={carta} />
-    <Ubicacion />
-    <Preguntas />
+    <Ubicacion ajustes={ajustes} />
+    <Preguntas ajustes={ajustes} />
   </main>
-  <PiePagina />
-  <AiChatWidget client:idle />
+  <PiePagina ajustes={ajustes} />
+  <Asistente datos={asistente} />
 </BaseLayout>

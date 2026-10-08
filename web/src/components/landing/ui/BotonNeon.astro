@@ -1,22 +1,36 @@
 ---
 import Icono, { type NombreIcono } from './Icono.astro'
 
-interface Props {
-  href: string
+/** Con href es un enlace; sin href es un <button> (envío de formularios, acciones en la página). */
+type Props = {
+  href?: string
+  tipo?: 'button' | 'submit'
   variante?: 'primario' | 'secundario'
   icono?: NombreIcono
   externo?: boolean
+  /** Nombre de archivo: el enlace descarga en vez de navegar. */
+  descargar?: string
   class?: string
-}
+} & { [atributo: `data-${string}`]: string | boolean | undefined }
 
 const TAMANO_ICONO = 18
-const { href, variante = 'primario', icono, externo = false, class: clase } = Astro.props
+const { href, tipo = 'button', variante = 'primario', icono, externo = false, descargar, class: clase, ...atributosDatos } = Astro.props
 const atributosExternos = externo ? { target: '_blank', rel: 'noopener noreferrer' } : {}
+const clases = ['boton', `boton--${variante}`, clase]
 ---
-<a href={href} class:list={['boton', `boton--${variante}`, clase]} {...atributosExternos}>
-  <slot />
-  {icono && <Icono nombre={icono} tamano={TAMANO_ICONO} />}
-</a>
+{
+  href ? (
+    <a href={href} class:list={clases} download={descargar} {...atributosExternos} {...atributosDatos}>
+      <slot />
+      {icono && <Icono nombre={icono} tamano={TAMANO_ICONO} />}
+    </a>
+  ) : (
+    <button type={tipo} class:list={clases} {...atributosDatos}>
+      <slot />
+      {icono && <Icono nombre={icono} tamano={TAMANO_ICONO} />}
+    </button>
+  )
+}
 
 <style>
   .boton {
@@ -26,17 +40,21 @@ const atributosExternos = externo ? { target: '_blank', rel: 'noopener noreferre
     gap: 0.6rem;
     min-height: 3.25rem;
     padding: 0.85rem 1.5rem;
+    border: 0;
     border-radius: 999px;
+    font: inherit;
     font-weight: 700;
     font-size: 1rem;
     letter-spacing: 0.01em;
     text-decoration: none;
     text-align: center;
+    cursor: pointer;
     transition: transform 0.35s var(--curva-salida), box-shadow 0.35s var(--curva-salida), background-color 0.2s;
   }
   .boton :global(svg) { transition: transform 0.35s var(--curva-salida); }
   .boton:hover :global(svg) { transform: translateX(3px); }
   .boton:active { transform: scale(0.98); }
+  .boton:disabled { opacity: 0.6; cursor: progress; }
 
   .boton--primario {
     color: var(--fondo);

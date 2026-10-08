@@ -32,5 +32,4 @@ function weekendNights(count: number, step: 1 | -1, now: Date): Date[] {
   return nights
 }
 
-export const upcomingWeekendNights = (count: number, now = new Date()) => weekendNights(count, 1, now)
 export const pastWeekendNights = (count: number, now = new Date()) => weekendNights(count, -1, now)

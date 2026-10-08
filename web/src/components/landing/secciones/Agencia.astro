@@ -1,0 +1,79 @@
+---
+import type { AjustesLugar } from '~/lib/data'
+import Seccion from '../ui/Seccion.astro'
+import BotonNeon from '../ui/BotonNeon.astro'
+import Icono from '../ui/Icono.astro'
+import { AGENCIA } from '../contenido/agencia'
+import { whatsappPrincipal } from '../utilidades/contacto'
+
+interface Props {
+  ajustes: AjustesLugar
+}
+
+const TAMANO_ICONO_SERVICIO = 30
+const TAMANO_ICONO_PUNTO = 18
+const { ajustes } = Astro.props
+const { aprender, contratar } = AGENCIA.llamados
+---
+<Seccion id="agencia" titulo={AGENCIA.titulo} intro={AGENCIA.intro} class="agencia-seccion">
+  <ul class="agencia">
+    {
+      AGENCIA.servicios.map((servicio) => (
+        <li class="servicio">
+          <span class="servicio__icono"><Icono nombre={servicio.icono} tamano={TAMANO_ICONO_SERVICIO} /></span>
+          <h3 class="servicio__titulo">{servicio.titulo}</h3>
+          <p class="servicio__texto">{servicio.texto}</p>
+          <ul class="servicio__puntos">
+            {servicio.puntos.map((punto) => (
+              <li><Icono nombre="check" tamano={TAMANO_ICONO_PUNTO} />{punto}</li>
+            ))}
+          </ul>
+        </li>
+      ))
+    }
+  </ul>
+  <div class="agencia__acciones">
+    <BotonNeon href={whatsappPrincipal(ajustes, aprender.mensajeWhatsapp)} externo icono="whatsapp">{aprender.texto}</BotonNeon>
+    <BotonNeon href={whatsappPrincipal(ajustes, contratar.mensajeWhatsapp)} externo variante="secundario" icono="whatsapp">
+      {contratar.texto}
+    </BotonNeon>
+  </div>
+</Seccion>
+
+<style>
+  :global(.agencia-seccion) {
+    background:
+      radial-gradient(70% 60% at 100% 100%, color-mix(in oklab, var(--primario) 22%, transparent), transparent 70%),
+      var(--fondo-2);
+    border-block: 1px solid var(--linea);
+  }
+  .agencia { display: grid; gap: 1rem; padding: 0; margin: 0; list-style: none; }
+  .servicio {
+    display: grid;
+    gap: 0.75rem;
+    align-content: start;
+    padding: 1.5rem;
+    border-radius: var(--radio);
+    border: 1px solid color-mix(in oklab, var(--primario) 35%, var(--linea));
+    background: linear-gradient(160deg, color-mix(in oklab, var(--primario) 12%, var(--fondo-2)), var(--fondo) 70%);
+  }
+  .servicio__icono {
+    display: grid;
+    place-items: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+    background: var(--degradado-oro);
+    color: var(--fondo);
+  }
+  .servicio__titulo { font-family: var(--fuente-display); font-weight: 900; font-size: clamp(1.9rem, 7vw, 2.4rem); line-height: 1; text-transform: uppercase; color: var(--tinta); }
+  .servicio__texto { color: var(--color-skpat-text); max-width: 45ch; }
+  .servicio__puntos { display: grid; gap: 0.4rem; padding: 0; margin: 0; list-style: none; color: var(--tinta-suave); }
+  .servicio__puntos li { display: flex; align-items: center; gap: 0.5rem; }
+  .servicio__puntos :global(svg) { flex: none; color: var(--primario); }
+  .agencia__acciones { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 2rem; }
+
+  @media (min-width: 52rem) {
+    .agencia { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>

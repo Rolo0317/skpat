@@ -1,12 +1,19 @@
 ---
 import Seccion from '../ui/Seccion.astro'
 import Icono from '../ui/Icono.astro'
-import { PREGUNTAS_FRECUENTES } from '../contenido/preguntas'
+import type { AjustesLugar } from '~/lib/data'
+import { preguntasFrecuentes } from '../contenido/preguntas'
+
+interface Props {
+  ajustes: AjustesLugar
+}
+
+const { ajustes } = Astro.props
 ---
 <Seccion id="preguntas" titulo="Preguntas frecuentes" class="preguntas-seccion">
   <div class="preguntas">
     {
-      PREGUNTAS_FRECUENTES.map(({ pregunta, respuesta }) => (
+      preguntasFrecuentes(ajustes).map(({ pregunta, respuesta }) => (
         <details class="pregunta" name="preguntas-frecuentes">
           <summary class="pregunta__resumen">
             <span>{pregunta}</span>

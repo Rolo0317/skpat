@@ -1,20 +1,23 @@
 ---
-import type { EventoPublico } from '~/lib/data'
+import type { AjustesLugar } from '~/lib/data'
 import LaseresCanvas from '../ui/LaseresCanvas.astro'
 import CuentaRegresiva from '../ui/CuentaRegresiva.astro'
 import BotonNeon from '../ui/BotonNeon.astro'
-import { NEGOCIO, RUTAS_APP } from '../contenido/negocio'
-import { partesDeFecha } from '../utilidades/formato'
-import { estaSucediendo } from '../utilidades/agenda'
 import Logo from '../ui/Logo.astro'
+import { NEGOCIO, RUTAS_APP } from '../contenido/negocio'
+import { fechaCorta, fechasEnTexto } from '../utilidades/formato'
+import { estaSucediendo, principalDe, type EventoActivo } from '../utilidades/agenda'
+import { whatsappPrincipal } from '../utilidades/contacto'
 
 interface Props {
-  proximo: EventoPublico | null
+  activo: EventoActivo | null
+  ajustes: AjustesLugar
   ahora: Date
 }
 
-const { proximo, ahora } = Astro.props
-const fecha = proximo ? partesDeFecha(proximo.fecha) : null
+const { activo, ajustes, ahora } = Astro.props
+const principal = activo ? principalDe(activo) : null
+const enlaceProximaFecha = whatsappPrincipal(ajustes, 'Hola Skpat VIP, ¿cuándo es la próxima fecha?')
 ---
 <section class="portada" aria-labelledby="portada-titulo">
   <LaseresCanvas />
@@ -24,32 +27,34 @@ const fecha = proximo ? partesDeFecha(proximo.fecha) : null
         <Logo class="portada__logo" prioritario sizes="(min-width: 48rem) 36rem, 100vw" />
       </h1>
       <p class="portada__lema">
-        Electrónica y guaracha hasta las 4 AM. {NEGOCIO.horario.dias} en la 93, Bogotá.
+        Electrónica y guaracha {NEGOCIO.horario.texto.toLowerCase()}. {NEGOCIO.horario.dias} en el sector {NEGOCIO.direccion.sector}, {NEGOCIO.direccion.ciudad}.
       </p>
     </div>
 
-    <aside class="portada__panel" aria-labelledby="proxima-noche">
+    <aside class="portada__panel" aria-labelledby="evento-activo">
       {
-        proximo && fecha ? (
+        activo && principal ? (
           <>
-            <p id="proxima-noche" class="portada__rotulo">
-              Próxima noche · <time datetime={proximo.fecha.toISOString()}>{fecha.completa}, {fecha.hora}</time>
+            <p id="evento-activo" class="portada__rotulo">
+              Evento activo · {fechasEnTexto(activo.fechas.map((evento) => evento.fecha))}
             </p>
-            <p class="portada__evento">{proximo.titulo}</p>
-            <CuentaRegresiva objetivo={proximo.fecha} ahora={ahora} enVivo={estaSucediendo(proximo, ahora)} />
+            <p class="portada__evento">{activo.titulo}</p>
+            <CuentaRegresiva objetivo={principal.fecha} ahora={ahora} enVivo={estaSucediendo(principal, ahora)} />
             <div class="portada__acciones">
-              <BotonNeon href={RUTAS_APP.comprar(proximo.id)} icono="flecha">Comprar entrada</BotonNeon>
-              <BotonNeon href="#cartelera" variante="secundario">Ver cartelera</BotonNeon>
+              {activo.fechas.map((evento) => (
+                <BotonNeon href={RUTAS_APP.comprar(evento.id)} icono="flecha">Entrada {fechaCorta(evento.fecha)}</BotonNeon>
+              ))}
+              <BotonNeon href="#palcos" variante="secundario">Palcos y mesas</BotonNeon>
             </div>
           </>
         ) : (
           <>
-            <p id="proxima-noche" class="portada__rotulo">{NEGOCIO.horario.dias} · {NEGOCIO.horario.texto}</p>
+            <p id="evento-activo" class="portada__rotulo">{NEGOCIO.horario.dias} · {NEGOCIO.horario.texto}</p>
             <p class="portada__evento">La próxima fecha sale muy pronto</p>
-            <p class="portada__nota">Crea tu cuenta y sé de los primeros en comprar cuando abra la boletería.</p>
+            <p class="portada__nota">Escríbenos y te avisamos apenas abra la venta por etapas.</p>
             <div class="portada__acciones">
-              <BotonNeon href={RUTAS_APP.registro} icono="flecha">Crear cuenta</BotonNeon>
-              <BotonNeon href="#tarifas" variante="secundario">Ver tarifas</BotonNeon>
+              <BotonNeon href={enlaceProximaFecha} externo icono="whatsapp">Avísame por WhatsApp</BotonNeon>
+              <BotonNeon href="#agencia" variante="secundario">Agencia y cursos de DJ</BotonNeon>
             </div>
           </>
         )
@@ -86,8 +91,7 @@ const fecha = proximo ? partesDeFecha(proximo.fecha) : null
     backdrop-filter: blur(12px);
     box-shadow: var(--sombra-profunda);
   }
-  .portada__rotulo { font-size: 0.9rem; color: var(--azul-claro); font-weight: 500; }
-  .portada__rotulo time::first-letter { text-transform: uppercase; }
+  .portada__rotulo { font-size: 0.9rem; color: var(--acento-claro); font-weight: 500; }
   .portada__evento { font-family: var(--fuente-display); font-weight: 900; font-size: clamp(2rem, 8vw, 2.75rem); line-height: 0.95; text-transform: uppercase; color: var(--tinta); text-wrap: balance; }
   .portada__nota { color: var(--tinta-suave); }
   .portada__acciones { display: flex; flex-wrap: wrap; gap: 0.75rem; }

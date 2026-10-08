@@ -1,9 +1,11 @@
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import type { FastifyInstance } from 'fastify'
 import FormData from 'form-data'
 import { buildServer } from '../../src/app.js'
 import { db } from '../../src/lib/db.js'
-import { createEvent, createUser, resetDb } from '../helpers.js'
+import { createEvent, createUser, IMAGE_BYTES, resetDb } from '../helpers.js'
+import { setStorageProvider } from '../../src/lib/storage/index.js'
+import { MemoryStorage } from '../../src/lib/storage/memoryStorage.js'
 
 const UNKNOWN_UUID = '00000000-0000-4000-8000-000000000000'
 
@@ -112,20 +114,33 @@ describe('POST /events', () => {
     expect(res.json().error).toBe('ValidationError')
   })
 
-  describe('on Vercel (no persistent disk)', () => {
-    beforeEach(() => { process.env.VERCEL = '1' })
-    afterEach(() => { delete process.env.VERCEL })
-
-    it('rejects a file upload and asks for image_url', async () => {
+  describe('flyer upload (multipart image)', () => {
+    const postFlyer = (image: Buffer) => {
       const form = eventForm({ title: 'Upload Night', date: '2026-06-15T22:00:00Z', price: '1000' })
-      form.append('image', Buffer.from('fake-image'), { filename: 'flyer.jpg', contentType: 'image/jpeg' })
-      const res = await app.inject({
-        method: 'POST',
-        url: '/events',
-        headers: { ...asAdmin(), ...form.getHeaders() },
-        payload: form,
-      })
-      expect(res.statusCode).toBe(400)
+      form.append('image', image, { filename: 'flyer.jpg', contentType: 'image/jpeg' })
+      return app.inject({ method: 'POST', url: '/events', headers: { ...asAdmin(), ...form.getHeaders() }, payload: form })
+    }
+
+    it('stores the flyer through the storage provider under flyers/', async () => {
+      const storage = new MemoryStorage()
+      setStorageProvider(storage)
+      const res = await postFlyer(IMAGE_BYTES.jpeg)
+      expect(res.statusCode).toBe(201)
+      const [pathname] = [...storage.files.keys()]
+      expect(pathname).toMatch(/^flyers\/[0-9a-f-]{36}\.jpg$/)
+      expect(res.json().image_url).toBe(`https://memoria.skpat.test/${pathname}`)
+    })
+
+    it('rejects a file that is not a supported image', async () => {
+      const res = await postFlyer(Buffer.from('fake-image'))
+      expect(res.statusCode).toBe(415)
+      expect(res.json().error).toBe('UnsupportedImageType')
+    })
+
+    it('returns 503 ImageUploadUnavailable when no storage is configured', async () => {
+      setStorageProvider(null)
+      const res = await postFlyer(IMAGE_BYTES.jpeg)
+      expect(res.statusCode).toBe(503)
       expect(res.json().error).toBe('ImageUploadUnavailable')
     })
   })

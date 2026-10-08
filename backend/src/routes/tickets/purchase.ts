@@ -2,18 +2,13 @@ import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { db, HttpError } from '../../lib/db.js'
 import { isUuid } from '../../lib/ids.js'
+import { buyerSchema } from '../../lib/schemas.js'
 import { optionalAuth } from '../../plugins/auth.js'
 import { insertTicket, isUniqueViolation, reserveEventCapacity } from '../../services/tickets.js'
 import { currentEventPrice } from '../../services/pricing.js'
 import { eventWhatsappUrl } from '../../services/whatsapp.js'
 
-const purchaseSchema = z.object({
-  event_id: z.string().min(1),
-  nombre: z.string().trim().min(1).max(80),
-  email: z.string().trim().toLowerCase().email().max(255),
-  cedula: z.string().regex(/^\d{5,15}$/, 'Cedula must be 5-15 digits'),
-  telefono: z.string().regex(/^\d{7,15}$/).optional(),
-})
+const purchaseSchema = buyerSchema.extend({ event_id: z.string().min(1) })
 
 type PurchaseInput = z.infer<typeof purchaseSchema>
 

@@ -8,11 +8,7 @@ export type TicketStatus = 'pending_payment' | 'confirmed' | 'cancelled'
 
 export interface EventCapacityRow { id: string; title: string; date: Date; price: number }
 
-const UNIQUE_VIOLATION = '23505'
-
-export function isUniqueViolation(err: unknown): boolean {
-  return typeof err === 'object' && err !== null && (err as { code?: string }).code === UNIQUE_VIOLATION
-}
+export { isUniqueViolation } from '../lib/pgErrors.js'
 
 /**
  * Descuenta un cupo del evento de forma atómica: el UPDATE condicionado evita sobreventa

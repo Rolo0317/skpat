@@ -1,3 +1,5 @@
+import type { PrecioVigente } from '@/lib/operacion'
+
 export interface SkpatEvent {
   id: string
   title: string
@@ -9,4 +11,9 @@ export interface SkpatEvent {
   is_vip: 0 | 1
   is_active: 0 | 1
   created_at: string
+  ends_at?: string | null
+  promoter_id?: string | null
+  lineup?: string[]
+  genre?: string | null
+  precio_vigente?: PrecioVigente
 }

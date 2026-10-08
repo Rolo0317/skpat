@@ -1,0 +1,182 @@
+---
+import type { DetalleFecha, Ubicacion } from '~/lib/data'
+import { ESTADOS_UBICACION, NOMBRE_PUESTO, SIN_PRECIO } from '../contenido/ubicaciones'
+import { fechaCorta, formatoCOP } from '../utilidades/formato'
+import type { DatosPuesto } from './reservaPalcos'
+
+/**
+ * Plano del lugar como en el flyer: STAGE arriba, palcos y mesas en su posición (% del plano) y GENERAL abajo.
+ * Cada puesto es un <button>: se recorre con Tab y se abre con Enter o Espacio.
+ */
+interface Props {
+  detalle: DetalleFecha
+}
+
+const { detalle } = Astro.props
+const { evento, oferta, ubicaciones } = detalle
+const fecha = fechaCorta(evento.fecha)
+
+function datosDelPuesto(ubicacion: Ubicacion): DatosPuesto | null {
+  const ofertaDelTipo = oferta.ubicaciones.find((item) => item.tipo === ubicacion.tipo)
+  if (!ofertaDelTipo) return null
+  return {
+    eventoId: evento.id,
+    spotId: ubicacion.id,
+    nombre: `${NOMBRE_PUESTO[ubicacion.tipo]} ${ubicacion.numero}`,
+    fecha,
+    evento: evento.titulo,
+    precio: formatoCOP(ofertaDelTipo.precioCentavos),
+    capacidad: ubicacion.capacidad,
+    incluye: ofertaDelTipo.incluye,
+  }
+}
+
+const puestos = ubicaciones.map((ubicacion) => {
+  const datos = datosDelPuesto(ubicacion)
+  const { estado } = ubicacion
+  const nombre = `${NOMBRE_PUESTO[ubicacion.tipo]} ${ubicacion.numero}`
+  const descripcion = datos ? ESTADOS_UBICACION[estado].descripcion : SIN_PRECIO
+  return { ubicacion, estado, nombre, datos, etiqueta: `${nombre}, ${ubicacion.capacidad} personas: ${descripcion}` }
+})
+---
+<div class="plano" role="group" aria-label={`Plano de palcos y mesas para el ${fecha}`}>
+  <p class="plano__stage" aria-hidden="true">Stage</p>
+  {
+    puestos.map(({ ubicacion, estado, nombre, datos, etiqueta }) => (
+      <button
+        type="button"
+        class:list={['puesto', `puesto--${ubicacion.tipo}`, `puesto--${estado}`]}
+        style={`--x: ${ubicacion.x}%; --y: ${ubicacion.y}%`}
+        aria-label={etiqueta}
+        aria-disabled={estado === 'disponible' && datos ? undefined : 'true'}
+        data-puesto
+        data-estado={estado}
+        data-nombre={nombre}
+        data-datos={datos ? JSON.stringify(datos) : undefined}
+      >
+        <span class="puesto__tipo" aria-hidden="true">{NOMBRE_PUESTO[ubicacion.tipo]}</span>
+        <span class="puesto__numero cifra" aria-hidden="true">{ubicacion.numero}</span>
+      </button>
+    ))
+  }
+  <p class="plano__general" aria-hidden="true">General</p>
+</div>
+
+<style>
+  .plano {
+    position: relative;
+    width: 100%;
+    max-width: 34rem;
+    aspect-ratio: 1 / 1.08;
+    margin-inline: auto;
+    border-radius: var(--radio);
+    border: 1px solid color-mix(in oklab, var(--primario) 35%, var(--linea));
+    background:
+      radial-gradient(60% 30% at 50% 0%, color-mix(in oklab, var(--primario) 22%, transparent), transparent 70%),
+      var(--fondo);
+    overflow: hidden;
+  }
+  .plano__stage,
+  .plano__general {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    margin: 0;
+    font-family: var(--fuente-display);
+    font-weight: 900;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    border-radius: var(--radio-pequeno);
+  }
+  .plano__stage {
+    top: 3%;
+    left: 30%;
+    width: 40%;
+    height: 9%;
+    font-size: clamp(1.1rem, 5vw, 1.6rem);
+    color: var(--fondo);
+    background: var(--degradado-oro);
+    box-shadow: 0 0 2rem -0.25rem color-mix(in oklab, var(--primario) 70%, transparent);
+  }
+  .plano__general {
+    left: 26%;
+    right: 4%;
+    bottom: 3%;
+    height: 13%;
+    font-size: clamp(1.25rem, 6vw, 2rem);
+    color: var(--acento-claro);
+    border: 1px solid color-mix(in oklab, var(--acento) 45%, transparent);
+    background: color-mix(in oklab, var(--acento) 10%, var(--fondo-2));
+  }
+
+  .puesto {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    translate: -50% -50%;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 0.1rem;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+    transition: transform 0.25s var(--curva-salida), box-shadow 0.25s var(--curva-salida);
+  }
+  .puesto--palco {
+    width: 17%;
+    aspect-ratio: 1 / 0.9;
+    border-radius: 0.6rem;
+    border: 2px solid var(--primario);
+    color: var(--tinta);
+    background:
+      repeating-linear-gradient(90deg, color-mix(in oklab, var(--primario) 35%, transparent) 0 18%, transparent 18% 25%) top / 100% 18% no-repeat,
+      var(--fondo-3);
+  }
+  .puesto--mesa {
+    width: 12%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 2px solid var(--acento-claro);
+    color: var(--fondo);
+    background: radial-gradient(circle at 35% 30%, white, var(--acento) 70%);
+  }
+  .puesto__tipo { font-size: clamp(0.5rem, 1.9vw, 0.65rem); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.8; }
+  .puesto--mesa .puesto__tipo { display: none; }
+  .puesto__numero { font-family: var(--fuente-display); font-weight: 900; font-size: clamp(1.15rem, 5vw, 1.6rem); line-height: 1; }
+
+  .puesto--disponible:hover,
+  .puesto--disponible:focus-visible {
+    transform: scale(1.08);
+    box-shadow: 0 0 0 0.25rem color-mix(in oklab, var(--primario) 45%, transparent), 0 0.75rem 1.5rem -0.5rem rgb(0 0 0 / 0.7);
+  }
+  .puesto:focus-visible { outline: 3px solid var(--azul-claro); outline-offset: 3px; }
+
+  .puesto--reservado {
+    cursor: not-allowed;
+    border-style: dashed;
+    opacity: 0.6;
+    filter: saturate(0.4);
+  }
+  .puesto--vendido { cursor: not-allowed; }
+  .puesto--vendido > * { opacity: 0.45; }
+  /* La X roja del flyer: dos trazos cruzados sobre el puesto vendido. */
+  .puesto--vendido::before,
+  .puesto--vendido::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 115%;
+    height: 0.3rem;
+    border-radius: 999px;
+    background: var(--color-skpat-red);
+    translate: -50% -50%;
+    rotate: 45deg;
+  }
+  .puesto--vendido::after { rotate: -45deg; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .puesto { transition: none; }
+  }
+</style>

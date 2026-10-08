@@ -44,6 +44,8 @@ const eventFields = {
   image_url: imageUrlSchema.nullable(),
   lineup: lineupSchema,
   genre: z.string().trim().max(MAX_GENRE_LENGTH).nullable(),
+  ends_at: z.string().refine((value) => !Number.isNaN(Date.parse(value)), 'Invalid ISO date').nullable(),
+  promoter_id: z.string().uuid().nullable(),
 }
 
 export const createEventSchema = z.object({
@@ -51,6 +53,8 @@ export const createEventSchema = z.object({
   description: eventFields.description.optional(),
   image_url: eventFields.image_url.optional(),
   genre: eventFields.genre.optional(),
+  ends_at: eventFields.ends_at.optional(),
+  promoter_id: eventFields.promoter_id.optional(),
   available_spots: eventFields.available_spots.default(DEFAULT_AVAILABLE_SPOTS),
   is_vip: eventFields.is_vip.default(false),
   lineup: eventFields.lineup.default([]),

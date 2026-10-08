@@ -12,7 +12,9 @@ import { adminRoutes } from './routes/admin/index.js'
 import { eventsRoutes } from './routes/events/index.js'
 import { aiRoutes } from './routes/ai/index.js'
 import { ticketsRoutes } from './routes/tickets/index.js'
-import { palcosRoutes } from './routes/palcos/index.js'
+import { settingsRoutes } from './routes/settings/index.js'
+import { spotsRoutes } from './routes/spots/index.js'
+import { paymentsRoutes } from './routes/payments/index.js'
 import { tablesRoutes } from './routes/tables/index.js'
 import { menuRoutes } from './routes/menu/index.js'
 import { salesRoutes } from './routes/sales/index.js'
@@ -70,7 +72,9 @@ export async function buildServer() {
   await app.register(eventsRoutes, { prefix: '/events' })
   await app.register(aiRoutes, { prefix: '/ai' })
   await app.register(ticketsRoutes, { prefix: '/tickets' })
-  await app.register(palcosRoutes, { prefix: '/palcos' })
+  await app.register(settingsRoutes, { prefix: '/settings' })
+  await app.register(spotsRoutes)
+  await app.register(paymentsRoutes, { prefix: '/admin/pagos' })
   await app.register(tablesRoutes)
   await app.register(menuRoutes, { prefix: '/menu' })
   await app.register(salesRoutes, { prefix: '/sales' })

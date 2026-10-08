@@ -86,6 +86,7 @@ create table if not exists skpat.spot_reservations (
   spot_id      uuid not null references skpat.venue_spots(id),
   nombre       text not null,
   email        text not null,
+  cedula_enc   text not null,
   telefono_enc text,
   price_cents  integer not null,
   status       text not null default 'pending_payment' check (status in ('pending_payment','confirmed','cancelled')),

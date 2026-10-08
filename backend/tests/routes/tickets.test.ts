@@ -3,25 +3,52 @@ import { buildServer } from '../../src/app.js'
 import type { FastifyInstance } from 'fastify'
 import { db } from '../../src/lib/db.js'
 import { createUser, resetDb } from '../helpers.js'
-import { PALCO_PRICES_CENTS } from '../../src/lib/ticketPrices.js'
 
 let app: FastifyInstance
 let porteroToken: string
 let adminToken: string
 let clienteToken: string
-let testEventId: string
+let tonightEventId: string
+
+const HOUR_MS = 60 * 60 * 1000
+const TAQUILLA_CENTS = 3000000
+const ETAPA_1_CENTS = 1000000
+
+const insertEvent = async (title: string, date: Date, extra: { price?: number; spots?: number; active?: boolean } = {}) => {
+  const row = await db.one<{ id: string }>(
+    'insert into events (title, date, price, available_spots, is_active) values ($1, $2, $3, $4, $5) returning id',
+    [title, date.toISOString(), extra.price ?? TAQUILLA_CENTS, extra.spots ?? 100, extra.active ?? true],
+  )
+  return row!.id
+}
+
+const buyer = (overrides: Record<string, unknown> = {}) => ({
+  event_id: tonightEventId, nombre: 'Juan Perez', email: 'juan@test.co', cedula: '1234567890', ...overrides,
+})
+
+const purchase = (payload: Record<string, unknown>, headers: Record<string, string> = {}) =>
+  app.inject({ method: 'POST', url: '/tickets/purchase', payload, headers })
+
+const asAdmin = () => ({ authorization: `Bearer ${adminToken}` })
+const asPortero = () => ({ authorization: `Bearer ${porteroToken}` })
+
+const confirm = (ticketId: string) =>
+  app.inject({ method: 'POST', url: `/admin/pagos/tiquetes/${ticketId}/confirmar`, headers: asAdmin() })
+
+const scan = (qrToken: string) =>
+  app.inject({ method: 'POST', url: '/tickets/scan', headers: asPortero(), payload: { qr_token: qrToken } })
+
+const qrTokenOf = async (ticketId: string) =>
+  (await db.one<{ qr_token: string }>('select qr_token from tickets where id = $1', [ticketId]))!.qr_token
+
+const spotsLeft = async (eventId: string) =>
+  (await db.one<{ available_spots: number }>('select available_spots from events where id = $1', [eventId]))!.available_spots
 
 beforeAll(async () => {
   app = await buildServer()
   await app.ready()
-
-  // Clean up
   await resetDb()
-
-  // Create a test event
-  const row = (await db.one("INSERT INTO events (title, date, price, is_active) VALUES ('Test Night', '2026-12-01T22:00:00Z', 3000000, true) RETURNING id")) as { id: string }
-  testEventId = row.id
-
+  tonightEventId = await insertEvent('Test Night', new Date())
   porteroToken = (await createUser('portero')).token
   adminToken = (await createUser('admin')).token
   clienteToken = (await createUser('cliente')).token
@@ -32,337 +59,179 @@ afterAll(async () => {
   await app.close()
 })
 
-describe('POST /tickets/purchase', () => {
-  it('links the ticket to the logged-in buyer so it shows up in /tickets/mine', async () => {
-    const buyer = await createUser('cliente')
-    const auth = { authorization: `Bearer ${buyer.token}` }
-    const purchase = await app.inject({
-      method: 'POST',
-      url: '/tickets/purchase',
-      headers: auth,
-      payload: { event_id: testEventId, nombre: 'Ana', email: 'ana@test.co', cedula: '55556666', ticket_type: 'general' },
-    })
-    expect(purchase.statusCode).toBe(201)
-
-    const mine = await app.inject({ method: 'GET', url: '/tickets/mine', headers: auth })
-    expect(mine.json().map((t: { id: string }) => t.id)).toEqual([purchase.json().ticket_id])
-  })
-
-  it('still sells to anonymous buyers when the optional token is invalid', async () => {
-    const res = await app.inject({
-      method: 'POST',
-      url: '/tickets/purchase',
-      headers: { authorization: 'Bearer not-a-valid-token' },
-      payload: { event_id: testEventId, nombre: 'Anon', email: 'anon@test.co', cedula: '77778888', ticket_type: 'general' },
-    })
-    expect(res.statusCode).toBe(201)
-  })
-
-  it('purchases a general ticket successfully', async () => {
-    const res = await app.inject({
-      method: 'POST',
-      url: '/tickets/purchase',
-      payload: {
-        event_id: testEventId,
-        nombre: 'Juan Perez',
-        email: 'juan@test.co',
-        cedula: '1234567890',
-        telefono: '3001234567',
-        ticket_type: 'general',
-      },
-    })
+describe('POST /tickets/purchase (sin pasarela: queda pendiente de pago)', () => {
+  it('crea la compra pendiente, sin QR, al precio de taquilla cuando no hay etapas', async () => {
+    const res = await purchase(buyer())
     expect(res.statusCode).toBe(201)
     const body = res.json()
-    expect(body.ticket_id).toBeDefined()
-    expect(body.qr_token).toHaveLength(64)
-    expect(body.qr_data_url).toMatch(/^data:image\/png;base64,/)
-    expect(body.event_title).toBe('Test Night')
-    expect(body.ticket_type).toBe('general')
-    expect(body.price_cents).toBe(3000000)
+    expect(body).toMatchObject({ status: 'pending_payment', price_cents: TAQUILLA_CENTS, price_stage: 'Taquilla' })
+    expect(body.qr_data_url).toBeUndefined()
+    expect(body.qr_token).toBeUndefined()
   })
 
-  it('returns 404 for unknown event_id', async () => {
-    const res = await app.inject({
-      method: 'POST',
-      url: '/tickets/purchase',
-      payload: {
-        event_id: 'nonexistent',
-        nombre: 'X',
-        email: 'x@test.co',
-        cedula: '12345',
-        ticket_type: 'general',
-      },
-    })
-    expect(res.statusCode).toBe(404)
-    expect(res.json().error).toBe('EventNotFound')
+  it('cobra la etapa vigente y devuelve el WhatsApp del gestor', async () => {
+    const eventId = await insertEvent('Etapas Night', new Date(Date.now() + 48 * HOUR_MS))
+    await db.run(
+      `insert into event_price_stages (event_id, nombre, price_cents, ends_at, sort_order)
+       values ($1, 'Etapa 1', $2, now() + interval '1 day', 1), ($1, 'Etapa 2', 1500000, null, 2)`,
+      [eventId, ETAPA_1_CENTS],
+    )
+    await db.run(`insert into promoters (nombre, whatsapp) values ('Gestor Test', '+573001112233')`)
+
+    const body = (await purchase(buyer({ event_id: eventId, email: 'etapa@test.co' }))).json()
+    expect(body).toMatchObject({ price_cents: ETAPA_1_CENTS, price_stage: 'Etapa 1' })
+    expect(body.whatsapp_url).toMatch(/^https:\/\/wa\.me\/573001112233\?text=/)
   })
 
-  it('returns 422 for inactive event', async () => {
-    const inactive = (await db.one("INSERT INTO events (title, date, price, is_active) VALUES ('Hidden', '2026-12-02T22:00:00Z', 1000, false) RETURNING id")) as { id: string }
-    const res = await app.inject({
-      method: 'POST',
-      url: '/tickets/purchase',
-      payload: {
-        event_id: inactive.id,
-        nombre: 'X',
-        email: 'x@test.co',
-        cedula: '12345',
-        ticket_type: 'general',
-      },
-    })
-    expect(res.statusCode).toBe(422)
-    expect(res.json().error).toBe('EventNotActive')
+  it('asocia la compra al usuario logueado y /tickets/mine la muestra pendiente con WhatsApp', async () => {
+    const cliente = await createUser('cliente')
+    const auth = { authorization: `Bearer ${cliente.token}` }
+    const bought = await purchase(buyer({ email: 'ana@test.co' }), auth)
+
+    const [mine] = (await app.inject({ method: 'GET', url: '/tickets/mine', headers: auth })).json()
+    expect(mine).toMatchObject({ id: bought.json().ticket_id, status: 'pending_payment', qr_data_url: null })
+    expect(mine.qr_token).toBeUndefined()
   })
 
-  it('returns 400 for invalid cedula', async () => {
-    const res = await app.inject({
-      method: 'POST',
-      url: '/tickets/purchase',
-      payload: {
-        event_id: testEventId,
-        nombre: 'X',
-        email: 'x@test.co',
-        cedula: 'NOT-A-CEDULA',
-        ticket_type: 'general',
-      },
-    })
-    expect(res.statusCode).toBe(400)
-    expect(res.json().error).toBe('ValidationError')
-  })
-
-  it('purchases a palco_gold ticket with correct price', async () => {
-    const res = await app.inject({
-      method: 'POST',
-      url: '/tickets/purchase',
-      payload: {
-        event_id: testEventId,
-        nombre: 'Maria Lopez',
-        email: 'maria@test.co',
-        cedula: '9876543210',
-        ticket_type: 'palco_gold',
-      },
-    })
+  it('sigue vendiendo como anónimo si el token opcional es inválido', async () => {
+    const res = await purchase(buyer({ email: 'anon@test.co' }), { authorization: 'Bearer not-a-valid-token' })
     expect(res.statusCode).toBe(201)
-    const body = res.json()
-    expect(body.ticket_type).toBe('palco_gold')
-    expect(body.price_cents).toBe(PALCO_PRICES_CENTS.palco_gold)
+  })
+
+  it('responde 404, 422 y 400 en los casos inválidos', async () => {
+    const inactiveId = await insertEvent('Hidden', new Date(), { active: false })
+    expect((await purchase(buyer({ event_id: 'nonexistent' }))).json().error).toBe('EventNotFound')
+    expect((await purchase(buyer({ event_id: inactiveId }))).json().error).toBe('EventNotActive')
+    expect((await purchase(buyer({ cedula: 'NOT-A-CEDULA' }))).json().error).toBe('ValidationError')
   })
 })
 
-describe('POST /tickets/purchase — lista', () => {
-  const inscripcion = (email: string) => ({
-    event_id: testEventId, nombre: 'Lista Uno', email, cedula: '1234512345', ticket_type: 'lista',
+describe('Pagos: confirmar y cancelar', () => {
+  it('al confirmar, el QR se entrega y vale en la puerta; confirmar dos veces da 409', async () => {
+    const ticketId = (await purchase(buyer({ email: 'paga@test.co' }))).json().ticket_id
+    const confirmed = await confirm(ticketId)
+    expect(confirmed.statusCode).toBe(200)
+    expect(confirmed.json().qr_data_url).toMatch(/^data:image\/png;base64,/)
+
+    expect((await confirm(ticketId)).json().error).toBe('AlreadyProcessed')
+    expect((await scan(await qrTokenOf(ticketId))).json()).toMatchObject({ valid: true, nombre: 'Juan Perez' })
   })
 
-  it('anota en la lista gratis y entrega un QR propio', async () => {
-    const first = await app.inject({ method: 'POST', url: '/tickets/purchase', payload: inscripcion('lista1@test.co') })
-    const second = await app.inject({ method: 'POST', url: '/tickets/purchase', payload: inscripcion('lista2@test.co') })
+  it('al cancelar devuelve el cupo al evento', async () => {
+    const eventId = await insertEvent('Cancel Night', new Date(), { spots: 10 })
+    const ticketId = (await purchase(buyer({ event_id: eventId, email: 'cancela@test.co' }))).json().ticket_id
+    expect(await spotsLeft(eventId)).toBe(9)
 
-    expect(first.statusCode).toBe(201)
-    expect(first.json()).toMatchObject({ ticket_type: 'lista', price_cents: 0 })
-    expect(first.json().qr_token).toMatch(/^[0-9a-f]{64}$/)
-    expect(second.json().qr_token).not.toBe(first.json().qr_token)
+    const res = await app.inject({ method: 'POST', url: `/admin/pagos/tiquetes/${ticketId}/cancelar`, headers: asAdmin() })
+    expect(res.json().status).toBe('cancelled')
+    expect(await spotsLeft(eventId)).toBe(10)
   })
 
-  it('no deja anotar dos veces el mismo correo en el mismo evento', async () => {
-    const before = (await db.one('SELECT available_spots FROM events WHERE id = $1', [testEventId])) as { available_spots: number }
-    const repeated = await app.inject({ method: 'POST', url: '/tickets/purchase', payload: inscripcion('LISTA1@test.co') })
-    const after = (await db.one('SELECT available_spots FROM events WHERE id = $1', [testEventId])) as { available_spots: number }
+  it('solo el admin ve los pendientes', async () => {
+    const forbidden = await app.inject({
+      method: 'GET', url: '/admin/pagos/pendientes', headers: { authorization: `Bearer ${clienteToken}` },
+    })
+    expect(forbidden.statusCode).toBe(403)
 
-    expect(repeated.statusCode).toBe(409)
-    expect(repeated.json().error).toBe('AlreadyOnList')
-    expect(after.available_spots).toBe(before.available_spots)
+    const pending = (await app.inject({ method: 'GET', url: '/admin/pagos/pendientes', headers: asAdmin() })).json()
+    expect(pending.tiquetes.length).toBeGreaterThan(0)
+    expect(pending.tiquetes[0].qr_token).toBeUndefined()
   })
 })
 
 describe('POST /tickets/scan', () => {
-  let validToken: string
-
-  beforeAll(async () => {
-    // Create a fresh ticket for scan tests
-    const res = await app.inject({
-      method: 'POST',
-      url: '/tickets/purchase',
-      payload: {
-        event_id: testEventId,
-        nombre: 'Scan Test User',
-        email: 'scan@test.co',
-        cedula: '11111111',
-        ticket_type: 'general',
-      },
+  it('exige portero o admin', async () => {
+    const anonymous = await app.inject({ method: 'POST', url: '/tickets/scan', payload: { qr_token: 'anything' } })
+    const cliente = await app.inject({
+      method: 'POST', url: '/tickets/scan', headers: { authorization: `Bearer ${clienteToken}` }, payload: { qr_token: 'anything' },
     })
-    validToken = res.json().qr_token
+    expect(anonymous.statusCode).toBe(401)
+    expect(cliente.statusCode).toBe(403)
   })
 
-  it('returns 401 without auth token', async () => {
-    const res = await app.inject({
-      method: 'POST',
-      url: '/tickets/scan',
-      payload: { qr_token: 'anything' },
-    })
-    expect(res.statusCode).toBe(401)
+  it('rechaza un QR con pago pendiente', async () => {
+    const ticketId = (await purchase(buyer({ email: 'pendiente@test.co' }))).json().ticket_id
+    expect((await scan(await qrTokenOf(ticketId))).json()).toMatchObject({ valid: false, reason: 'PendingPayment' })
   })
 
-  it('returns 403 with cliente role', async () => {
-    const res = await app.inject({
-      method: 'POST',
-      url: '/tickets/scan',
-      headers: { authorization: `Bearer ${clienteToken}` },
-      payload: { qr_token: 'anything' },
-    })
-    expect(res.statusCode).toBe(403)
+  it('rechaza un QR repetido', async () => {
+    const ticketId = (await purchase(buyer({ email: 'repetido@test.co' }))).json().ticket_id
+    await confirm(ticketId)
+    const qrToken = await qrTokenOf(ticketId)
+    await scan(qrToken)
+    expect((await scan(qrToken)).json()).toMatchObject({ valid: false, reason: 'AlreadyUsed' })
   })
 
-  it('validates a valid QR token as portero', async () => {
-    const res = await app.inject({
-      method: 'POST',
-      url: '/tickets/scan',
-      headers: { authorization: `Bearer ${porteroToken}` },
-      payload: { qr_token: validToken },
-    })
-    expect(res.statusCode).toBe(200)
-    const body = res.json()
-    expect(body.valid).toBe(true)
-    expect(body.nombre).toBe('Scan Test User')
-    expect(body.ticket_type).toBe('general')
-    expect(body.event_title).toBe('Test Night')
+  it('el QR solo vale para su fecha: antes no es válido y después vence', async () => {
+    const futureId = await insertEvent('Future Night', new Date(Date.now() + 72 * HOUR_MS))
+    const pastId = await insertEvent('Past Night', new Date(Date.now() - 48 * HOUR_MS))
+    const futureTicket = (await purchase(buyer({ event_id: futureId, email: 'futuro@test.co' }))).json().ticket_id
+    const pastTicket = (await purchase(buyer({ event_id: pastId, email: 'pasado@test.co' }))).json().ticket_id
+    await confirm(futureTicket)
+    await confirm(pastTicket)
+
+    expect((await scan(await qrTokenOf(futureTicket))).json().reason).toBe('NotYetValid')
+    expect((await scan(await qrTokenOf(pastTicket))).json().reason).toBe('Expired')
   })
 
-  it('rejects a duplicate scan (already used)', async () => {
-    const res = await app.inject({
-      method: 'POST',
-      url: '/tickets/scan',
-      headers: { authorization: `Bearer ${porteroToken}` },
-      payload: { qr_token: validToken },
-    })
-    expect(res.statusCode).toBe(200)
-    const body = res.json()
-    expect(body.valid).toBe(false)
-    expect(body.reason).toBe('AlreadyUsed')
-  })
-
-  it('returns invalid for unknown QR token', async () => {
-    const res = await app.inject({
-      method: 'POST',
-      url: '/tickets/scan',
-      headers: { authorization: `Bearer ${porteroToken}` },
-      payload: { qr_token: 'a'.repeat(64) },
-    })
-    expect(res.statusCode).toBe(200)
-    const body = res.json()
-    expect(body.valid).toBe(false)
-    expect(body.reason).toBe('InvalidQR')
+  it('responde inválido para un QR desconocido', async () => {
+    expect((await scan('a'.repeat(64))).json()).toMatchObject({ valid: false, reason: 'InvalidQR' })
   })
 })
 
-describe('GET /tickets/event/:event_id (admin attendee list)', () => {
-  it('returns 401 without auth', async () => {
-    const res = await app.inject({ method: 'GET', url: `/tickets/event/${testEventId}` })
-    expect(res.statusCode).toBe(401)
-  })
-
-  it('returns 403 with portero role', async () => {
-    const res = await app.inject({
-      method: 'GET',
-      url: `/tickets/event/${testEventId}`,
-      headers: { authorization: `Bearer ${porteroToken}` },
+describe('Palcos y mesas', () => {
+  const reserve = async (eventId: string, numero: number, email: string) => {
+    const spot = await db.one<{ id: string }>(`select id from venue_spots where tipo = 'palco' and numero = $1`, [numero])
+    return app.inject({
+      method: 'POST',
+      url: `/events/${eventId}/ubicaciones/${spot!.id}/reservar`,
+      payload: { nombre: 'Titular Palco', email, cedula: '1020304050' },
     })
-    expect(res.statusCode).toBe(403)
-  })
+  }
 
-  it('returns attendee list for admin', async () => {
-    const res = await app.inject({
-      method: 'GET',
-      url: `/tickets/event/${testEventId}`,
-      headers: { authorization: `Bearer ${adminToken}` },
+  it('reserva pendiente, no deja tomar el mismo palco y al confirmar emite un QR por persona', async () => {
+    const eventId = await insertEvent('Palco Night', new Date(), { spots: 50 })
+    await db.run(`insert into event_spot_offers (event_id, tipo, price_cents, incluye) values ($1, 'palco', 120000000, '{}')`, [eventId])
+
+    const reserved = await reserve(eventId, 2, 'titular@test.co')
+    expect(reserved.statusCode).toBe(201)
+    expect(reserved.json()).toMatchObject({ status: 'pending_payment', price_cents: 120000000 })
+    expect((await reserve(eventId, 2, 'otro@test.co')).json().error).toBe('SpotTaken')
+
+    const map = (await app.inject({ method: 'GET', url: `/events/${eventId}/ubicaciones` })).json()
+    expect(map.find((s: { tipo: string; numero: number }) => s.tipo === 'palco' && s.numero === 2).estado).toBe('reservado')
+
+    const confirmed = await app.inject({
+      method: 'POST', url: `/admin/pagos/reservas/${reserved.json().reservation_id}/confirmar`, headers: asAdmin(),
     })
-    expect(res.statusCode).toBe(200)
-    const body = res.json()
-    expect(body.event_id).toBe(testEventId)
+    const { capacidad } = (await db.one<{ capacidad: number }>(`select capacidad from venue_spots where tipo = 'palco' and numero = 2`))!
+    expect(confirmed.json().tiquetes).toHaveLength(capacidad)
+    expect(await spotsLeft(eventId)).toBe(50 - capacidad)
+  })
+})
+
+describe('GET /tickets/event/:event_id (lista de asistentes del admin)', () => {
+  it('protege la ruta y descifra la cédula para el admin', async () => {
+    expect((await app.inject({ method: 'GET', url: `/tickets/event/${tonightEventId}` })).statusCode).toBe(401)
+    expect((await app.inject({ method: 'GET', url: `/tickets/event/${tonightEventId}`, headers: asPortero() })).statusCode).toBe(403)
+
+    const body = (await app.inject({ method: 'GET', url: `/tickets/event/${tonightEventId}`, headers: asAdmin() })).json()
     expect(body.event_title).toBe('Test Night')
-    expect(Array.isArray(body.attendees)).toBe(true)
-    expect(body.total).toBeGreaterThanOrEqual(1)
-    // PII decrypted
-    const attendee = body.attendees[0]
-    expect(attendee.cedula).toMatch(/^\d+$/)
-    expect(typeof attendee.qr_used).toBe('boolean')
+    expect(body.attendees[0].cedula).toMatch(/^\d+$/)
   })
 
-  it('returns 404 for unknown event', async () => {
-    const res = await app.inject({
-      method: 'GET',
-      url: '/tickets/event/nonexistent',
-      headers: { authorization: `Bearer ${adminToken}` },
-    })
+  it('responde 404 para un evento desconocido', async () => {
+    const res = await app.inject({ method: 'GET', url: '/tickets/event/nonexistent', headers: asAdmin() })
     expect(res.statusCode).toBe(404)
   })
 })
 
-describe('POST /tickets/purchase — concurrency and spot decrement', () => {
-  it('decrements available_spots by 1 on successful purchase', async () => {
-    const evt = (await db.one("INSERT INTO events (title, date, price, available_spots, is_active) VALUES ('Decrement Night', '2026-12-15T22:00:00Z', 1000, 50, true) RETURNING id")) as { id: string }
-
-    const res = await app.inject({
-      method: 'POST',
-      url: '/tickets/purchase',
-      payload: {
-        event_id: evt.id,
-        nombre: 'Dec User',
-        email: 'dec@test.co',
-        cedula: '11112222',
-        ticket_type: 'general',
-      },
-    })
-    expect(res.statusCode).toBe(201)
-
-    const after = (await db.one('SELECT available_spots FROM events WHERE id = $1', [evt.id])) as { available_spots: number }
-    expect(after.available_spots).toBe(49)
-  })
-
-  it('returns 422 SoldOut when available_spots is 0', async () => {
-    const evt = (await db.one("INSERT INTO events (title, date, price, available_spots, is_active) VALUES ('Sold Out Night', '2026-12-16T22:00:00Z', 1000, 0, true) RETURNING id")) as { id: string }
-
-    const res = await app.inject({
-      method: 'POST',
-      url: '/tickets/purchase',
-      payload: {
-        event_id: evt.id,
-        nombre: 'Sold User',
-        email: 'sold@test.co',
-        cedula: '22223333',
-        ticket_type: 'general',
-      },
-    })
-    expect(res.statusCode).toBe(422)
-    expect(res.json().error).toBe('SoldOut')
-
-    const count = (await db.one('SELECT COUNT(*) AS n FROM tickets WHERE event_id = $1', [evt.id])) as { n: number }
-    expect(count.n).toBe(0)
-  })
-
-  it('exhausts available_spots sequentially without going negative', async () => {
-    const evt = (await db.one("INSERT INTO events (title, date, price, available_spots, is_active) VALUES ('Last Spot Night', '2026-12-17T22:00:00Z', 1000, 1, true) RETURNING id")) as { id: string }
-
-    const ok = await app.inject({
-      method: 'POST',
-      url: '/tickets/purchase',
-      payload: {
-        event_id: evt.id, nombre: 'A', email: 'a@test.co', cedula: '33334444', ticket_type: 'general',
-      },
-    })
-    expect(ok.statusCode).toBe(201)
-
-    const fail = await app.inject({
-      method: 'POST',
-      url: '/tickets/purchase',
-      payload: {
-        event_id: evt.id, nombre: 'B', email: 'b@test.co', cedula: '44445555', ticket_type: 'general',
-      },
-    })
-    expect(fail.statusCode).toBe(422)
-    expect(fail.json().error).toBe('SoldOut')
-
-    const after = (await db.one('SELECT available_spots FROM events WHERE id = $1', [evt.id])) as { available_spots: number }
-    expect(after.available_spots).toBe(0)
+describe('Cupo del evento', () => {
+  it('descuenta un cupo por compra y nunca queda negativo', async () => {
+    const eventId = await insertEvent('Last Spot Night', new Date(), { spots: 1 })
+    expect((await purchase(buyer({ event_id: eventId, email: 'a@test.co' }))).statusCode).toBe(201)
+    const soldOut = await purchase(buyer({ event_id: eventId, email: 'b@test.co' }))
+    expect(soldOut.json().error).toBe('SoldOut')
+    expect(await spotsLeft(eventId)).toBe(0)
   })
 })

@@ -2,6 +2,7 @@ import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { db } from '../../lib/db.js'
 import { verifyAuth, requireRole } from '../../plugins/auth.js'
+import { qrWindowStatus } from '../../services/qrValidity.js'
 
 const scanSchema = z.object({
   qr_token: z.string().min(10),
@@ -14,11 +15,14 @@ interface TicketRow {
   event_title: string
   qr_used: boolean
   status: string
+  event_date: Date
+  event_ends_at: Date | null
 }
 
 const findTicket = (qrToken: string) =>
   db.one<TicketRow>(
-    `select t.id, t.nombre, t.ticket_type, t.qr_used, t.status, e.title as event_title
+    `select t.id, t.nombre, t.ticket_type, t.qr_used, t.status, e.title as event_title,
+            e.date as event_date, e.ends_at as event_ends_at
        from tickets t join events e on e.id = t.event_id
       where t.qr_token = $1`,
     [qrToken],
@@ -45,8 +49,16 @@ export async function scanTicketRoute(app: FastifyInstance) {
 
       const holder = { nombre: ticket.nombre, ticket_type: ticket.ticket_type, event_title: ticket.event_title }
 
+      if (ticket.status === 'pending_payment') {
+        return reply.send({ valid: false, reason: 'PendingPayment', message: 'El pago de este tiquete no se ha confirmado', ...holder })
+      }
       if (ticket.status !== 'confirmed') {
         return reply.send({ valid: false, reason: 'TicketNotConfirmed', message: `Estado del tiquete: ${ticket.status}`, ...holder })
+      }
+      const window = qrWindowStatus(ticket.event_date, ticket.event_ends_at)
+      if (window !== 'valid') {
+        const message = window === 'NotYetValid' ? 'Este QR todavía no es válido para hoy' : 'Este QR ya venció: era para otra fecha'
+        return reply.send({ valid: false, reason: window, message, ...holder })
       }
       if (ticket.qr_used || (await markAsUsed(ticket.id)) === 0) {
         return reply.send({ valid: false, reason: 'AlreadyUsed', message: 'Este QR ya fue escaneado', ...holder })

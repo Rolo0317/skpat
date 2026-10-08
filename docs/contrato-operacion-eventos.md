@@ -4,6 +4,21 @@ Fuente de verdad compartida entre backend, panel admin (React) y web pública (A
 Esquema: `supabase/migrations/0005_skpat_operacion_eventos.sql`. Montos en **centavos COP**. Fechas ISO 8601.
 Todas las rutas van bajo `/api` en producción (Fastify las ve sin el prefijo).
 
+## Datos del negocio (confirmados por el dueño)
+
+- Abre **de viernes a lunes, sin límite de horario**.
+- Ubicación: **sector Plaza de las Américas, Bogotá** (dirección exacta pendiente: editable en `venue_settings`).
+- Además de discoteca, Skpat es **agencia de DJs**: representación de DJs, **cursos y clases de DJ**.
+- La web pública muestra **solo el evento activo actual** (hoy: "Maratoneados en Springfield", sábado 10 y domingo 11 de octubre).
+
+## Estado de implementación
+
+- HECHO (backend): `services/{tickets,pricing,whatsapp,payments,ticketDelivery,qrValidity}.ts`; `GET /settings`;
+  `GET /events/:id/oferta`; `PUT /events/:id/etapas` y `PUT /events/:id/ofertas` (admin; **estas son las rutas reales**,
+  no `/admin/events/...`); ubicaciones y reserva (**la reserva exige `cedula`**); `/admin/pagos/*`; compra pendiente;
+  `/tickets/mine` con estado; escaneo con `PendingPayment`/`NotYetValid`/`Expired`.
+- PENDIENTE: CRUD `/admin/promoters`, `PUT /admin/settings`, listas, galería, anuncios, `/admin/uploads`.
+
 ## Reglas de negocio
 
 1. **Sin pasarela de pago por ahora.** Toda compra paga (entrada general por etapa, palco, mesa) nace en
@@ -41,7 +56,7 @@ type EstadoPago = 'pending_payment' | 'confirmed' | 'cancelled'
 | `GET /events` | (ya existe) cada evento agrega `precio_vigente: PrecioVigente`, `ends_at`, `promoter_id` |
 | `GET /events/:id/oferta` | `{ etapas: Etapa[], precio_vigente: PrecioVigente, ubicaciones: OfertaUbicacion[] }` |
 | `GET /events/:id/ubicaciones` | `Ubicacion[]` (`reservado` = pendiente de pago, `vendido` = confirmado) |
-| `POST /events/:id/ubicaciones/:spotId/reservar` `{nombre,email,telefono}` | 201 `{ reservation_id, status:'pending_payment', price_cents, whatsapp_url }`; 409 `SpotTaken`; 404 |
+| `POST /events/:id/ubicaciones/:spotId/reservar` `{nombre,email,cedula,telefono?}` | 201 `{ reservation_id, status:'pending_payment', price_cents, whatsapp_url }`; 409 `SpotTaken`; 404 |
 | `POST /tickets/purchase` `{event_id,nombre,email,cedula,telefono?}` | 201 `{ ticket_id, status:'pending_payment', price_cents, price_stage, event_title, whatsapp_url }` (sin QR). Solo entrada general. |
 | `GET /tickets/mine` | (ya existe) agrega `status`; `qr_data_url` solo si `confirmed`, si no `whatsapp_url` |
 | `GET /lists/:slug` | `{ nombre, evento:{id,title,date}, cupo, inscritos, cierra_at, abierta: boolean, gestor: Gestor \| null }` |
@@ -56,8 +71,8 @@ type EstadoPago = 'pending_payment' | 'confirmed' | 'cancelled'
 |---|---|
 | `GET/POST /admin/promoters`, `PATCH/DELETE /admin/promoters/:id` | Directorio de gestores (WhatsApp) |
 | `PUT /admin/settings` `{direccion,referencia,mapa_url}` | Datos del lugar |
-| `PUT /admin/events/:id/etapas` `Etapa[]` sin id | Reemplaza las etapas del evento |
-| `PUT /admin/events/:id/ofertas` `OfertaUbicacion[]` | Precio e incluye de palco y mesa |
+| `PUT /events/:id/etapas` `{nombre,price_cents,ends_at?,sort_order}[]` | Reemplaza las etapas del evento |
+| `PUT /events/:id/ofertas` `OfertaUbicacion[]` | Precio e incluye de palco y mesa |
 | eventos create/update | aceptan además `ends_at`, `promoter_id` |
 | `GET/POST /admin/lists`, `PATCH/DELETE /admin/lists/:id` | Listas (`slug` se genera del nombre si no llega) |
 | `GET /admin/lists/:id/inscritos` | `{ lista, inscritos: {nombre,email,cedula,qr_used,created_at}[] }` |

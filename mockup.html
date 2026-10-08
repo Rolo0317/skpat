@@ -1,0 +1,1907 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Skpat VIP — Sistema Integral</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#09090b;
+  --surface:#111118;
+  --card:#18181f;
+  --border:rgba(255,255,255,0.08);
+  --border2:rgba(255,255,255,0.14);
+  --primary:#7c3aed;
+  --primary-light:#8b5cf6;
+  --primary-dim:rgba(124,58,237,0.18);
+  --accent:#e11d48;
+  --success:#059669;
+  --warning:#d97706;
+  --danger:#dc2626;
+  --text:#f4f4f5;
+  --text2:#a1a1aa;
+  --text3:#71717a;
+  --radius:6px;
+  --radius2:10px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{text-decoration:none;color:inherit}
+button{font-family:inherit;cursor:pointer;border:none;outline:none}
+input,select,textarea{font-family:inherit}
+svg{display:inline-block;vertical-align:middle;flex-shrink:0}
+
+/* ── Screen Manager ── */
+.screen{display:none}
+.screen.active{display:block}
+
+/* ── Top Nav ── */
+.top-nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:rgba(9,9,11,0.92);
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(12px);
+  height:52px;
+  display:flex;align-items:center;
+  padding:0 20px;gap:4px;
+}
+.nav-logo{
+  font-weight:800;font-size:15px;letter-spacing:-.5px;
+  color:var(--text);margin-right:16px;white-space:nowrap;
+}
+.nav-logo span{color:var(--primary)}
+.nav-tabs{display:flex;align-items:center;gap:2px;flex:1;overflow-x:auto;scrollbar-width:none}
+.nav-tabs::-webkit-scrollbar{display:none}
+.nav-tab{
+  padding:6px 12px;border-radius:var(--radius);
+  font-size:13px;font-weight:500;color:var(--text2);
+  background:transparent;border:none;cursor:pointer;
+  white-space:nowrap;transition:all 150ms ease;
+}
+.nav-tab:hover{color:var(--text);background:rgba(255,255,255,0.06)}
+.nav-tab.active{color:var(--text);background:rgba(124,58,237,0.2);color:#a78bfa}
+
+/* ── Page wrapper ── */
+.page{padding-top:52px;min-height:100vh}
+
+/* ── Buttons ── */
+.btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:9px 18px;border-radius:var(--radius);
+  font-size:14px;font-weight:500;
+  transition:all 150ms ease;cursor:pointer;
+  border:none;
+}
+.btn-primary{
+  background:var(--primary);color:#fff;
+}
+.btn-primary:hover{background:var(--primary-light)}
+.btn-outline{
+  background:transparent;color:var(--text2);
+  border:1px solid var(--border2);
+}
+.btn-outline:hover{background:rgba(255,255,255,0.06);color:var(--text)}
+.btn-sm{padding:6px 14px;font-size:13px}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-danger:hover{background:#b91c1c}
+.btn-success{background:var(--success);color:#fff}
+.btn-success:hover{background:#047857}
+
+/* ── Cards ── */
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius2);
+  padding:20px;
+}
+
+/* ── Badges ── */
+.badge{
+  display:inline-flex;align-items:center;
+  padding:2px 8px;border-radius:4px;
+  font-size:12px;font-weight:600;letter-spacing:.3px;
+}
+.badge-success{background:rgba(5,150,105,0.15);color:#34d399}
+.badge-warning{background:rgba(217,119,6,0.15);color:#fbbf24}
+.badge-danger{background:rgba(220,38,38,0.15);color:#f87171}
+.badge-purple{background:rgba(124,58,237,0.18);color:#a78bfa}
+.badge-muted{background:rgba(255,255,255,0.07);color:var(--text2)}
+
+/* ── Form elements ── */
+.field{margin-bottom:16px}
+.field label{display:block;font-size:13px;font-weight:500;color:var(--text2);margin-bottom:6px}
+.field input,.field select,.field textarea{
+  width:100%;background:rgba(255,255,255,0.04);
+  border:1px solid var(--border2);border-radius:var(--radius);
+  color:var(--text);padding:9px 12px;font-size:14px;
+  transition:border-color 150ms ease;
+}
+.field input:focus,.field select:focus,.field textarea:focus{
+  outline:none;border-color:var(--primary);
+}
+.field input::placeholder{color:var(--text3)}
+.field select option{background:#1c1c28}
+
+/* ── Section utilities ── */
+.section-label{
+  font-size:11px;font-weight:700;letter-spacing:.8px;
+  text-transform:uppercase;color:var(--text3);margin-bottom:12px;
+}
+.divider{height:1px;background:var(--border);margin:16px 0}
+.muted{color:var(--text2)}
+.small{font-size:13px}
+.mono{font-family:'Menlo','Consolas',monospace;font-size:13px}
+
+/* ══════════════════════════════════════════
+   LANDING PAGE
+══════════════════════════════════════════ */
+#landing{background:var(--bg)}
+
+/* Site nav (inside landing only) */
+.site-nav{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 48px;height:60px;
+  background:rgba(9,9,11,0.9);
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(16px);
+}
+.site-nav-logo{font-size:16px;font-weight:800;letter-spacing:-.4px}
+.site-nav-logo span{color:var(--primary)}
+.site-nav-links{display:flex;align-items:center;gap:28px}
+.site-nav-links a{font-size:14px;color:var(--text2);transition:color 150ms ease}
+.site-nav-links a:hover{color:var(--text)}
+.site-nav-cta{
+  padding:8px 18px;background:var(--primary);color:#fff;
+  border-radius:var(--radius);font-size:14px;font-weight:500;
+  border:none;cursor:pointer;transition:background 150ms ease;
+}
+.site-nav-cta:hover{background:var(--primary-light)}
+
+/* Hero */
+.hero{
+  position:relative;padding:160px 48px 100px;overflow:hidden;
+}
+.hero-blob{
+  position:absolute;top:-100px;left:50%;transform:translateX(-50%);
+  width:700px;height:500px;border-radius:50%;
+  background:radial-gradient(ellipse, rgba(124,58,237,0.18) 0%, transparent 70%);
+  pointer-events:none;
+}
+.hero-content{position:relative;max-width:680px}
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 12px;border-radius:4px;
+  background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.3);
+  font-size:12px;font-weight:600;color:#a78bfa;letter-spacing:.4px;
+  text-transform:uppercase;margin-bottom:24px;
+}
+.hero h1{
+  font-size:clamp(40px,6vw,72px);font-weight:800;line-height:1.05;
+  letter-spacing:-2px;color:#fff;margin-bottom:20px;
+}
+.hero-sub{
+  font-size:18px;color:var(--text2);line-height:1.6;
+  max-width:520px;margin-bottom:36px;
+}
+.hero-actions{display:flex;align-items:center;gap:12px;margin-bottom:64px}
+.hero-stats{
+  display:flex;align-items:center;gap:0;
+  border-top:1px solid var(--border);padding-top:32px;
+}
+.stat-item{padding:0 32px;border-right:1px solid var(--border)}
+.stat-item:first-child{padding-left:0}
+.stat-item:last-child{border-right:none}
+.stat-num{font-size:28px;font-weight:800;color:#fff;letter-spacing:-1px}
+.stat-lbl{font-size:13px;color:var(--text3);margin-top:2px}
+
+/* Events */
+.events-section{padding:80px 48px}
+.section-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:36px}
+.section-title{font-size:28px;font-weight:700;letter-spacing:-.5px}
+.events-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.event-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius2);
+  overflow:hidden;transition:border-color 150ms ease, transform 150ms ease;
+}
+.event-card:hover{border-color:var(--border2);transform:translateY(-2px)}
+.event-card-img{height:140px;position:relative}
+.event-card-img-1{background:linear-gradient(135deg,#7c3aed 0%,#4f46e5 100%)}
+.event-card-img-2{background:linear-gradient(135deg,#be185d 0%,#9f1239 100%)}
+.event-card-img-3{background:linear-gradient(135deg,#0369a1 0%,#0891b2 100%)}
+.event-card-badge{
+  position:absolute;top:12px;right:12px;
+  padding:3px 8px;border-radius:4px;font-size:11px;font-weight:700;
+  background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);color:#fff;letter-spacing:.3px;
+}
+.event-card-body{padding:18px}
+.event-date{font-size:11px;font-weight:700;color:var(--primary-light);letter-spacing:.6px;text-transform:uppercase;margin-bottom:6px}
+.event-name{font-size:16px;font-weight:700;margin-bottom:4px}
+.event-venue{font-size:13px;color:var(--text2);margin-bottom:14px;display:flex;align-items:center;gap:4px}
+.event-footer{display:flex;align-items:center;justify-content:space-between}
+.event-price{font-size:18px;font-weight:700;color:#34d399}
+.event-price-lbl{font-size:11px;color:var(--text3);font-weight:400}
+
+/* VIP Section */
+.vip-section{padding:80px 48px;background:var(--surface)}
+.vip-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:40px}
+.vip-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius2);padding:28px;
+  position:relative;transition:border-color 150ms ease;
+}
+.vip-card.featured{border-color:rgba(124,58,237,0.5)}
+.vip-card.featured::before{
+  content:'Recomendado';
+  position:absolute;top:-1px;left:50%;transform:translateX(-50%);
+  background:var(--primary);color:#fff;
+  font-size:11px;font-weight:700;letter-spacing:.4px;
+  padding:3px 12px;border-radius:0 0 6px 6px;
+}
+.vip-tier{font-size:12px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);margin-bottom:8px}
+.vip-price{font-size:36px;font-weight:800;letter-spacing:-1px;margin-bottom:4px}
+.vip-price span{font-size:16px;font-weight:400;color:var(--text3)}
+.vip-desc{font-size:14px;color:var(--text2);margin-bottom:20px;line-height:1.5}
+.vip-features{list-style:none;margin-bottom:24px}
+.vip-feature{
+  display:flex;align-items:center;gap:8px;
+  padding:6px 0;font-size:14px;color:var(--text2);
+  border-bottom:1px solid var(--border);
+}
+.vip-feature:last-child{border-bottom:none}
+.check-icon{color:#34d399;flex-shrink:0}
+
+/* Map section */
+.map-section{padding:80px 48px}
+.map-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
+.map-box{
+  height:300px;background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius2);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;
+}
+.map-grid-lines{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size:40px 40px;
+}
+.map-pin-container{
+  position:relative;z-index:1;
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+}
+.map-location-label{
+  font-size:12px;font-weight:600;color:var(--text2);
+  background:var(--card);border:1px solid var(--border2);
+  padding:4px 10px;border-radius:4px;
+}
+.map-info h3{font-size:22px;font-weight:700;margin-bottom:8px}
+.map-info p{font-size:15px;color:var(--text2);line-height:1.6;margin-bottom:20px}
+.map-detail{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;font-size:14px;color:var(--text2)}
+.map-detail-icon{color:var(--primary-light);margin-top:1px}
+
+/* Footer */
+.site-footer{
+  background:var(--surface);border-top:1px solid var(--border);
+  padding:48px;
+}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:48px;margin-bottom:40px}
+.footer-brand p{font-size:14px;color:var(--text3);line-height:1.6;margin-top:10px;max-width:280px}
+.footer-col h4{font-size:13px;font-weight:600;margin-bottom:14px;color:var(--text)}
+.footer-col a{display:block;font-size:14px;color:var(--text3);margin-bottom:8px;transition:color 150ms ease}
+.footer-col a:hover{color:var(--text)}
+.footer-bottom{
+  display:flex;align-items:center;justify-content:space-between;
+  border-top:1px solid var(--border);padding-top:20px;
+}
+.footer-bottom p{font-size:13px;color:var(--text3)}
+.social-links{display:flex;gap:8px}
+.social-btn{
+  width:32px;height:32px;border-radius:50%;
+  background:rgba(255,255,255,0.06);border:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--text3);transition:all 150ms ease;
+}
+.social-btn:hover{background:rgba(255,255,255,0.1);color:var(--text)}
+
+/* ══════════════════════════════════════════
+   BOLETERIA
+══════════════════════════════════════════ */
+#boleteria .page-header{
+  padding:32px 32px 0;
+  display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;
+}
+#boleteria .page-title{font-size:24px;font-weight:700;letter-spacing:-.4px}
+#boleteria .page-sub{font-size:14px;color:var(--text2);margin-top:3px}
+.boleteria-layout{display:grid;grid-template-columns:1fr 360px;gap:24px;padding:0 32px 32px}
+.event-info-panel .card{margin-bottom:16px}
+.event-header{display:flex;gap:16px;align-items:flex-start;margin-bottom:16px}
+.event-color-block{
+  width:56px;height:56px;border-radius:8px;flex-shrink:0;
+  background:linear-gradient(135deg,#7c3aed,#4f46e5);
+}
+.event-info-name{font-size:18px;font-weight:700;letter-spacing:-.3px;margin-bottom:4px}
+.event-info-meta{font-size:13px;color:var(--text2);display:flex;gap:12px}
+.meta-item{display:flex;align-items:center;gap:4px}
+
+.tariffs-table{width:100%;border-collapse:collapse}
+.tariffs-table th{
+  font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;
+  color:var(--text3);padding:8px 0;border-bottom:1px solid var(--border);text-align:left;
+}
+.tariffs-table td{padding:12px 0;border-bottom:1px solid var(--border);font-size:14px}
+.tariffs-table tr:last-child td{border-bottom:none}
+.tariff-name{font-weight:600}
+.tariff-time{font-size:12px;color:var(--text3);margin-top:2px}
+.tariff-price{color:#34d399;font-weight:700;text-align:right}
+
+.palco-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:4px}
+.palco-item{
+  padding:12px;border:1px solid var(--border);border-radius:var(--radius);
+  cursor:pointer;transition:all 150ms ease;
+}
+.palco-item:hover,.palco-item.selected{border-color:var(--primary);background:var(--primary-dim)}
+.palco-item-name{font-size:13px;font-weight:600}
+.palco-item-cap{font-size:12px;color:var(--text3);margin-top:2px}
+.palco-item-price{font-size:14px;font-weight:700;color:#a78bfa;margin-top:6px}
+
+/* Sidebar */
+.order-sidebar .card{margin-bottom:16px}
+.order-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:8px 0;border-bottom:1px solid var(--border);font-size:14px;
+}
+.order-row:last-child{border-bottom:none}
+.order-total{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:14px 0 0;font-weight:700;font-size:16px;
+}
+.qty-control{display:flex;align-items:center;gap:8px}
+.qty-btn{
+  width:26px;height:26px;border-radius:4px;
+  background:rgba(255,255,255,0.07);border:1px solid var(--border2);
+  color:var(--text);font-size:16px;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:background 150ms ease;
+}
+.qty-btn:hover{background:rgba(255,255,255,0.12)}
+.qty-val{font-size:14px;font-weight:600;min-width:20px;text-align:center}
+
+/* ══════════════════════════════════════════
+   ADMIN DASHBOARD
+══════════════════════════════════════════ */
+#admin-dashboard{display:none}
+#admin-dashboard.active{display:flex}
+.admin-sidebar{
+  width:220px;flex-shrink:0;
+  background:var(--surface);border-right:1px solid var(--border);
+  min-height:100vh;padding-top:52px;
+  position:fixed;left:0;top:0;bottom:0;
+  display:flex;flex-direction:column;
+}
+.sidebar-logo{
+  padding:20px 20px 16px;
+  border-bottom:1px solid var(--border);
+  font-size:15px;font-weight:800;letter-spacing:-.4px;
+}
+.sidebar-logo span{color:var(--primary)}
+.sidebar-section{padding:12px 8px 4px;font-size:11px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--text3);margin-top:4px}
+.sidebar-nav{padding:8px}
+.sidebar-link{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 10px;border-radius:var(--radius);
+  font-size:14px;font-weight:500;color:var(--text2);
+  cursor:pointer;transition:all 150ms ease;margin-bottom:2px;
+  background:transparent;border:none;width:100%;text-align:left;
+}
+.sidebar-link:hover{background:rgba(255,255,255,0.06);color:var(--text)}
+.sidebar-link.active{background:rgba(124,58,237,0.18);color:#a78bfa}
+.sidebar-link svg{opacity:.7}
+.sidebar-link.active svg{opacity:1}
+.sidebar-user{
+  margin-top:auto;padding:12px;border-top:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+}
+.user-avatar{
+  width:32px;height:32px;border-radius:50%;
+  background:var(--primary-dim);border:1px solid rgba(124,58,237,0.4);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;color:#a78bfa;flex-shrink:0;
+}
+.user-name{font-size:13px;font-weight:600}
+.user-role{font-size:12px;color:var(--text3)}
+
+.admin-main{
+  margin-left:220px;flex:1;padding:32px;min-height:100vh;
+}
+.admin-greeting{margin-bottom:28px}
+.admin-greeting h1{font-size:22px;font-weight:700;letter-spacing:-.3px}
+.admin-greeting .date-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 10px;background:rgba(255,255,255,0.06);
+  border:1px solid var(--border2);border-radius:4px;
+  font-size:12px;color:var(--text3);margin-top:6px;
+}
+
+/* KPI Cards */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.kpi-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius2);padding:20px;
+}
+.kpi-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.kpi-label{font-size:13px;font-weight:500;color:var(--text3)}
+.kpi-icon{
+  width:32px;height:32px;border-radius:var(--radius);
+  display:flex;align-items:center;justify-content:center;
+}
+.kpi-icon-purple{background:rgba(124,58,237,0.15);color:#a78bfa}
+.kpi-icon-green{background:rgba(5,150,105,0.15);color:#34d399}
+.kpi-icon-blue{background:rgba(59,130,246,0.15);color:#93c5fd}
+.kpi-icon-rose{background:rgba(225,29,72,0.15);color:#fb7185}
+.kpi-value{font-size:28px;font-weight:800;letter-spacing:-1px;margin-bottom:4px}
+.kpi-delta{font-size:12px;font-weight:500}
+.kpi-delta.up{color:#34d399}
+.kpi-delta.down{color:#f87171}
+
+/* Charts row */
+.charts-row{display:grid;grid-template-columns:1fr 320px;gap:16px;margin-bottom:24px}
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius2);padding:20px}
+.chart-title{font-size:15px;font-weight:600;margin-bottom:4px}
+.chart-sub{font-size:13px;color:var(--text3);margin-bottom:20px}
+
+/* CSS Bar Chart */
+.bar-chart{display:flex;align-items:flex-end;gap:8px;height:120px}
+.bar-col{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1}
+.bar-fill{
+  width:100%;border-radius:3px 3px 0 0;
+  background:linear-gradient(to top,var(--primary),var(--primary-light));
+  transition:height 300ms ease;
+}
+.bar-fill.accent{background:linear-gradient(to top,#be185d,#e11d48)}
+.bar-lbl{font-size:11px;color:var(--text3)}
+
+/* Donut */
+.donut-container{display:flex;flex-direction:column;align-items:center;padding:8px}
+.donut-svg{width:140px;height:140px}
+.donut-legend{width:100%;margin-top:16px}
+.legend-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:6px 0;border-bottom:1px solid var(--border);font-size:13px;
+}
+.legend-item:last-child{border-bottom:none}
+.legend-dot{width:8px;height:8px;border-radius:50%;margin-right:8px;flex-shrink:0}
+.legend-name{display:flex;align-items:center;color:var(--text2)}
+.legend-val{font-weight:600}
+
+/* Admin Table */
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{
+  font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;
+  color:var(--text3);padding:10px 12px;border-bottom:1px solid var(--border);text-align:left;
+}
+.data-table td{padding:12px;border-bottom:1px solid var(--border);font-size:14px;vertical-align:middle}
+.data-table tr:last-child td{border-bottom:none}
+.data-table tr:hover td{background:rgba(255,255,255,0.02)}
+.table-name{font-weight:600}
+.table-sub{font-size:12px;color:var(--text3);margin-top:1px}
+
+/* ══════════════════════════════════════════
+   MESERO
+══════════════════════════════════════════ */
+.mesero-layout{padding:24px}
+.mesero-header-cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:24px}
+.mesero-name-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius2);padding:20px;
+  display:flex;align-items:center;gap:14px;
+}
+.mesero-avatar{
+  width:44px;height:44px;border-radius:50%;
+  background:linear-gradient(135deg,#7c3aed,#4f46e5);
+  display:flex;align-items:center;justify-content:center;
+  font-size:17px;font-weight:700;color:#fff;flex-shrink:0;
+}
+.mesero-info-name{font-size:16px;font-weight:700}
+.mesero-info-sub{font-size:13px;color:var(--text3);margin-top:2px}
+
+.tables-section{margin-bottom:24px}
+.tables-section h3{font-size:16px;font-weight:600;margin-bottom:14px}
+.tables-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.table-tile{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius2);padding:16px;
+  cursor:pointer;transition:all 150ms ease;
+}
+.table-tile:hover{border-color:var(--border2)}
+.table-tile.occupied{border-color:rgba(124,58,237,0.4);background:rgba(124,58,237,0.06)}
+.table-tile.vip-table{border-color:rgba(217,119,6,0.4);background:rgba(217,119,6,0.06)}
+.table-tile.free{opacity:.6}
+.table-num{font-size:20px;font-weight:800;letter-spacing:-1px}
+.table-status{font-size:11px;font-weight:600;margin-top:4px;letter-spacing:.3px}
+.table-amount{font-size:14px;font-weight:700;color:#34d399;margin-top:6px}
+
+.orders-list-section h3{font-size:16px;font-weight:600;margin-bottom:14px}
+.order-item-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);margin-bottom:8px;
+  transition:border-color 150ms ease;
+}
+.order-item-row:hover{border-color:var(--border2)}
+.order-item-left{display:flex;align-items:center;gap:12px}
+.order-table-badge{
+  width:36px;height:36px;border-radius:var(--radius);
+  background:var(--primary-dim);color:#a78bfa;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;flex-shrink:0;
+}
+.order-item-name{font-size:14px;font-weight:600}
+.order-item-time{font-size:12px;color:var(--text3);margin-top:2px}
+.order-item-right{display:flex;align-items:center;gap:12px}
+.order-item-total{font-size:15px;font-weight:700}
+
+/* ══════════════════════════════════════════
+   PORTERO
+══════════════════════════════════════════ */
+.portero-layout{padding:32px;max-width:800px;margin:0 auto}
+.portero-header{text-align:center;margin-bottom:36px}
+.portero-header h1{font-size:26px;font-weight:700;letter-spacing:-.4px;margin-bottom:4px}
+.portero-header p{color:var(--text2);font-size:15px}
+
+.scanner-box{
+  background:var(--card);border:2px dashed var(--border2);
+  border-radius:var(--radius2);
+  height:220px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:16px;margin-bottom:28px;position:relative;overflow:hidden;
+}
+.scan-line{
+  position:absolute;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--primary),transparent);
+  animation:scan 2.5s ease-in-out infinite;
+  top:20%;
+}
+@keyframes scan{
+  0%{top:20%;opacity:0}
+  10%{opacity:1}
+  90%{opacity:1}
+  100%{top:80%;opacity:0}
+}
+.qr-svg-icon{opacity:.4}
+.scanner-label{font-size:14px;color:var(--text3);font-weight:500}
+
+.result-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:28px}
+.result-card{
+  padding:18px;border-radius:var(--radius2);border:1px solid;
+}
+.result-card.approved{
+  background:rgba(5,150,105,0.1);border-color:rgba(5,150,105,0.3);
+}
+.result-card.rejected{
+  background:rgba(220,38,38,0.1);border-color:rgba(220,38,38,0.3);
+}
+.result-card-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.result-icon-ok{color:#34d399}
+.result-icon-fail{color:#f87171}
+.result-card-title{font-size:15px;font-weight:700}
+.result-card-detail{font-size:13px;color:var(--text2);line-height:1.5}
+.result-card-detail strong{color:var(--text);font-weight:600}
+
+.portero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.portero-stat{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius2);padding:16px;text-align:center;
+}
+.portero-stat-num{font-size:28px;font-weight:800;letter-spacing:-1px}
+.portero-stat-lbl{font-size:12px;color:var(--text3);margin-top:2px}
+
+/* ══════════════════════════════════════════
+   INVENTARIO
+══════════════════════════════════════════ */
+.inventario-layout{padding:24px}
+.alert-bar{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 16px;background:rgba(220,38,38,0.1);
+  border:1px solid rgba(220,38,38,0.25);border-radius:var(--radius);
+  font-size:14px;color:#fca5a5;margin-bottom:24px;
+}
+.alert-bar strong{color:#f87171;font-weight:600}
+
+.inv-kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.inv-kpi{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius2);padding:16px;
+}
+.inv-kpi-val{font-size:24px;font-weight:800;letter-spacing:-.8px}
+.inv-kpi-lbl{font-size:12px;color:var(--text3);margin-top:3px}
+
+.inv-bars-section{margin-bottom:24px}
+.inv-bar-row{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 0;border-bottom:1px solid var(--border);
+}
+.inv-bar-row:last-child{border-bottom:none}
+.inv-bar-name{width:160px;font-size:13px;font-weight:500;flex-shrink:0}
+.inv-bar-track{flex:1;height:6px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden}
+.inv-bar-fill{height:100%;border-radius:3px;transition:width 300ms ease}
+.inv-bar-fill.ok{background:var(--success)}
+.inv-bar-fill.warn{background:var(--warning)}
+.inv-bar-fill.crit{background:var(--danger)}
+.inv-bar-qty{width:80px;text-align:right;font-size:13px;font-weight:600}
+
+.stock-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.stock-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius2);padding:16px;
+}
+.stock-card-name{font-size:13px;font-weight:600;margin-bottom:4px}
+.stock-card-cat{font-size:12px;color:var(--text3);margin-bottom:12px}
+.stock-card-num{font-size:26px;font-weight:800;letter-spacing:-1px;margin-bottom:4px}
+.stock-card-unit{font-size:12px;color:var(--text3)}
+.stock-progress{height:4px;background:rgba(255,255,255,0.07);border-radius:2px;margin-top:12px;overflow:hidden}
+.stock-progress-fill{height:100%;border-radius:2px}
+
+/* ══════════════════════════════════════════
+   CARTA DIGITAL
+══════════════════════════════════════════ */
+.carta-layout{padding:24px;max-width:700px;margin:0 auto}
+.carta-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:28px;
+}
+.carta-title-area h1{font-size:24px;font-weight:800;letter-spacing:-.4px}
+.carta-title-area p{font-size:14px;color:var(--text2);margin-top:3px}
+.mesa-tag{
+  padding:6px 14px;background:var(--primary-dim);
+  border:1px solid rgba(124,58,237,0.35);
+  border-radius:var(--radius);font-size:14px;font-weight:700;color:#a78bfa;
+}
+
+.carta-category{margin-bottom:32px}
+.category-label{
+  font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;
+  color:var(--primary-light);margin-bottom:14px;
+  padding-bottom:8px;border-bottom:1px solid var(--border);
+}
+.menu-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 0;border-bottom:1px solid var(--border);
+}
+.menu-item:last-child{border-bottom:none}
+.menu-item-text{flex:1;padding-right:16px}
+.menu-item-name{font-size:15px;font-weight:600;margin-bottom:3px}
+.menu-item-desc{font-size:13px;color:var(--text3);line-height:1.4}
+.menu-item-right{display:flex;align-items:center;gap:14px;flex-shrink:0}
+.menu-item-price{font-size:15px;font-weight:700;color:#34d399}
+.add-btn{
+  width:28px;height:28px;border-radius:4px;
+  background:var(--primary);color:#fff;
+  border:none;cursor:pointer;font-size:18px;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  transition:background 150ms ease;
+}
+.add-btn:hover{background:var(--primary-light)}
+
+.carta-footer{
+  margin-top:24px;padding-top:20px;border-top:1px solid var(--border);
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+}
+.payment-tag{
+  padding:4px 10px;border:1px solid var(--border2);
+  border-radius:4px;font-size:12px;color:var(--text3);
+  background:rgba(255,255,255,0.04);
+}
+
+/* ══════════════════════════════════════════
+   AI CHAT WIDGET
+══════════════════════════════════════════ */
+.chat-widget{position:fixed;bottom:24px;right:24px;z-index:500}
+.chat-toggle{
+  width:44px;height:44px;border-radius:8px;
+  background:var(--primary);color:#fff;
+  border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 20px rgba(124,58,237,0.4);
+  transition:all 150ms ease;
+}
+.chat-toggle:hover{background:var(--primary-light);transform:translateY(-2px)}
+.chat-panel{
+  position:absolute;bottom:56px;right:0;
+  width:300px;
+  background:var(--card);border:1px solid var(--border2);
+  border-radius:var(--radius2);
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  display:none;flex-direction:column;overflow:hidden;
+}
+.chat-panel.open{display:flex}
+.chat-panel-header{
+  padding:14px 16px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.chat-panel-title{font-size:14px;font-weight:600}
+.chat-panel-sub{font-size:12px;color:var(--text3);margin-top:1px}
+.chat-close{
+  background:none;border:none;color:var(--text3);
+  cursor:pointer;padding:2px;transition:color 150ms ease;
+}
+.chat-close:hover{color:var(--text)}
+.chat-messages{
+  padding:16px;height:200px;overflow-y:auto;
+  display:flex;flex-direction:column;gap:10px;
+}
+.chat-msg{
+  max-width:85%;padding:8px 12px;border-radius:8px;font-size:13px;line-height:1.4;
+}
+.chat-msg.bot{background:rgba(255,255,255,0.07);color:var(--text);align-self:flex-start}
+.chat-msg.user{background:var(--primary);color:#fff;align-self:flex-end}
+.chat-input-row{
+  padding:12px;border-top:1px solid var(--border);
+  display:flex;gap:8px;align-items:center;
+}
+.chat-input{
+  flex:1;background:rgba(255,255,255,0.06);border:1px solid var(--border2);
+  border-radius:var(--radius);color:var(--text);
+  padding:7px 10px;font-size:13px;outline:none;
+  transition:border-color 150ms ease;
+}
+.chat-input:focus{border-color:var(--primary)}
+.chat-send{
+  width:30px;height:30px;border-radius:var(--radius);
+  background:var(--primary);color:#fff;border:none;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:background 150ms ease;
+}
+.chat-send:hover{background:var(--primary-light)}
+</style>
+</head>
+<body>
+
+<!-- ─── SVG Symbol Defs ─────────────────────────────────── -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="ico-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+  </symbol>
+  <symbol id="ico-map-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+    <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+  </symbol>
+  <symbol id="ico-ticket" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>
+  </symbol>
+  <symbol id="ico-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+  </symbol>
+  <symbol id="ico-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+  </symbol>
+  <symbol id="ico-currency" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+  </symbol>
+  <symbol id="ico-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M5 13l4 4L19 7"/>
+  </symbol>
+  <symbol id="ico-xcircle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+  </symbol>
+  <symbol id="ico-package" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+  </symbol>
+  <symbol id="ico-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+  </symbol>
+  <symbol id="ico-arrow-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+  </symbol>
+  <symbol id="ico-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 6h16M4 12h16M4 18h16"/>
+  </symbol>
+  <symbol id="ico-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+  </symbol>
+</svg>
+
+<!-- ─── Top Nav (non-landing) ───────────────────────────── -->
+<nav class="top-nav" id="app-nav" style="display:none">
+  <span class="nav-logo">SKPAT<span>VIP</span></span>
+  <div class="nav-tabs">
+    <button class="nav-tab" onclick="show('boleteria')">Boleteria</button>
+    <button class="nav-tab" onclick="show('admin-dashboard')">Admin</button>
+    <button class="nav-tab" onclick="show('mesero')">Mesero</button>
+    <button class="nav-tab" onclick="show('portero')">Portero</button>
+    <button class="nav-tab" onclick="show('inventario')">Inventario</button>
+    <button class="nav-tab" onclick="show('carta')">Carta Digital</button>
+    <button class="nav-tab" onclick="show('landing')" style="margin-left:auto;color:var(--text3)">Ver Landing</button>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════
+     SCREEN 1 — LANDING
+══════════════════════════════════════════════════════ -->
+<div id="landing" class="screen active">
+
+  <!-- Site Nav -->
+  <nav class="site-nav">
+    <div class="site-nav-logo">SKPAT<span>VIP</span></div>
+    <div class="site-nav-links">
+      <a href="#">Eventos</a>
+      <a href="#">Palcos</a>
+      <a href="#">Contacto</a>
+    </div>
+    <button class="site-nav-cta" onclick="show('boleteria')">Comprar tiquetes</button>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero" style="padding-top:140px">
+    <div class="hero-blob"></div>
+    <div class="hero-content">
+      <div class="hero-eyebrow">
+        <svg width="12" height="12"><use href="#ico-ticket"/></svg>
+        Plataforma de experiencias VIP
+      </div>
+      <h1>La noche que no olvidaras.</h1>
+      <p class="hero-sub">Acceso exclusivo a los eventos mas importantes de la ciudad. Palcos privados, servicio de primera y tecnologia de punta.</p>
+      <div class="hero-actions">
+        <button class="btn btn-primary" onclick="show('boleteria')">
+          Comprar tiquetes
+          <svg width="16" height="16"><use href="#ico-arrow-right"/></svg>
+        </button>
+        <button class="btn btn-outline">Ver eventos</button>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <div class="stat-num">240+</div>
+          <div class="stat-lbl">Eventos realizados</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">18K</div>
+          <div class="stat-lbl">Asistentes anuales</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">96%</div>
+          <div class="stat-lbl">Satisfaccion</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">34</div>
+          <div class="stat-lbl">Palcos VIP</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Events Section -->
+  <section class="events-section">
+    <div class="section-header">
+      <div>
+        <p class="section-label">Proximos eventos</p>
+        <h2 class="section-title">Agenda</h2>
+      </div>
+      <button class="btn btn-outline btn-sm">Ver todos</button>
+    </div>
+    <div class="events-grid">
+      <!-- Card 1 -->
+      <div class="event-card">
+        <div class="event-card-img event-card-img-1">
+          <span class="event-card-badge">Disponible</span>
+        </div>
+        <div class="event-card-body">
+          <div class="event-date">23 MAY — 2026</div>
+          <div class="event-name">Noche Electronica Vol. 12</div>
+          <div class="event-venue">
+            <svg width="13" height="13"><use href="#ico-map-pin"/></svg>
+            Teatro Metropol, Bogota
+          </div>
+          <div class="event-footer">
+            <div>
+              <div class="event-price">$85.000 <span class="event-price-lbl">COP</span></div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="show('boleteria')">Comprar</button>
+          </div>
+        </div>
+      </div>
+      <!-- Card 2 -->
+      <div class="event-card">
+        <div class="event-card-img event-card-img-2">
+          <span class="event-card-badge" style="background:rgba(225,29,72,0.7)">Ultimos cupos</span>
+        </div>
+        <div class="event-card-body">
+          <div class="event-date">07 JUN — 2026</div>
+          <div class="event-name">Salsa &amp; Champeta All Stars</div>
+          <div class="event-venue">
+            <svg width="13" height="13"><use href="#ico-map-pin"/></svg>
+            Plaza Mayor, Medellin
+          </div>
+          <div class="event-footer">
+            <div>
+              <div class="event-price">$65.000 <span class="event-price-lbl">COP</span></div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="show('boleteria')">Comprar</button>
+          </div>
+        </div>
+      </div>
+      <!-- Card 3 -->
+      <div class="event-card">
+        <div class="event-card-img event-card-img-3">
+          <span class="event-card-badge">Proximamente</span>
+        </div>
+        <div class="event-card-body">
+          <div class="event-date">19 JUL — 2026</div>
+          <div class="event-name">Jazz Under the Stars</div>
+          <div class="event-venue">
+            <svg width="13" height="13"><use href="#ico-map-pin"/></svg>
+            Auditorio Nacional, Cali
+          </div>
+          <div class="event-footer">
+            <div>
+              <div class="event-price">$120.000 <span class="event-price-lbl">COP</span></div>
+            </div>
+            <button class="btn btn-outline btn-sm">Notificarme</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIP Section -->
+  <section class="vip-section">
+    <div style="max-width:1100px;margin:0 auto">
+      <p class="section-label" style="text-align:center">Experiencia VIP</p>
+      <h2 class="section-title" style="text-align:center;font-size:32px">Elige tu nivel de acceso</h2>
+      <div class="vip-grid">
+        <!-- Standard -->
+        <div class="vip-card">
+          <div class="vip-tier">Standard</div>
+          <div class="vip-price">$85.000 <span>/ persona</span></div>
+          <div class="vip-desc">Acceso general al evento con todas las amenidades basicas incluidas.</div>
+          <ul class="vip-features">
+            <li class="vip-feature"><svg class="check-icon" width="14" height="14"><use href="#ico-check"/></svg>Entrada al recinto</li>
+            <li class="vip-feature"><svg class="check-icon" width="14" height="14"><use href="#ico-check"/></svg>Area de pista</li>
+            <li class="vip-feature"><svg class="check-icon" width="14" height="14"><use href="#ico-check"/></svg>Consumicion minima $30K</li>
+            <li class="vip-feature"><svg class="check-icon" width="14" height="14"><use href="#ico-check"/></svg>Acceso a barra principal</li>
+          </ul>
+          <button class="btn btn-outline" style="width:100%;justify-content:center" onclick="show('boleteria')">Seleccionar</button>
+        </div>
+        <!-- VIP (featured) -->
+        <div class="vip-card featured">
+          <div class="vip-tier" style="color:#a78bfa">VIP</div>
+          <div class="vip-price" style="color:#a78bfa">$185.000 <span>/ persona</span></div>
+          <div class="vip-desc">Experiencia premium con acceso a zona exclusiva y servicio dedicado.</div>
+          <ul class="vip-features">
+            <li class="vip-feature"><svg class="check-icon" width="14" height="14"><use href="#ico-check"/></svg>Todo lo de Standard</li>
+            <li class="vip-feature"><svg class="check-icon" width="14" height="14"><use href="#ico-check"/></svg>Zona VIP privada</li>
+            <li class="vip-feature"><svg class="check-icon" width="14" height="14"><use href="#ico-check"/></svg>Consumicion libre 3h</li>
+            <li class="vip-feature"><svg class="check-icon" width="14" height="14"><use href="#ico-check"/></svg>Mesero dedicado</li>
+            <li class="vip-feature"><svg class="check-icon" width="14" height="14"><use href="#ico-check"/></svg>Meet &amp; Greet artistas</li>
+          </ul>
+          <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="show('boleteria')">Seleccionar</button>
+        </div>
+        <!-- Palco -->
+        <div class="vip-card">
+          <div class="vip-tier">Palco Privado</div>
+          <div class="vip-price">$980.000 <span>/ palco</span></div>
+          <div class="vip-desc">Palco exclusivo para grupos. Maximo 10 personas con servicio total.</div>
+          <ul class="vip-features">
+            <li class="vip-feature"><svg class="check-icon" width="14" height="14"><use href="#ico-check"/></svg>Todo lo de VIP x10</li>
+            <li class="vip-feature"><svg class="check-icon" width="14" height="14"><use href="#ico-check"/></svg>Palco privado con vista</li>
+            <li class="vip-feature"><svg class="check-icon" width="14" height="14"><use href="#ico-check"/></svg>Botella premium incluida</li>
+            <li class="vip-feature"><svg class="check-icon" width="14" height="14"><use href="#ico-check"/></svg>Acceso backstage</li>
+            <li class="vip-feature"><svg class="check-icon" width="14" height="14"><use href="#ico-check"/></svg>Host personal</li>
+          </ul>
+          <button class="btn btn-outline" style="width:100%;justify-content:center" onclick="show('boleteria')">Reservar palco</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Map Section -->
+  <section class="map-section">
+    <div class="map-grid">
+      <div class="map-box">
+        <div class="map-grid-lines"></div>
+        <div class="map-pin-container">
+          <svg width="36" height="36" color="#7c3aed"><use href="#ico-map-pin"/></svg>
+          <div class="map-location-label">Teatro Metropol</div>
+        </div>
+      </div>
+      <div class="map-info">
+        <p class="section-label">Ubicacion</p>
+        <h3>Como llegarnos</h3>
+        <p>Centralmente ubicados en el corazon de la ciudad, con facil acceso en transporte publico y parqueadero privado para invitados VIP.</p>
+        <div class="map-detail">
+          <svg class="map-detail-icon" width="16" height="16"><use href="#ico-map-pin"/></svg>
+          <span>Cra 7 No. 32-16, Teatro Metropol, Bogota D.C.</span>
+        </div>
+        <div class="map-detail">
+          <svg class="map-detail-icon" width="16" height="16"><use href="#ico-calendar"/></svg>
+          <span>Eventos viernes y sabados — Puertas 8:00 PM</span>
+        </div>
+        <div class="map-detail">
+          <svg class="map-detail-icon" width="16" height="16"><use href="#ico-users"/></svg>
+          <span>Parqueadero VIP disponible con reserva anticipada</span>
+        </div>
+        <button class="btn btn-primary" style="margin-top:8px">Ver mapa completo</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div style="font-size:16px;font-weight:800;letter-spacing:-.4px">SKPAT<span style="color:var(--primary)">VIP</span></div>
+        <p>La plataforma de gestion de eventos y experiencias VIP mas completa de Colombia. Tecnologia al servicio del entretenimiento.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Plataforma</h4>
+        <a href="#">Eventos</a>
+        <a href="#">Palcos VIP</a>
+        <a href="#">Tiquetes</a>
+        <a href="#">Carta Digital</a>
+      </div>
+      <div class="footer-col">
+        <h4>Empresa</h4>
+        <a href="#">Nosotros</a>
+        <a href="#">Contacto</a>
+        <a href="#">Terminos</a>
+        <a href="#">Privacidad</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 Skpat VIP. Todos los derechos reservados.</p>
+      <div class="social-links">
+        <a class="social-btn" href="#">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M24 4.557a9.83 9.83 0 01-2.828.775 4.932 4.932 0 002.165-2.724 9.864 9.864 0 01-3.127 1.195 4.916 4.916 0 00-8.384 4.482C7.691 8.094 4.066 6.13 1.64 3.161a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.061a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.937 4.937 0 004.604 3.417 9.868 9.868 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.054 0 13.999-7.496 13.999-13.986 0-.209 0-.42-.015-.63a9.936 9.936 0 002.46-2.548l-.047-.02z"/></svg>
+        </a>
+        <a class="social-btn" href="#">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+        </a>
+        <a class="social-btn" href="#">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+        </a>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     SCREEN 2 — BOLETERIA
+══════════════════════════════════════════════════════ -->
+<div id="boleteria" class="screen page">
+  <div id="boleteria" style="all:unset;display:block"><!-- reset nested id --></div>
+  <div style="padding:32px">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px">
+      <div>
+        <h1 style="font-size:24px;font-weight:700;letter-spacing:-.4px">Comprar tiquetes</h1>
+        <p style="font-size:14px;color:var(--text2);margin-top:3px">Selecciona tu evento y tipo de acceso</p>
+      </div>
+      <span class="badge badge-purple">3 eventos disponibles</span>
+    </div>
+    <div class="boleteria-layout" style="padding:0">
+      <!-- Left panel -->
+      <div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="event-header">
+            <div class="event-color-block"></div>
+            <div>
+              <div class="event-info-name">Noche Electronica Vol. 12</div>
+              <div class="event-info-meta">
+                <span class="meta-item"><svg width="13" height="13"><use href="#ico-calendar"/></svg> 23 Mayo, 2026</span>
+                <span class="meta-item"><svg width="13" height="13"><use href="#ico-map-pin"/></svg> Teatro Metropol</span>
+              </div>
+            </div>
+          </div>
+          <div class="divider"></div>
+          <p class="section-label">Tarifas por horario</p>
+          <table class="tariffs-table">
+            <thead>
+              <tr><th>Tipo</th><th>Horario</th><th style="text-align:right">Precio</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><div class="tariff-name">Madrugada</div></td>
+                <td><div class="tariff-time">12:00 AM — 3:00 AM</div></td>
+                <td class="tariff-price">$45.000</td>
+              </tr>
+              <tr>
+                <td><div class="tariff-name">General</div></td>
+                <td><div class="tariff-time">8:00 PM — 12:00 AM</div></td>
+                <td class="tariff-price">$85.000</td>
+              </tr>
+              <tr>
+                <td><div class="tariff-name">VIP</div></td>
+                <td><div class="tariff-time">Desde 8:00 PM</div></td>
+                <td class="tariff-price">$185.000</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <p class="section-label">Palcos disponibles</p>
+          <div class="palco-grid">
+            <div class="palco-item selected">
+              <div class="palco-item-name">Palco A — Vista Central</div>
+              <div class="palco-item-cap">Hasta 10 personas</div>
+              <div class="palco-item-price">$980.000</div>
+            </div>
+            <div class="palco-item">
+              <div class="palco-item-name">Palco B — Lateral</div>
+              <div class="palco-item-cap">Hasta 8 personas</div>
+              <div class="palco-item-price">$750.000</div>
+            </div>
+            <div class="palco-item">
+              <div class="palco-item-name">Palco C — Premium</div>
+              <div class="palco-item-cap">Hasta 12 personas</div>
+              <div class="palco-item-price">$1.250.000</div>
+            </div>
+            <div class="palco-item" style="opacity:.45;cursor:not-allowed">
+              <div class="palco-item-name">Palco D — Agotado</div>
+              <div class="palco-item-cap">Hasta 6 personas</div>
+              <div class="palco-item-price" style="color:var(--text3)">No disponible</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right sidebar -->
+      <div>
+        <div class="card" style="margin-bottom:16px">
+          <p class="section-label">Tus datos</p>
+          <div class="field"><label>Nombre completo</label><input type="text" placeholder="Carlos Restrepo"/></div>
+          <div class="field"><label>Correo electronico</label><input type="email" placeholder="carlos@email.com"/></div>
+          <div class="field"><label>Celular</label><input type="tel" placeholder="+57 300 000 0000"/></div>
+          <div class="field">
+            <label>Tipo de documento</label>
+            <select><option>Cedula de ciudadania</option><option>Pasaporte</option><option>Cedula extranjeria</option></select>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:16px">
+          <p class="section-label">Resumen del pedido</p>
+          <div class="order-row">
+            <span style="color:var(--text2)">Tiquete VIP x 2</span>
+            <div class="qty-control">
+              <button class="qty-btn">-</button>
+              <span class="qty-val">2</span>
+              <button class="qty-btn">+</button>
+            </div>
+          </div>
+          <div class="order-row"><span style="color:var(--text2)">Subtotal</span><span>$370.000</span></div>
+          <div class="order-row"><span style="color:var(--text2)">Cargo por servicio (5%)</span><span>$18.500</span></div>
+          <div class="order-total"><span>Total</span><span style="color:#34d399">$388.500</span></div>
+        </div>
+
+        <button class="btn btn-primary" style="width:100%;justify-content:center;padding:13px;font-size:15px;font-weight:600">
+          Proceder al pago
+          <svg width="16" height="16"><use href="#ico-arrow-right"/></svg>
+        </button>
+        <p style="font-size:12px;color:var(--text3);text-align:center;margin-top:10px">Pago seguro. SSL 256-bit.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     SCREEN 3 — ADMIN DASHBOARD
+══════════════════════════════════════════════════════ -->
+<div id="admin-dashboard" class="screen page" style="display:none">
+  <aside class="admin-sidebar">
+    <div class="sidebar-logo">SKPAT<span>VIP</span></div>
+    <div class="sidebar-nav" style="padding-top:16px">
+      <div class="sidebar-section">Principal</div>
+      <button class="sidebar-link active">
+        <svg width="16" height="16"><use href="#ico-chart"/></svg> Panel general
+      </button>
+      <button class="sidebar-link">
+        <svg width="16" height="16"><use href="#ico-ticket"/></svg> Eventos
+      </button>
+      <button class="sidebar-link">
+        <svg width="16" height="16"><use href="#ico-users"/></svg> Usuarios
+      </button>
+      <button class="sidebar-link">
+        <svg width="16" height="16"><use href="#ico-currency"/></svg> Finanzas
+      </button>
+      <div class="sidebar-section">Operaciones</div>
+      <button class="sidebar-link" onclick="show('inventario')">
+        <svg width="16" height="16"><use href="#ico-package"/></svg> Inventario
+      </button>
+      <button class="sidebar-link" onclick="show('mesero')">
+        <svg width="16" height="16"><use href="#ico-menu"/></svg> Meseros
+      </button>
+      <button class="sidebar-link" onclick="show('portero')">
+        <svg width="16" height="16"><use href="#ico-check"/></svg> Portero
+      </button>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-avatar">AR</div>
+      <div>
+        <div class="user-name">Admin Root</div>
+        <div class="user-role">Superadmin</div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-greeting">
+      <h1>Panel de Administracion</h1>
+      <div class="date-chip">
+        <svg width="12" height="12"><use href="#ico-calendar"/></svg>
+        Jueves, 14 de Mayo 2026
+      </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-label">Ingresos del mes</span>
+          <div class="kpi-icon kpi-icon-green"><svg width="16" height="16"><use href="#ico-currency"/></svg></div>
+        </div>
+        <div class="kpi-value">$48.3M</div>
+        <div class="kpi-delta up">+12.4% vs mes anterior</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-label">Tiquetes vendidos</span>
+          <div class="kpi-icon kpi-icon-purple"><svg width="16" height="16"><use href="#ico-ticket"/></svg></div>
+        </div>
+        <div class="kpi-value">1,847</div>
+        <div class="kpi-delta up">+8.1% vs mes anterior</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-label">Asistentes hoy</span>
+          <div class="kpi-icon kpi-icon-blue"><svg width="16" height="16"><use href="#ico-users"/></svg></div>
+        </div>
+        <div class="kpi-value">342</div>
+        <div class="kpi-delta down">-3.2% vs sabado pasado</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-label">Palcos activos</span>
+          <div class="kpi-icon kpi-icon-rose"><svg width="16" height="16"><use href="#ico-chart"/></svg></div>
+        </div>
+        <div class="kpi-value">28</div>
+        <div class="kpi-delta up">+4 vs semana pasada</div>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-title">Ventas semanales</div>
+        <div class="chart-sub">Comparativo de tiquetes vs ingresos</div>
+        <div class="bar-chart">
+          <div class="bar-col"><div class="bar-fill" style="height:60%"></div><div class="bar-lbl">L</div></div>
+          <div class="bar-col"><div class="bar-fill" style="height:75%"></div><div class="bar-lbl">M</div></div>
+          <div class="bar-col"><div class="bar-fill" style="height:45%"></div><div class="bar-lbl">X</div></div>
+          <div class="bar-col"><div class="bar-fill" style="height:90%"></div><div class="bar-lbl">J</div></div>
+          <div class="bar-col"><div class="bar-fill accent" style="height:100%"></div><div class="bar-lbl">V</div></div>
+          <div class="bar-col"><div class="bar-fill accent" style="height:95%"></div><div class="bar-lbl">S</div></div>
+          <div class="bar-col"><div class="bar-fill" style="height:55%"></div><div class="bar-lbl">D</div></div>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Distribucion de ventas</div>
+        <div class="chart-sub">Por tipo de tiquete</div>
+        <div class="donut-container">
+          <svg class="donut-svg" viewBox="0 0 120 120">
+            <circle cx="60" cy="60" r="45" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="16"/>
+            <circle cx="60" cy="60" r="45" fill="none" stroke="#7c3aed" stroke-width="16"
+              stroke-dasharray="113 170" stroke-dashoffset="0" stroke-linecap="butt" transform="rotate(-90 60 60)"/>
+            <circle cx="60" cy="60" r="45" fill="none" stroke="#059669" stroke-width="16"
+              stroke-dasharray="68 215" stroke-dashoffset="-113" stroke-linecap="butt" transform="rotate(-90 60 60)"/>
+            <circle cx="60" cy="60" r="45" fill="none" stroke="#d97706" stroke-width="16"
+              stroke-dasharray="42 241" stroke-dashoffset="-181" stroke-linecap="butt" transform="rotate(-90 60 60)"/>
+            <text x="60" y="64" text-anchor="middle" fill="#f4f4f5" font-size="14" font-weight="700" font-family="Inter">1,847</text>
+          </svg>
+          <div class="donut-legend">
+            <div class="legend-item">
+              <span class="legend-name"><span class="legend-dot" style="background:#7c3aed"></span>VIP</span>
+              <span class="legend-val">40%</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-name"><span class="legend-dot" style="background:#059669"></span>General</span>
+              <span class="legend-val">25%</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-name"><span class="legend-dot" style="background:#d97706"></span>Palco</span>
+              <span class="legend-val">15%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Staff Table -->
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div>
+          <div style="font-size:15px;font-weight:600">Personal en turno</div>
+          <div style="font-size:13px;color:var(--text3);margin-top:2px">Turno nocturno — Hoy</div>
+        </div>
+        <button class="btn btn-outline btn-sm">Ver todos</button>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Nombre</th><th>Rol</th><th>Zona asignada</th><th>Ventas</th><th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><div class="table-name">Laura Mendez</div><div class="table-sub">ID #1042</div></td>
+            <td>Mesera</td><td>Zona VIP</td><td>$420.000</td>
+            <td><span class="badge badge-success">Activo</span></td>
+          </tr>
+          <tr>
+            <td><div class="table-name">Andres Torres</div><div class="table-sub">ID #1038</div></td>
+            <td>Bartender</td><td>Barra principal</td><td>$310.000</td>
+            <td><span class="badge badge-success">Activo</span></td>
+          </tr>
+          <tr>
+            <td><div class="table-name">Sofia Ruiz</div><div class="table-sub">ID #1055</div></td>
+            <td>Mesera</td><td>Palcos A-D</td><td>$580.000</td>
+            <td><span class="badge badge-warning">Descanso</span></td>
+          </tr>
+          <tr>
+            <td><div class="table-name">Miguel Castro</div><div class="table-sub">ID #1061</div></td>
+            <td>Portero</td><td>Entrada principal</td><td>—</td>
+            <td><span class="badge badge-success">Activo</span></td>
+          </tr>
+          <tr>
+            <td><div class="table-name">Valentina Gil</div><div class="table-sub">ID #1049</div></td>
+            <td>Host VIP</td><td>Zona VIP</td><td>$720.000</td>
+            <td><span class="badge badge-purple">VIP</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     SCREEN 4 — MESERO
+══════════════════════════════════════════════════════ -->
+<div id="mesero" class="screen page">
+  <div class="mesero-layout">
+    <!-- Header -->
+    <div class="mesero-header-cards">
+      <div class="mesero-name-card">
+        <div class="mesero-avatar">LM</div>
+        <div>
+          <div class="mesero-info-name">Laura Mendez</div>
+          <div class="mesero-info-sub">Turno nocturno — Zona VIP</div>
+        </div>
+      </div>
+      <div class="card" style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:12px;color:var(--text3);font-weight:500;text-transform:uppercase;letter-spacing:.5px">Ventas hoy</div>
+          <div style="font-size:26px;font-weight:800;letter-spacing:-1px;color:#34d399">$420.000</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px">14 ordenes atendidas</div>
+        </div>
+        <div style="width:40px;height:40px;border-radius:8px;background:rgba(5,150,105,0.15);display:flex;align-items:center;justify-content:center;color:#34d399">
+          <svg width="20" height="20"><use href="#ico-currency"/></svg>
+        </div>
+      </div>
+      <div class="card" style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:12px;color:var(--text3);font-weight:500;text-transform:uppercase;letter-spacing:.5px">Inicio turno</div>
+          <div style="font-size:22px;font-weight:800;letter-spacing:-.5px">8:00 PM</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px">4h 23m en turno</div>
+        </div>
+        <div style="width:40px;height:40px;border-radius:8px;background:rgba(124,58,237,0.15);display:flex;align-items:center;justify-content:center;color:#a78bfa">
+          <svg width="20" height="20"><use href="#ico-calendar"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tables Grid -->
+    <div class="tables-section">
+      <h3>Mesas asignadas</h3>
+      <div class="tables-grid">
+        <div class="table-tile occupied">
+          <div class="table-num">01</div>
+          <div class="table-status" style="color:#a78bfa">Ocupada</div>
+          <div class="table-amount">$145.000</div>
+        </div>
+        <div class="table-tile free">
+          <div class="table-num">02</div>
+          <div class="table-status" style="color:var(--text3)">Libre</div>
+          <div class="table-amount" style="color:var(--text3)">—</div>
+        </div>
+        <div class="table-tile vip-table">
+          <div class="table-num">03</div>
+          <div class="table-status" style="color:#fbbf24">VIP</div>
+          <div class="table-amount">$580.000</div>
+        </div>
+        <div class="table-tile occupied">
+          <div class="table-num">04</div>
+          <div class="table-status" style="color:#a78bfa">Ocupada</div>
+          <div class="table-amount">$98.000</div>
+        </div>
+        <div class="table-tile free">
+          <div class="table-num">05</div>
+          <div class="table-status" style="color:var(--text3)">Libre</div>
+          <div class="table-amount" style="color:var(--text3)">—</div>
+        </div>
+        <div class="table-tile occupied">
+          <div class="table-num">06</div>
+          <div class="table-status" style="color:#a78bfa">Ocupada</div>
+          <div class="table-amount">$210.000</div>
+        </div>
+        <div class="table-tile free">
+          <div class="table-num">07</div>
+          <div class="table-status" style="color:var(--text3)">Libre</div>
+          <div class="table-amount" style="color:var(--text3)">—</div>
+        </div>
+        <div class="table-tile vip-table">
+          <div class="table-num">08</div>
+          <div class="table-status" style="color:#fbbf24">VIP</div>
+          <div class="table-amount">$340.000</div>
+        </div>
+        <div class="table-tile occupied">
+          <div class="table-num">09</div>
+          <div class="table-status" style="color:#a78bfa">Ocupada</div>
+          <div class="table-amount">$75.000</div>
+        </div>
+        <div class="table-tile free">
+          <div class="table-num">10</div>
+          <div class="table-status" style="color:var(--text3)">Libre</div>
+          <div class="table-amount" style="color:var(--text3)">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Orders List -->
+    <div class="orders-list-section">
+      <h3>Ordenes activas</h3>
+      <div class="order-item-row">
+        <div class="order-item-left">
+          <div class="order-table-badge">M01</div>
+          <div>
+            <div class="order-item-name">2x Aguardiente — 1x Botella Vodka Premium</div>
+            <div class="order-item-time">Hace 8 minutos</div>
+          </div>
+        </div>
+        <div class="order-item-right">
+          <div class="order-item-total">$145.000</div>
+          <span class="badge badge-warning">En proceso</span>
+        </div>
+      </div>
+      <div class="order-item-row">
+        <div class="order-item-left">
+          <div class="order-table-badge">M03</div>
+          <div>
+            <div class="order-item-name">Palco VIP — 4x Cervezas — 2x Cocktails</div>
+            <div class="order-item-time">Hace 22 minutos</div>
+          </div>
+        </div>
+        <div class="order-item-right">
+          <div class="order-item-total">$580.000</div>
+          <span class="badge badge-success">Entregado</span>
+        </div>
+      </div>
+      <div class="order-item-row">
+        <div class="order-item-left">
+          <div class="order-table-badge">M06</div>
+          <div>
+            <div class="order-item-name">1x Botella Ron — Tabla de quesos</div>
+            <div class="order-item-time">Hace 5 minutos</div>
+          </div>
+        </div>
+        <div class="order-item-right">
+          <div class="order-item-total">$210.000</div>
+          <span class="badge badge-warning">En proceso</span>
+        </div>
+      </div>
+      <div class="order-item-row">
+        <div class="order-item-left">
+          <div class="order-table-badge">M09</div>
+          <div>
+            <div class="order-item-name">3x Cervezas artesanales</div>
+            <div class="order-item-time">Hace 2 minutos</div>
+          </div>
+        </div>
+        <div class="order-item-right">
+          <div class="order-item-total">$75.000</div>
+          <span class="badge badge-muted">Pendiente</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     SCREEN 5 — PORTERO
+══════════════════════════════════════════════════════ -->
+<div id="portero" class="screen page">
+  <div class="portero-layout">
+    <div class="portero-header">
+      <h1>Control de acceso</h1>
+      <p>Escanea el codigo QR del tiquete para verificar el ingreso</p>
+    </div>
+
+    <div class="scanner-box">
+      <div class="scan-line"></div>
+      <svg class="qr-svg-icon" width="80" height="80" viewBox="0 0 80 80" fill="none">
+        <!-- QR code drawn as SVG rects -->
+        <rect x="4" y="4" width="28" height="28" rx="3" stroke="rgba(255,255,255,0.5)" stroke-width="3" fill="none"/>
+        <rect x="11" y="11" width="14" height="14" fill="rgba(255,255,255,0.5)"/>
+        <rect x="48" y="4" width="28" height="28" rx="3" stroke="rgba(255,255,255,0.5)" stroke-width="3" fill="none"/>
+        <rect x="55" y="11" width="14" height="14" fill="rgba(255,255,255,0.5)"/>
+        <rect x="4" y="48" width="28" height="28" rx="3" stroke="rgba(255,255,255,0.5)" stroke-width="3" fill="none"/>
+        <rect x="11" y="55" width="14" height="14" fill="rgba(255,255,255,0.5)"/>
+        <rect x="48" y="48" width="8" height="8" fill="rgba(255,255,255,0.5)"/>
+        <rect x="60" y="48" width="8" height="8" fill="rgba(255,255,255,0.5)"/>
+        <rect x="48" y="60" width="8" height="8" fill="rgba(255,255,255,0.5)"/>
+        <rect x="60" y="60" width="16" height="8" fill="rgba(255,255,255,0.5)"/>
+        <rect x="48" y="72" width="8" height="8" fill="rgba(255,255,255,0.5)"/>
+        <rect x="60" y="72" width="8" height="8" fill="rgba(255,255,255,0.5)"/>
+      </svg>
+      <div class="scanner-label">Apunta la camara al codigo QR del tiquete</div>
+    </div>
+
+    <div class="result-cards">
+      <div class="result-card approved">
+        <div class="result-card-header">
+          <svg class="result-icon-ok" width="20" height="20"><use href="#ico-check"/></svg>
+          <div class="result-card-title">Acceso aprobado</div>
+        </div>
+        <div class="result-card-detail">
+          <strong>Carlos Restrepo</strong><br/>
+          Tiquete VIP — Noche Electronica Vol. 12<br/>
+          #TKT-2026-08847 — Valido hasta 3:00 AM
+        </div>
+      </div>
+      <div class="result-card rejected">
+        <div class="result-card-header">
+          <svg class="result-icon-fail" width="20" height="20"><use href="#ico-xcircle"/></svg>
+          <div class="result-card-title">Acceso denegado</div>
+        </div>
+        <div class="result-card-detail">
+          <strong>Tiquete invalido</strong><br/>
+          El codigo no corresponde a este evento o ya fue utilizado.<br/>
+          #TKT-2026-00122 — Rechazado
+        </div>
+      </div>
+    </div>
+
+    <div class="portero-stats">
+      <div class="portero-stat">
+        <div class="portero-stat-num" style="color:#34d399">247</div>
+        <div class="portero-stat-lbl">Ingresos aprobados</div>
+      </div>
+      <div class="portero-stat">
+        <div class="portero-stat-num" style="color:#f87171">8</div>
+        <div class="portero-stat-lbl">Intentos rechazados</div>
+      </div>
+      <div class="portero-stat">
+        <div class="portero-stat-num">95</div>
+        <div class="portero-stat-lbl">Aforo restante</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     SCREEN 6 — INVENTARIO
+══════════════════════════════════════════════════════ -->
+<div id="inventario" class="screen page">
+  <div class="inventario-layout">
+    <div class="alert-bar">
+      <svg width="16" height="16"><use href="#ico-alert"/></svg>
+      <span><strong>3 productos</strong> con stock critico requieren reabastecimiento urgente</span>
+    </div>
+
+    <div class="inv-kpi-row">
+      <div class="inv-kpi">
+        <div class="inv-kpi-val">148</div>
+        <div class="inv-kpi-lbl">Productos totales</div>
+      </div>
+      <div class="inv-kpi">
+        <div class="inv-kpi-val" style="color:#f87171">3</div>
+        <div class="inv-kpi-lbl">Stock critico</div>
+      </div>
+      <div class="inv-kpi">
+        <div class="inv-kpi-val" style="color:#fbbf24">12</div>
+        <div class="inv-kpi-lbl">Stock bajo</div>
+      </div>
+      <div class="inv-kpi">
+        <div class="inv-kpi-val" style="color:#34d399">$8.4M</div>
+        <div class="inv-kpi-lbl">Valor en bodega</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <div class="card">
+        <p class="section-label">Niveles de stock — Licores</p>
+        <div>
+          <div class="inv-bar-row"><span class="inv-bar-name">Aguardiente Antioq.</span><div class="inv-bar-track"><div class="inv-bar-fill ok" style="width:82%"></div></div><span class="inv-bar-qty">82 un</span></div>
+          <div class="inv-bar-row"><span class="inv-bar-name">Ron Medellin</span><div class="inv-bar-track"><div class="inv-bar-fill ok" style="width:65%"></div></div><span class="inv-bar-qty">65 un</span></div>
+          <div class="inv-bar-row"><span class="inv-bar-name">Vodka Premium</span><div class="inv-bar-track"><div class="inv-bar-fill warn" style="width:28%"></div></div><span class="inv-bar-qty">28 un</span></div>
+          <div class="inv-bar-row"><span class="inv-bar-name">Whisky Importado</span><div class="inv-bar-track"><div class="inv-bar-fill warn" style="width:22%"></div></div><span class="inv-bar-qty">22 un</span></div>
+          <div class="inv-bar-row"><span class="inv-bar-name">Champagne</span><div class="inv-bar-track"><div class="inv-bar-fill crit" style="width:8%"></div></div><span class="inv-bar-qty">8 un</span></div>
+          <div class="inv-bar-row"><span class="inv-bar-name">Cerveza artesanal</span><div class="inv-bar-track"><div class="inv-bar-fill ok" style="width:91%"></div></div><span class="inv-bar-qty">91 un</span></div>
+          <div class="inv-bar-row"><span class="inv-bar-name">Tequila</span><div class="inv-bar-track"><div class="inv-bar-fill crit" style="width:5%"></div></div><span class="inv-bar-qty">5 un</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <p class="section-label">Consumibles y otros</p>
+        <div class="stock-grid" style="grid-template-columns:repeat(2,1fr)">
+          <div class="stock-card">
+            <div class="stock-card-name">Vasos plastico</div>
+            <div class="stock-card-cat">Desechables</div>
+            <div class="stock-card-num">1,240</div>
+            <div class="stock-card-unit">unidades</div>
+            <div class="stock-progress"><div class="stock-progress-fill" style="width:62%;background:var(--success)"></div></div>
+          </div>
+          <div class="stock-card">
+            <div class="stock-card-name">Copas cristal</div>
+            <div class="stock-card-cat">Menaje</div>
+            <div class="stock-card-num">348</div>
+            <div class="stock-card-unit">unidades</div>
+            <div class="stock-progress"><div class="stock-progress-fill" style="width:87%;background:var(--success)"></div></div>
+          </div>
+          <div class="stock-card">
+            <div class="stock-card-name">Servilletas</div>
+            <div class="stock-card-cat">Insumos</div>
+            <div class="stock-card-num">420</div>
+            <div class="stock-card-unit">paquetes</div>
+            <div class="stock-progress"><div class="stock-progress-fill" style="width:42%;background:var(--warning)"></div></div>
+          </div>
+          <div class="stock-card">
+            <div class="stock-card-name">Hielo (kg)</div>
+            <div class="stock-card-cat">Refrigeracion</div>
+            <div class="stock-card-num">85</div>
+            <div class="stock-card-unit">kilogramos</div>
+            <div class="stock-progress"><div class="stock-progress-fill" style="width:17%;background:var(--danger)"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     SCREEN 7 — CARTA DIGITAL
+══════════════════════════════════════════════════════ -->
+<div id="carta" class="screen page">
+  <div class="carta-layout">
+    <div class="carta-header">
+      <div class="carta-title-area">
+        <h1>Carta Digital</h1>
+        <p>Servicio a mesa — solicita al mesero</p>
+      </div>
+      <div class="mesa-tag">Mesa 7</div>
+    </div>
+
+    <!-- Bebidas -->
+    <div class="carta-category">
+      <div class="category-label">Bebidas</div>
+      <div class="menu-item">
+        <div class="menu-item-text">
+          <div class="menu-item-name">Aguardiente Antioqueno</div>
+          <div class="menu-item-desc">Botella 750ml — servida con limon y sal</div>
+        </div>
+        <div class="menu-item-right">
+          <span class="menu-item-price">$85.000</span>
+          <button class="add-btn">+</button>
+        </div>
+      </div>
+      <div class="menu-item">
+        <div class="menu-item-text">
+          <div class="menu-item-name">Ron Medellin Anejo</div>
+          <div class="menu-item-desc">Botella 700ml — con hielo y cola</div>
+        </div>
+        <div class="menu-item-right">
+          <span class="menu-item-price">$95.000</span>
+          <button class="add-btn">+</button>
+        </div>
+      </div>
+      <div class="menu-item">
+        <div class="menu-item-text">
+          <div class="menu-item-name">Cerveza Artesanal IPA</div>
+          <div class="menu-item-desc">330ml — lupulo colombiano, fria</div>
+        </div>
+        <div class="menu-item-right">
+          <span class="menu-item-price">$18.000</span>
+          <button class="add-btn">+</button>
+        </div>
+      </div>
+      <div class="menu-item">
+        <div class="menu-item-text">
+          <div class="menu-item-name">Cocktail de la Casa</div>
+          <div class="menu-item-desc">Mezcla especial del bartender — pregunta por disponibilidad</div>
+        </div>
+        <div class="menu-item-right">
+          <span class="menu-item-price">$28.000</span>
+          <button class="add-btn">+</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Snacks -->
+    <div class="carta-category">
+      <div class="category-label">Snacks y Pasabocas</div>
+      <div class="menu-item">
+        <div class="menu-item-text">
+          <div class="menu-item-name">Tabla de quesos y embutidos</div>
+          <div class="menu-item-desc">Queso camembert, manchego, jamon serrano — para 4 personas</div>
+        </div>
+        <div class="menu-item-right">
+          <span class="menu-item-price">$65.000</span>
+          <button class="add-btn">+</button>
+        </div>
+      </div>
+      <div class="menu-item">
+        <div class="menu-item-text">
+          <div class="menu-item-name">Nachos con guacamole</div>
+          <div class="menu-item-desc">Porcion grande — guacamole y pico de gallo</div>
+        </div>
+        <div class="menu-item-right">
+          <span class="menu-item-price">$32.000</span>
+          <button class="add-btn">+</button>
+        </div>
+      </div>
+      <div class="menu-item">
+        <div class="menu-item-text">
+          <div class="menu-item-name">Alitas BBQ</div>
+          <div class="menu-item-desc">8 unidades — salsa BBQ ahumada casera</div>
+        </div>
+        <div class="menu-item-right">
+          <span class="menu-item-price">$38.000</span>
+          <button class="add-btn">+</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sin alcohol -->
+    <div class="carta-category">
+      <div class="category-label">Sin Alcohol</div>
+      <div class="menu-item">
+        <div class="menu-item-text">
+          <div class="menu-item-name">Agua mineral</div>
+          <div class="menu-item-desc">500ml con o sin gas</div>
+        </div>
+        <div class="menu-item-right">
+          <span class="menu-item-price">$8.000</span>
+          <button class="add-btn">+</button>
+        </div>
+      </div>
+      <div class="menu-item">
+        <div class="menu-item-text">
+          <div class="menu-item-name">Jugo natural de la temporada</div>
+          <div class="menu-item-desc">Mango, lulo o maracuya — con o sin azucar</div>
+        </div>
+        <div class="menu-item-right">
+          <span class="menu-item-price">$14.000</span>
+          <button class="add-btn">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="carta-footer">
+      <span style="font-size:13px;color:var(--text3);margin-right:8px">Metodos de pago:</span>
+      <span class="payment-tag">Efectivo</span>
+      <span class="payment-tag">Tarjeta debito</span>
+      <span class="payment-tag">Tarjeta credito</span>
+      <span class="payment-tag">Nequi</span>
+      <span class="payment-tag">Daviplata</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     AI CHAT WIDGET
+══════════════════════════════════════════════════════ -->
+<div class="chat-widget">
+  <div class="chat-panel" id="chatPanel">
+    <div class="chat-panel-header">
+      <div>
+        <div class="chat-panel-title">Asistente Skpat</div>
+        <div class="chat-panel-sub">Responde en segundos</div>
+      </div>
+      <button class="chat-close" onclick="toggleChat()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+      <div class="chat-msg bot">Hola, soy el asistente de Skpat VIP. Como puedo ayudarte hoy?</div>
+      <div class="chat-msg user">Como compro tiquetes para el proximo evento?</div>
+      <div class="chat-msg bot">Puedes comprarlos directamente desde la seccion "Boleteria". Selecciona el evento, tipo de acceso y completa el formulario. Aceptamos todas las tarjetas y pagos electronicos.</div>
+    </div>
+    <div class="chat-input-row">
+      <input class="chat-input" id="chatInput" type="text" placeholder="Escribe tu pregunta..." onkeydown="if(event.key==='Enter')sendMsg()"/>
+      <button class="chat-send" onclick="sendMsg()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>
+  <button class="chat-toggle" onclick="toggleChat()">
+    <svg width="20" height="20"><use href="#ico-chat"/></svg>
+  </button>
+</div>
+
+<script>
+const SCREENS = ['landing','boleteria','admin-dashboard','mesero','portero','inventario','carta'];
+
+function show(id) {
+  SCREENS.forEach(s => {
+    const el = document.getElementById(s);
+    if (el) {
+      el.classList.remove('active');
+      el.style.display = 'none';
+    }
+  });
+
+  const target = document.getElementById(id);
+  if (!target) return;
+
+  if (id === 'admin-dashboard') {
+    target.style.display = 'flex';
+  } else {
+    target.style.display = 'block';
+  }
+  target.classList.add('active');
+
+  const appNav = document.getElementById('app-nav');
+  const isLanding = id === 'landing';
+  appNav.style.display = isLanding ? 'none' : 'flex';
+
+  // Update active nav tab
+  document.querySelectorAll('.nav-tab').forEach(btn => {
+    btn.classList.remove('active');
+    if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(id)) {
+      btn.classList.add('active');
+    }
+  });
+
+  window.scrollTo(0,0);
+}
+
+function toggleChat() {
+  const panel = document.getElementById('chatPanel');
+  panel.classList.toggle('open');
+}
+
+function sendMsg() {
+  const input = document.getElementById('chatInput');
+  const messages = document.getElementById('chatMessages');
+  const text = input.value.trim();
+  if (!text) return;
+
+  const userMsg = document.createElement('div');
+  userMsg.className = 'chat-msg user';
+  userMsg.textContent = text;
+  messages.appendChild(userMsg);
+
+  const responses = [
+    'Claro, puedo ayudarte con eso. Dame un momento.',
+    'Esa es una excelente pregunta. Los eventos se actualizan cada semana.',
+    'Para mas informacion puedes contactar a nuestro equipo en soporte@skpat.co.',
+    'Los tiquetes VIP incluyen consumicion minima y acceso a la zona exclusiva.',
+  ];
+  const botMsg = document.createElement('div');
+  botMsg.className = 'chat-msg bot';
+  botMsg.textContent = responses[Math.floor(Math.random() * responses.length)];
+  setTimeout(() => {
+    messages.appendChild(botMsg);
+    messages.scrollTop = messages.scrollHeight;
+  }, 600);
+
+  input.value = '';
+  messages.scrollTop = messages.scrollHeight;
+}
+
+// Init
+show('landing');
+</script>
+</body>
+</html>

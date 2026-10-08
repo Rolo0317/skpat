@@ -1,12 +1,12 @@
 import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
-import { db, HttpError, type SqlClient } from '../../lib/db.js'
+import { db, HttpError } from '../../lib/db.js'
 import { isUuid } from '../../lib/ids.js'
-import { encrypt } from '../../lib/encrypt.js'
-import { generateQrToken, generateQrDataUrl } from '../../lib/qr.js'
+import { generateQrDataUrl } from '../../lib/qr.js'
 import { sendTicketEmail } from '../../lib/email.js'
 import { optionalAuth } from '../../plugins/auth.js'
 import { TICKET_TYPES, ticketPriceCents, type TicketType } from '../../lib/ticketPrices.js'
+import { insertTicket, isUniqueViolation, reserveEventCapacity } from '../../services/tickets.js'
 
 const purchaseSchema = z.object({
   event_id: z.string().min(1),
@@ -19,55 +19,23 @@ const purchaseSchema = z.object({
 
 type PurchaseInput = z.infer<typeof purchaseSchema>
 
-interface EventRow { id: string; title: string; date: Date; price: number }
-
 const EMAIL_DATE_FORMAT: Intl.DateTimeFormatOptions = {
   weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit',
   timeZone: 'America/Bogota',
 }
 
-const UNIQUE_VIOLATION = '23505'
-
-function isUniqueViolation(err: unknown): boolean {
-  return typeof err === 'object' && err !== null && (err as { code?: string }).code === UNIQUE_VIOLATION
-}
-
-/**
- * Reserva un cupo de forma atómica: el UPDATE condicionado evita sobreventa aunque
- * lleguen compras simultáneas (no hay lectura-luego-escritura).
- */
-async function reserveSpot(tx: SqlClient, eventId: string): Promise<EventRow> {
-  const reserved = await tx.one<EventRow>(
-    `update events set available_spots = available_spots - 1
-      where id = $1 and is_active and available_spots > 0
-      returning id, title, date, price`,
-    [eventId],
-  )
-  if (reserved) return reserved
-
-  const existing = await tx.one<{ is_active: boolean }>('select is_active from events where id = $1', [eventId])
-  if (!existing) throw new HttpError(404, 'EventNotFound')
-  throw new HttpError(422, existing.is_active ? 'SoldOut' : 'EventNotActive')
-}
-
 async function createTicket(input: PurchaseInput, userId: string | null) {
   if (!isUuid(input.event_id)) throw new HttpError(404, 'EventNotFound')
-  const qrToken = generateQrToken()
 
   // El índice único tickets_lista_unica garantiza un solo QR de lista por correo y evento.
   return db.transaction(async (tx) => {
-    const event = await reserveSpot(tx, input.event_id)
+    const event = await reserveEventCapacity(tx, input.event_id)
     const priceCents = ticketPriceCents(input.ticket_type, event.price)
-    const ticket = await tx.one<{ id: string }>(
-      `insert into tickets (event_id, user_id, nombre, cedula_enc, email, telefono_enc, qr_token, ticket_type, price_cents)
-       values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-       returning id`,
-      [
-        event.id, userId, input.nombre, encrypt(input.cedula), input.email,
-        input.telefono ? encrypt(input.telefono) : null, qrToken, input.ticket_type, priceCents,
-      ],
-    )
-    return { event, ticketId: ticket!.id, priceCents, qrToken }
+    const { id, qrToken } = await insertTicket(tx, {
+      eventId: event.id, userId, nombre: input.nombre, email: input.email, cedula: input.cedula,
+      telefono: input.telefono, ticketType: input.ticket_type, priceCents, status: 'confirmed',
+    })
+    return { event, ticketId: id, priceCents, qrToken }
   }).catch((err: unknown) => {
     if (isUniqueViolation(err)) throw new HttpError(409, 'AlreadyOnList')
     throw err

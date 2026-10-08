@@ -6,7 +6,7 @@ import type { SqlClient } from './types.js'
 const MIGRATIONS_DIR = new URL('../../../../supabase/migrations/', import.meta.url)
 const SCHEMA_FILE = new URL('0002_skpat_schema.sql', MIGRATIONS_DIR)
 /** Migraciones idempotentes: se aplican en cada arranque para poner al día también las bases persistidas. */
-const IDEMPOTENT_MIGRATIONS = ['0004_skpat_lista.sql'].map((file) => new URL(file, MIGRATIONS_DIR))
+const IDEMPOTENT_MIGRATIONS = ['0004_skpat_lista.sql', '0005_skpat_operacion_eventos.sql'].map((file) => new URL(file, MIGRATIONS_DIR))
 
 type Executor = PGlite | Transaction
 

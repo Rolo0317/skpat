@@ -1,5 +1,9 @@
+/** Línea de reservas (WhatsApp) publicada en Instagram y en los flyers. */
+const TELEFONO = { visible: '319 543 5288', internacional: '+573195435288' } as const
+
 /** Datos públicos del negocio: una sola fuente para la landing, el SEO y el JSON-LD. */
 export const NEGOCIO = {
+  telefono: TELEFONO,
   nombre: 'Skpat VIP',
   eslogan: 'Electrónica y guaracha en Bogotá',
   direccion: {
@@ -15,9 +19,15 @@ export const NEGOCIO = {
     cierre: '04:00',
     texto: '9 PM – 4 AM',
   },
-  instagram: {
-    usuario: '@skpat.vip',
-    url: 'https://www.instagram.com/skpat.vip/',
+  redes: {
+    instagram: { nombre: 'Instagram', usuario: '@skpat.vip', url: 'https://www.instagram.com/skpat.vip/' },
+    tiktok: { nombre: 'TikTok', usuario: '@skpat.vip', url: 'https://www.tiktok.com/@skpat.vip' },
+    facebook: { nombre: 'Facebook', usuario: 'SKPAT', url: 'https://www.facebook.com/profile.php?id=100072123812559' },
+    whatsapp: {
+      nombre: 'WhatsApp',
+      usuario: TELEFONO.visible,
+      url: `https://wa.me/${TELEFONO.internacional.slice(1)}?text=${encodeURIComponent('Hola SKPAT, quiero información y reservas')}`,
+    },
   },
   zonaHoraria: 'America/Bogota',
   edadMinima: 18,
@@ -33,7 +43,13 @@ export const ENLACES_MAPA = {
 /** Rutas de la app React a las que apuntan los CTA. */
 export const RUTAS_APP = {
   comprar: (eventoId: string) => `/comprar/${encodeURIComponent(eventoId)}`,
+  lista: (eventoId: string) => `/comprar/${encodeURIComponent(eventoId)}?tipo=lista`,
   login: '/login',
   registro: '/register',
   cliente: '/cliente',
 } as const
+
+export type IdRed = keyof typeof NEGOCIO.redes
+
+/** Redes en el orden en que se muestran; el id también es el nombre del icono. */
+export const REDES = (Object.keys(NEGOCIO.redes) as IdRed[]).map((id) => ({ id, ...NEGOCIO.redes[id] }))

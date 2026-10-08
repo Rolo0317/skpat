@@ -85,7 +85,7 @@ export default function AdminHome() {
               onClick={() => setPeriod(p)}
               className={`px-4 py-1.5 rounded-md text-xs font-semibold transition-all ${
                 period === p
-                  ? 'bg-skpat-purple text-white'
+                  ? 'bg-skpat-oro text-skpat-bg'
                   : 'text-skpat-muted hover:text-skpat-text'
               }`}
             >
@@ -102,7 +102,7 @@ export default function AdminHome() {
         <select
           value={filterMesero}
           onChange={e => setFilterMesero(e.target.value)}
-          className="px-3 py-1.5 bg-skpat-bg3 border border-skpat-border rounded-lg text-xs text-skpat-text focus:outline-none focus:border-skpat-purple transition-colors"
+          className="px-3 py-1.5 bg-skpat-bg3 border border-skpat-border rounded-lg text-xs text-skpat-text focus:outline-none focus:border-skpat-oro transition-colors"
         >
           <option value="">Todos los meseros</option>
           {summary?.mesero_breakdown.map(m => (
@@ -112,7 +112,7 @@ export default function AdminHome() {
         <select
           value={filterHour}
           onChange={e => setFilterHour(e.target.value)}
-          className="px-3 py-1.5 bg-skpat-bg3 border border-skpat-border rounded-lg text-xs text-skpat-text focus:outline-none focus:border-skpat-purple transition-colors"
+          className="px-3 py-1.5 bg-skpat-bg3 border border-skpat-border rounded-lg text-xs text-skpat-text focus:outline-none focus:border-skpat-oro transition-colors"
         >
           <option value="">Todas las horas</option>
           {['18','19','20','21','22','23','00','01','02','03'].map(h => (
@@ -152,7 +152,7 @@ export default function AdminHome() {
             {[
               { label: 'Total general', value: summary.grand_total_cents, color: 'text-skpat-white', sub: `${summary.sales.count + summary.tickets.count} transacciones`, icon: TrendingUp },
               { label: 'Ventas en mesa', value: summary.sales.total_cents, color: 'text-skpat-green', sub: `${summary.sales.count} ventas`, icon: ShoppingCart },
-              { label: 'Boletería', value: summary.tickets.total_cents, color: 'text-skpat-purple', sub: `${summary.tickets.count} tiquetes`, icon: Ticket },
+              { label: 'Boletería', value: summary.tickets.total_cents, color: 'text-skpat-oro', sub: `${summary.tickets.count} tiquetes`, icon: Ticket },
             ].map(({ label, value, color, sub, icon }) => (
               <StatTile key={label} label={label} value={formatCOP(value)} sub={sub} icon={icon} colorClass={color} />
             ))}
@@ -172,7 +172,7 @@ export default function AdminHome() {
                       style={{
                         height: `${Math.max(4, (h.total_cents / maxBar) * 100)}%`,
                         background: h.total_cents > 0
-                          ? 'linear-gradient(180deg,#8b5cf6,#6d28d9)'
+                          ? 'linear-gradient(180deg,#d4a63a,#8a6420)'
                           : 'rgba(255,255,255,0.05)',
                       }}
                     />
@@ -186,7 +186,7 @@ export default function AdminHome() {
             <div className="bg-skpat-card border border-skpat-border rounded-xl p-5">
               <div className="font-bold text-sm text-skpat-white mb-4">Desglose</div>
               {[
-                { label: 'Boletería', value: summary.tickets.total_cents, pct: summary.grand_total_cents > 0 ? (summary.tickets.total_cents / summary.grand_total_cents * 100) : 0, color: 'bg-skpat-purple', textColor: 'text-skpat-purple' },
+                { label: 'Boletería', value: summary.tickets.total_cents, pct: summary.grand_total_cents > 0 ? (summary.tickets.total_cents / summary.grand_total_cents * 100) : 0, color: 'bg-skpat-oro', textColor: 'text-skpat-oro' },
                 { label: 'Ventas mesa', value: summary.sales.total_cents, pct: summary.grand_total_cents > 0 ? (summary.sales.total_cents / summary.grand_total_cents * 100) : 0, color: 'bg-skpat-green', textColor: 'text-skpat-green' },
               ].map(item => (
                 <div key={item.label} className="mb-3.5 last:mb-0">
@@ -244,7 +244,7 @@ export default function AdminHome() {
                         className="h-full rounded-full transition-all duration-500"
                         style={{
                           width: `${((m.total_cents ?? 0) / maxM) * 100}%`,
-                          background: 'linear-gradient(90deg,#8b5cf6,#ec4899)',
+                          background: 'linear-gradient(90deg,#d4a63a,#f2d38a)',
                         }}
                       />
                     </div>

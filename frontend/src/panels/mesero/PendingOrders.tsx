@@ -49,7 +49,7 @@ function OrderCard({ order, busy, onUpdate }: OrderCardProps) {
       {order.notes && <p className="text-xs text-skpat-gold mb-2">Nota: {order.notes}</p>}
       <div className="flex flex-wrap gap-2 items-center">
         {order.status === 'pending' && (
-          <button type="button" disabled={busy} onClick={() => onUpdate({ status: 'attending' })} className={`${ACTION_BUTTON} bg-skpat-purple text-white`}>
+          <button type="button" disabled={busy} onClick={() => onUpdate({ status: 'attending' })} className={`${ACTION_BUTTON} bg-skpat-oro text-skpat-bg`}>
             Atender
           </button>
         )}
@@ -100,7 +100,7 @@ export function PendingOrders() {
   return (
     <section aria-labelledby="pending-orders-title" className="mb-5">
       <h2 id="pending-orders-title" className="flex items-center gap-2 font-bold text-sm text-skpat-white mb-3">
-        <BellRing size={14} className="text-skpat-purple" />
+        <BellRing size={14} className="text-skpat-oro" />
         Pedidos de mesas
         <span className="text-xs text-skpat-muted font-normal">({orders.length})</span>
       </h2>

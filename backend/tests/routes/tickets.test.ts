@@ -149,6 +149,32 @@ describe('POST /tickets/purchase', () => {
   })
 })
 
+describe('POST /tickets/purchase — lista', () => {
+  const inscripcion = (email: string) => ({
+    event_id: testEventId, nombre: 'Lista Uno', email, cedula: '1234512345', ticket_type: 'lista',
+  })
+
+  it('anota en la lista gratis y entrega un QR propio', async () => {
+    const first = await app.inject({ method: 'POST', url: '/tickets/purchase', payload: inscripcion('lista1@test.co') })
+    const second = await app.inject({ method: 'POST', url: '/tickets/purchase', payload: inscripcion('lista2@test.co') })
+
+    expect(first.statusCode).toBe(201)
+    expect(first.json()).toMatchObject({ ticket_type: 'lista', price_cents: 0 })
+    expect(first.json().qr_token).toMatch(/^[0-9a-f]{64}$/)
+    expect(second.json().qr_token).not.toBe(first.json().qr_token)
+  })
+
+  it('no deja anotar dos veces el mismo correo en el mismo evento', async () => {
+    const before = (await db.one('SELECT available_spots FROM events WHERE id = $1', [testEventId])) as { available_spots: number }
+    const repeated = await app.inject({ method: 'POST', url: '/tickets/purchase', payload: inscripcion('LISTA1@test.co') })
+    const after = (await db.one('SELECT available_spots FROM events WHERE id = $1', [testEventId])) as { available_spots: number }
+
+    expect(repeated.statusCode).toBe(409)
+    expect(repeated.json().error).toBe('AlreadyOnList')
+    expect(after.available_spots).toBe(before.available_spots)
+  })
+})
+
 describe('POST /tickets/scan', () => {
   let validToken: string
 

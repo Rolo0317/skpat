@@ -56,7 +56,7 @@ export default function RegisterPage() {
         )}
         <button
           disabled={isSubmitting}
-          className="w-full bg-fuchsia-600 hover:bg-fuchsia-500 disabled:opacity-50 py-2 rounded font-semibold"
+          className="w-full bg-skpat-oro text-skpat-bg hover:bg-skpat-champan disabled:opacity-50 py-2 rounded font-semibold"
         >
           {isSubmitting ? 'Creando...' : 'Crear cuenta'}
         </button>

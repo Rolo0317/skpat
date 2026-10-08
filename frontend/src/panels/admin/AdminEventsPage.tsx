@@ -66,7 +66,7 @@ export default function AdminEventsPage() {
         </label>
         <input className="text-sm" type="file" accept="image/*" onChange={(e) => setImage(e.target.files?.[0] ?? null)} />
         {error && <p className="text-red-400 text-sm">{error}</p>}
-        <button type="submit" className="bg-purple-600 hover:bg-purple-500 text-white py-2 rounded" disabled={createMut.isPending}>
+        <button type="submit" className="bg-skpat-oro hover:bg-skpat-champan text-skpat-bg py-2 rounded" disabled={createMut.isPending}>
           {createMut.isPending ? 'Creando…' : 'Crear evento'}
         </button>
       </form>
@@ -83,7 +83,7 @@ export default function AdminEventsPage() {
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
               <button
                 onClick={() => navigate(`/admin/eventos/${ev.id}/asistentes`)}
-                style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(139,92,246,.3)', background: 'rgba(139,92,246,.1)', color: '#a78bfa', fontSize: 12, cursor: 'pointer' }}
+                style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(212,166,58,.3)', background: 'rgba(212,166,58,.1)', color: '#e6c56e', fontSize: 12, cursor: 'pointer' }}
               >
                 Ver asistentes
               </button>

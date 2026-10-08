@@ -42,18 +42,18 @@ const UNIDADES: { clave: UnidadTiempo; etiqueta: string }[] = [
     display: flex; flex-direction: column; align-items: center;
     padding: 0.6rem 0.25rem 0.5rem;
     border-radius: var(--radio-pequeno);
-    background: color-mix(in oklab, var(--fondo) 75%, var(--violeta));
+    background: color-mix(in oklab, var(--fondo) 75%, var(--primario));
   }
   .cuenta__cifra { font-family: var(--fuente-display); font-weight: 900; font-size: clamp(2rem, 9vw, 2.75rem); line-height: 1; color: var(--tinta); }
   .cuenta__etiqueta { font-size: 0.75rem; color: var(--tinta-suave); text-transform: uppercase; letter-spacing: 0.08em; }
 
-  .cuenta__vivo { display: none; align-items: center; gap: 0.6rem; font-family: var(--fuente-display); font-weight: 900; font-size: 2rem; text-transform: uppercase; color: var(--rosa-claro); }
-  .cuenta__punto { width: 0.75rem; height: 0.75rem; border-radius: 50%; background: var(--rosa); animation: latido 0.94s ease-out infinite; }
+  .cuenta__vivo { display: none; align-items: center; gap: 0.6rem; font-family: var(--fuente-display); font-weight: 900; font-size: 2rem; text-transform: uppercase; color: var(--acento-claro); }
+  .cuenta__punto { width: 0.75rem; height: 0.75rem; border-radius: 50%; background: var(--acento); animation: latido 0.94s ease-out infinite; }
   .cuenta[data-estado='en-vivo'] .cuenta__vivo { display: flex; }
   .cuenta[data-estado='en-vivo'] .cuenta__reloj { display: none; }
 
   @keyframes latido {
-    from { box-shadow: 0 0 0 0 color-mix(in oklab, var(--rosa) 70%, transparent); }
+    from { box-shadow: 0 0 0 0 color-mix(in oklab, var(--acento) 70%, transparent); }
     to { box-shadow: 0 0 0 0.75rem transparent; }
   }
 </style>

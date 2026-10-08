@@ -1,5 +1,5 @@
 import type { EventoPublico } from '~/lib/data'
-import { NEGOCIO, RUTAS_APP } from '../contenido/negocio'
+import { NEGOCIO, REDES, RUTAS_APP } from '../contenido/negocio'
 import { finDelEvento } from './agenda'
 import { CENTAVOS_POR_PESO } from './formato'
 
@@ -22,9 +22,11 @@ function discoteca(origen: string) {
     name: NEGOCIO.nombre,
     description: NEGOCIO.eslogan,
     url: origen,
-    image: `${origen}/og.png`,
+    image: `${origen}/marca/og-skpat.jpg`,
+    logo: `${origen}/marca/icon-skpat-512.png`,
+    telephone: NEGOCIO.telefono.internacional,
     address: direccionPostal(),
-    sameAs: [NEGOCIO.instagram.url],
+    sameAs: REDES.filter(({ id }) => id !== 'whatsapp').map(({ url }) => url),
     openingHoursSpecification: {
       '@type': 'OpeningHoursSpecification',
       dayOfWeek: DIAS_ABIERTOS_SCHEMA,

@@ -1,0 +1,36 @@
+---
+/**
+ * Logo original de Skpat VIP (dorado con alas, nave y cinta VIP).
+ * El JPEG trae fondo: se funde con el negro del sitio con `lighten` y una máscara radial.
+ * El ancho lo decide quien lo usa vía la clase.
+ */
+interface Props {
+  class?: string
+  /** true en la portada: es la imagen principal (LCP). */
+  prioritario?: boolean
+  sizes?: string
+}
+
+const { class: clase, prioritario = false, sizes = '12rem' } = Astro.props
+---
+<img
+  src="/marca/logo-skpat-600.webp"
+  srcset="/marca/logo-skpat-600.webp 600w, /marca/logo-skpat-1200.webp 1200w"
+  sizes={sizes}
+  width="600"
+  height="274"
+  alt="Skpat VIP"
+  loading={prioritario ? 'eager' : 'lazy'}
+  fetchpriority={prioritario ? 'high' : 'auto'}
+  decoding="async"
+  class:list={['logo', clase]}
+/>
+
+<style>
+  .logo {
+    display: block;
+    height: auto;
+    mix-blend-mode: lighten;
+    mask-image: radial-gradient(ellipse at center, #000 55%, transparent 75%);
+  }
+</style>

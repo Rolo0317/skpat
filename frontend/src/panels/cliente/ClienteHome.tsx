@@ -3,6 +3,7 @@ import { useAuth } from '@/features/auth/useAuth'
 import { Link } from 'react-router-dom'
 import { api } from '@/lib/api'
 import { formatCOP } from '@/lib/format'
+import { ticketLabel } from '@skpat/backend/src/lib/ticketPrices'
 
 interface MyTicket {
   id: string
@@ -15,13 +16,6 @@ interface MyTicket {
   qr_token: string
   qr_used: boolean
   created_at: string
-}
-
-const TYPE_LABELS: Record<string, string> = {
-  general: 'Entrada General',
-  palco_silver: 'Palco Silver',
-  palco_gold: 'Palco Gold',
-  palco_platinum: 'Palco Platinum',
 }
 
 export default function ClienteHome() {
@@ -42,7 +36,7 @@ export default function ClienteHome() {
   return (
     <div style={{ padding: '24px 32px', maxWidth: 700 }}>
       <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 800, color: '#f8fafc', margin: '0 0 4px' }}>
+        <h1 style={{ fontSize: 24, fontWeight: 800, color: '#faf7f0', margin: '0 0 4px' }}>
           Mis tiquetes
         </h1>
         <p style={{ color: '#64748b', fontSize: 13 }}>
@@ -56,7 +50,7 @@ export default function ClienteHome() {
       {!loading && tickets.length === 0 && (
         <div style={{ background: '#1c1c2e', border: '1px solid rgba(255,255,255,.08)', borderRadius: 12, padding: 32, textAlign: 'center' }}>
           <p style={{ color: '#64748b', marginBottom: 16 }}>Aún no tienes tiquetes comprados.</p>
-          <Link to="/" reloadDocument style={{ color: '#8b5cf6', fontWeight: 600, textDecoration: 'none', fontSize: 14 }}>
+          <Link to="/" reloadDocument style={{ color: '#d4a63a', fontWeight: 600, textDecoration: 'none', fontSize: 14 }}>
             Ver eventos disponibles
           </Link>
         </div>
@@ -66,7 +60,7 @@ export default function ClienteHome() {
         {tickets.map(ticket => (
           <div key={ticket.id} style={{
             background: '#1c1c2e',
-            border: `1px solid ${ticket.qr_used ? 'rgba(100,116,139,.3)' : 'rgba(139,92,246,.25)'}`,
+            border: `1px solid ${ticket.qr_used ? 'rgba(100,116,139,.3)' : 'rgba(212,166,58,.25)'}`,
             borderRadius: 14,
             overflow: 'hidden',
           }}>
@@ -79,8 +73,8 @@ export default function ClienteHome() {
                   {new Date(ticket.event_date).toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
                 </div>
                 <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
-                  <span style={{ background: 'rgba(139,92,246,.15)', color: '#a78bfa', padding: '2px 8px', borderRadius: 6, fontSize: 11, fontWeight: 600 }}>
-                    {TYPE_LABELS[ticket.ticket_type] ?? ticket.ticket_type}
+                  <span style={{ background: 'rgba(212,166,58,.15)', color: '#e6c56e', padding: '2px 8px', borderRadius: 6, fontSize: 11, fontWeight: 600 }}>
+                    {ticketLabel(ticket.ticket_type)}
                   </span>
                   <span style={{
                     background: ticket.qr_used ? 'rgba(100,116,139,.15)' : 'rgba(16,185,129,.1)',
@@ -99,7 +93,7 @@ export default function ClienteHome() {
                 {!ticket.qr_used && (
                   <button
                     onClick={() => setOpenQr(openQr === ticket.id ? null : ticket.id)}
-                    style={{ marginTop: 8, padding: '6px 14px', borderRadius: 8, border: '1px solid rgba(139,92,246,.4)', background: 'rgba(139,92,246,.1)', color: '#a78bfa', fontSize: 12, cursor: 'pointer' }}
+                    style={{ marginTop: 8, padding: '6px 14px', borderRadius: 8, border: '1px solid rgba(212,166,58,.4)', background: 'rgba(212,166,58,.1)', color: '#e6c56e', fontSize: 12, cursor: 'pointer' }}
                   >
                     {openQr === ticket.id ? 'Ocultar QR' : 'Ver QR'}
                   </button>

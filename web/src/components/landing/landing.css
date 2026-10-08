@@ -5,12 +5,14 @@
 
   --tinta: var(--color-skpat-white);
   --tinta-suave: var(--color-skpat-muted);
-  --violeta: var(--color-skpat-purple);
-  --violeta-claro: color-mix(in oklab, var(--color-skpat-purple) 55%, white);
-  --rosa: var(--color-skpat-pink);
-  --rosa-claro: color-mix(in oklab, var(--color-skpat-pink) 60%, white);
-  --cian: var(--color-skpat-cyan);
-  --cian-claro: color-mix(in oklab, var(--color-skpat-cyan) 65%, white);
+  --primario: var(--color-skpat-oro);
+  --primario-claro: color-mix(in oklab, var(--color-skpat-oro) 55%, white);
+  --acento: var(--color-skpat-champan);
+  --acento-claro: color-mix(in oklab, var(--color-skpat-champan) 60%, white);
+  /* Brillo metálico del logo: champán → oro → bronce. */
+  --degradado-oro: linear-gradient(135deg, var(--color-skpat-champan), var(--color-skpat-oro) 50%, var(--color-skpat-bronce));
+  --azul: var(--color-skpat-azul);
+  --azul-claro: color-mix(in oklab, var(--color-skpat-azul) 65%, white);
   --oro: var(--color-skpat-gold);
   --fondo: var(--color-skpat-bg);
   --fondo-2: var(--color-skpat-bg2);
@@ -39,11 +41,11 @@ body {
   overflow-x: clip;
 }
 
-::selection { background: var(--rosa); color: var(--fondo); }
-html { scrollbar-color: var(--violeta) var(--fondo); accent-color: var(--violeta); caret-color: var(--rosa); }
+::selection { background: var(--acento); color: var(--fondo); }
+html { scrollbar-color: var(--primario) var(--fondo); accent-color: var(--primario); caret-color: var(--acento); }
 
 :focus-visible {
-  outline: 2px solid var(--cian-claro);
+  outline: 2px solid var(--azul-claro);
   outline-offset: 3px;
   border-radius: 4px;
 }

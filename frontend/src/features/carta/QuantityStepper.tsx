@@ -8,7 +8,7 @@ interface QuantityStepperProps {
 }
 
 const BUTTON_CLASS =
-  'w-8 h-8 rounded-lg flex items-center justify-center bg-skpat-purple text-white disabled:opacity-30 hover:bg-skpat-purple2 transition-colors'
+  'w-8 h-8 rounded-lg flex items-center justify-center bg-skpat-oro text-skpat-bg disabled:opacity-30 hover:bg-skpat-bronce transition-colors'
 
 /** Control +/− de cantidad; `label` nombra el producto para lectores de pantalla y pruebas. */
 export function QuantityStepper({ label, quantity, onIncrement, onDecrement }: QuantityStepperProps) {

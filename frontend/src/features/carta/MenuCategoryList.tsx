@@ -18,7 +18,7 @@ export function MenuCategoryList({ items, quantityOf, onAdd, onRemove }: MenuCat
     <div className="space-y-7">
       {categories.map(([category, categoryItems]) => (
         <section key={category}>
-          <h2 className="text-[11px] font-bold text-skpat-purple uppercase tracking-[2px] mb-3 pb-2 border-b border-skpat-purple/20">
+          <h2 className="text-[11px] font-bold text-skpat-oro uppercase tracking-[2px] mb-3 pb-2 border-b border-skpat-oro/20">
             {category}
           </h2>
           <ul className="space-y-2">

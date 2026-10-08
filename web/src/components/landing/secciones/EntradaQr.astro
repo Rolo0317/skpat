@@ -7,22 +7,23 @@ import { NEGOCIO, RUTAS_APP } from '../contenido/negocio'
 
 interface Props {
   enlaceCompra: string
+  enlaceLista: string
 }
 
-const { enlaceCompra } = Astro.props
+const { enlaceCompra, enlaceLista } = Astro.props
 const PASOS: readonly Paso[] = [
-  { icono: 'boleto', titulo: 'Compra en un minuto', texto: 'Eliges la fecha, pones tus datos y listo. Sin filas en taquilla.' },
+  { icono: 'boleto', titulo: 'Anótate o compra en un minuto', texto: 'La lista es gratis y el cover lo pagas en la puerta según tu hora de llegada. Sin filas en taquilla.' },
   { icono: 'correo', titulo: 'Tu QR llega al correo', texto: 'Cada entrada trae su código único. También lo ves en tu cuenta.' },
   { icono: 'escanear', titulo: 'Lo escaneamos en la puerta', texto: 'Muestras el QR desde el celular, sube el brillo y entras.' },
 ]
 ---
-<Seccion id="entrada" titulo="Tu entrada vive en tu celular" class="entrada-seccion">
+<Seccion id="entrada" titulo="Entra por lista con tu propio QR" class="entrada-seccion">
   <div class="entrada">
     <ListaPasos pasos={PASOS} />
     <figure class="boleta" aria-label="Ilustración de una entrada digital">
       <div class="boleta__cabeza">
         <span class="boleta__marca">SKPAT VIP</span>
-        <span class="boleta__tipo">Entrada general</span>
+        <span class="boleta__tipo">Lista</span>
       </div>
       <div class="boleta__qr">
         <QrDecorativo semilla="skpat-entrada" class="boleta__codigo" />
@@ -35,7 +36,8 @@ const PASOS: readonly Paso[] = [
     </figure>
   </div>
   <div class="entrada__acciones">
-    <BotonNeon href={enlaceCompra} icono="flecha">Comprar entrada</BotonNeon>
+    <BotonNeon href={enlaceLista} icono="flecha">Anotarme en la lista</BotonNeon>
+    <BotonNeon href={enlaceCompra} variante="secundario">Comprar entrada</BotonNeon>
     <BotonNeon href={RUTAS_APP.cliente} variante="secundario">Ver mis entradas</BotonNeon>
   </div>
 </Seccion>
@@ -52,14 +54,14 @@ const PASOS: readonly Paso[] = [
     border-radius: var(--radio);
     background: var(--tinta);
     color: var(--fondo);
-    box-shadow: 0 2rem 4rem -1.5rem color-mix(in oklab, var(--violeta) 70%, transparent);
+    box-shadow: 0 2rem 4rem -1.5rem color-mix(in oklab, var(--primario) 70%, transparent);
     rotate: -3deg;
     transition: rotate 0.6s var(--curva-salida);
   }
   .boleta:hover { rotate: 0deg; }
   .boleta__cabeza { display: flex; justify-content: space-between; align-items: baseline; padding: 1.25rem 1.25rem 0.75rem; border-bottom: 2px dashed color-mix(in oklab, var(--fondo) 25%, transparent); }
   .boleta__marca { font-family: var(--fuente-display); font-weight: 900; font-size: 1.5rem; }
-  .boleta__tipo { font-size: 0.85rem; font-weight: 700; color: var(--color-skpat-purple2); }
+  .boleta__tipo { font-size: 0.85rem; font-weight: 700; color: var(--color-skpat-bronce); }
   .boleta__qr { position: relative; margin: 1.25rem; overflow: hidden; }
   .boleta :global(.boleta__codigo) { display: block; width: 100%; height: auto; color: var(--fondo); }
   .boleta__escaner {
@@ -67,8 +69,8 @@ const PASOS: readonly Paso[] = [
     left: 0;
     right: 0;
     height: 3px;
-    background: var(--rosa);
-    box-shadow: 0 0 1rem 0.25rem color-mix(in oklab, var(--rosa) 60%, transparent);
+    background: var(--acento);
+    box-shadow: 0 0 1rem 0.25rem color-mix(in oklab, var(--acento) 60%, transparent);
     animation: scan 2.8s ease-in-out infinite;
   }
   .boleta__pie { display: flex; justify-content: space-between; padding: 0 1.25rem 1.25rem; font-size: 0.8rem; color: var(--color-skpat-bg3); }

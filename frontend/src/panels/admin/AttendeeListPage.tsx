@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { useAuth } from '@/features/auth/useAuth'
 import { api, isApiError } from '@/lib/api'
 import { formatCOP } from '@/lib/format'
+import { ticketLabel } from '@skpat/backend/src/lib/ticketPrices'
 
 const ATTENDEES_POLL_INTERVAL_MS = 5_000
 const HTTP_NOT_FOUND = 404
@@ -26,13 +27,6 @@ interface AttendeeData {
   total: number
   scanned: number
   attendees: Attendee[]
-}
-
-const TICKET_LABELS: Record<string, string> = {
-  general: 'General',
-  palco_silver: 'Palco Silver',
-  palco_gold: 'Palco Gold',
-  palco_platinum: 'Palco Platinum',
 }
 
 function attendeesErrorMessage(error: unknown): string {
@@ -68,12 +62,12 @@ export default function AttendeeListPage() {
   }, [fetchAttendees])
 
   if (loading) return (
-    <div style={{ padding: 32, color: '#94a3b8' }}>Cargando asistentes...</div>
+    <div style={{ padding: 32, color: '#a89f8f' }}>Cargando asistentes...</div>
   )
   if (error) return (
     <div style={{ padding: 32 }}>
       <p style={{ color: '#ef4444' }}>{error}</p>
-      <Link to="/admin/eventos" style={{ color: '#8b5cf6', fontSize: 13 }}>← Volver a eventos</Link>
+      <Link to="/admin/eventos" style={{ color: '#d4a63a', fontSize: 13 }}>← Volver a eventos</Link>
     </div>
   )
   if (!data) return null
@@ -84,21 +78,21 @@ export default function AttendeeListPage() {
     <div style={{ padding: '24px 32px', maxWidth: 1000 }}>
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
-        <Link to="/admin/eventos" style={{ color: '#8b5cf6', fontSize: 13, textDecoration: 'none' }}>
+        <Link to="/admin/eventos" style={{ color: '#d4a63a', fontSize: 13, textDecoration: 'none' }}>
           ← Volver a eventos
         </Link>
-        <h1 style={{ fontSize: 24, fontWeight: 800, color: '#f8fafc', margin: '10px 0 4px' }}>
+        <h1 style={{ fontSize: 24, fontWeight: 800, color: '#faf7f0', margin: '10px 0 4px' }}>
           {data.event_title}
         </h1>
-        <p style={{ color: '#94a3b8', fontSize: 13 }}>Lista de asistentes · Actualización automática cada 5s</p>
+        <p style={{ color: '#a89f8f', fontSize: 13 }}>Lista de asistentes · Actualización automática cada 5s</p>
       </div>
 
       {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 24 }}>
         {[
-          { label: 'Total tiquetes', value: data.total, color: '#f8fafc' },
+          { label: 'Total tiquetes', value: data.total, color: '#faf7f0' },
           { label: 'Ingresaron', value: data.scanned, color: '#10b981' },
-          { label: 'Pendientes', value: pending, color: '#f59e0b' },
+          { label: 'Pendientes', value: pending, color: '#f0c75e' },
         ].map(s => (
           <div key={s.label} style={{ background: '#1c1c2e', border: '1px solid rgba(255,255,255,.08)', borderRadius: 12, padding: '16px 20px' }}>
             <div style={{ fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 6 }}>{s.label}</div>
@@ -110,7 +104,7 @@ export default function AttendeeListPage() {
       {/* Table */}
       <div style={{ background: '#1c1c2e', border: '1px solid rgba(255,255,255,.08)', borderRadius: 12, overflow: 'hidden' }}>
         <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontWeight: 700, color: '#f8fafc' }}>Asistentes ({data.total})</span>
+          <span style={{ fontWeight: 700, color: '#faf7f0' }}>Asistentes ({data.total})</span>
         </div>
         {data.attendees.length === 0 ? (
           <div style={{ padding: 32, textAlign: 'center', color: '#64748b' }}>
@@ -130,18 +124,18 @@ export default function AttendeeListPage() {
                 {data.attendees.map(a => (
                   <tr key={a.id} style={{ borderTop: '1px solid rgba(255,255,255,.06)' }}>
                     <td style={{ padding: '12px 16px', color: '#f1f5f9', fontWeight: 600, whiteSpace: 'nowrap' }}>{a.nombre}</td>
-                    <td style={{ padding: '12px 16px', color: '#94a3b8', fontSize: 12 }}>{a.email}</td>
-                    <td style={{ padding: '12px 16px', color: '#94a3b8', fontFamily: 'monospace', fontSize: 12 }}>{a.cedula}</td>
+                    <td style={{ padding: '12px 16px', color: '#a89f8f', fontSize: 12 }}>{a.email}</td>
+                    <td style={{ padding: '12px 16px', color: '#a89f8f', fontFamily: 'monospace', fontSize: 12 }}>{a.cedula}</td>
                     <td style={{ padding: '12px 16px' }}>
-                      <span style={{ background: 'rgba(139,92,246,.15)', color: '#a78bfa', padding: '2px 8px', borderRadius: 6, fontSize: 11, fontWeight: 600 }}>
-                        {TICKET_LABELS[a.ticket_type] ?? a.ticket_type}
+                      <span style={{ background: 'rgba(212,166,58,.15)', color: '#e6c56e', padding: '2px 8px', borderRadius: 6, fontSize: 11, fontWeight: 600 }}>
+                        {ticketLabel(a.ticket_type)}
                       </span>
                     </td>
                     <td style={{ padding: '12px 16px', color: '#10b981', fontWeight: 700, whiteSpace: 'nowrap' }}>{formatCOP(a.price_cents)}</td>
                     <td style={{ padding: '12px 16px' }}>
                       <span style={{
                         background: a.qr_used ? 'rgba(16,185,129,.12)' : 'rgba(245,158,11,.12)',
-                        color: a.qr_used ? '#10b981' : '#f59e0b',
+                        color: a.qr_used ? '#10b981' : '#f0c75e',
                         border: `1px solid ${a.qr_used ? 'rgba(16,185,129,.3)' : 'rgba(245,158,11,.3)'}`,
                         padding: '2px 8px', borderRadius: 6, fontSize: 11, fontWeight: 600,
                       }}>

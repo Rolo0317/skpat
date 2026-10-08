@@ -29,7 +29,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         {/* Brand */}
         <div className="text-center mb-8">
-          <div className="text-3xl font-black text-skpat-purple tracking-tight text-glow">SKPAT VIP</div>
+          <div className="text-3xl font-black text-skpat-oro tracking-tight text-glow">SKPAT VIP</div>
           <div className="text-skpat-muted text-sm mt-1">Panel de administración</div>
         </div>
 
@@ -51,7 +51,7 @@ export default function LoginPage() {
                 type="email"
                 autoComplete="email"
                 {...register('email')}
-                className="w-full bg-skpat-bg3 border border-skpat-border rounded-lg pl-9 pr-3 py-2.5 text-sm text-skpat-text placeholder:text-skpat-muted focus:outline-none focus:border-skpat-purple transition-colors"
+                className="w-full bg-skpat-bg3 border border-skpat-border rounded-lg pl-9 pr-3 py-2.5 text-sm text-skpat-text placeholder:text-skpat-muted focus:outline-none focus:border-skpat-oro transition-colors"
                 placeholder="tu@email.com"
               />
             </div>
@@ -70,7 +70,7 @@ export default function LoginPage() {
                 type="password"
                 autoComplete="current-password"
                 {...register('password')}
-                className="w-full bg-skpat-bg3 border border-skpat-border rounded-lg pl-9 pr-3 py-2.5 text-sm text-skpat-text placeholder:text-skpat-muted focus:outline-none focus:border-skpat-purple transition-colors"
+                className="w-full bg-skpat-bg3 border border-skpat-border rounded-lg pl-9 pr-3 py-2.5 text-sm text-skpat-text placeholder:text-skpat-muted focus:outline-none focus:border-skpat-oro transition-colors"
                 placeholder="••••••••"
               />
             </div>
@@ -85,17 +85,17 @@ export default function LoginPage() {
 
           <button
             disabled={isSubmitting}
-            className="w-full flex items-center justify-center gap-2 bg-skpat-purple hover:bg-skpat-purple2 disabled:opacity-50 py-2.5 rounded-lg font-semibold text-white transition-colors"
+            className="w-full flex items-center justify-center gap-2 bg-skpat-oro hover:bg-skpat-bronce disabled:opacity-50 py-2.5 rounded-lg font-semibold text-white transition-colors"
           >
             <LogIn size={15} />
             {isSubmitting ? 'Entrando...' : 'Entrar'}
           </button>
 
           <div className="flex justify-between text-xs text-skpat-muted pt-1">
-            <Link to="/register" className="hover:text-skpat-purple transition-colors">
+            <Link to="/register" className="hover:text-skpat-oro transition-colors">
               Crear cuenta
             </Link>
-            <Link to="/recover" className="hover:text-skpat-purple transition-colors">
+            <Link to="/recover" className="hover:text-skpat-oro transition-colors">
               Olvidé mi contraseña
             </Link>
           </div>

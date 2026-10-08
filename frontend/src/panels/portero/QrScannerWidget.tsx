@@ -45,7 +45,7 @@ export function QrScannerWidget({ onScan, active }: QrScannerWidgetProps) {
         overflow: 'hidden',
         aspectRatio: '1',
         background: '#0a0a18',
-        border: '2px solid #2a2a4a',
+        border: '2px solid #3a3022',
       }}
     >
       <video
@@ -61,7 +61,7 @@ export function QrScannerWidget({ onScan, active }: QrScannerWidgetProps) {
             left: 0,
             right: 0,
             height: 2,
-            background: 'linear-gradient(90deg, transparent, #8b5cf6, transparent)',
+            background: 'linear-gradient(90deg, transparent, #d4a63a, transparent)',
             animation: 'scan 2.5s ease-in-out infinite',
           }}
         />

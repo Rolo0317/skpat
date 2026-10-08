@@ -18,12 +18,12 @@ export function MapSection() {
           />
         </div>
         <div>
-          <h3 className="text-[#f8fafc] text-[26px] font-extrabold mb-3">¿Cómo llegar?</h3>
+          <h3 className="text-[#faf7f0] text-[26px] font-extrabold mb-3">¿Cómo llegar?</h3>
           <div className="flex gap-3 items-start mb-4">
             <span className="text-lg mt-0.5">📍</span>
             <p className="text-sm text-skpat-muted leading-relaxed">
               Cra. 15 #93-47, Bogotá, Colombia<br />
-              <span className="text-skpat-purple">Nueva ubicación 2025</span>
+              <span className="text-skpat-oro">Nueva ubicación 2025</span>
             </p>
           </div>
           <div className="flex gap-3 items-start mb-4">
@@ -44,10 +44,10 @@ export function MapSection() {
             href="https://maps.google.com/?q=Carrera+15+93-47+Bogotá"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-block px-8 py-3 rounded-full text-white font-bold text-[15px]"
+            className="inline-block px-8 py-3 rounded-full text-skpat-bg font-bold text-[15px]"
             style={{
-              background: 'linear-gradient(135deg, #8b5cf6, #ec4899)',
-              boxShadow: '0 4px 20px #8b5cf640',
+              background: 'linear-gradient(135deg, #d4a63a, #f2d38a)',
+              boxShadow: '0 4px 20px #d4a63a40',
             }}
           >
             Ver en Google Maps

@@ -8,9 +8,29 @@ export const PALCO_PRICES_CENTS: Record<string, number> = {
   palco_platinum: 1_500_000_00, // $1.500.000 COP — hasta 15 personas, bar abierto
 }
 
-export type TicketType = 'general' | 'palco_silver' | 'palco_gold' | 'palco_platinum'
+/** "lista": inscripción gratuita con QR propio; el cover se paga en la puerta según la hora de llegada. */
+export type TicketType = 'general' | 'lista' | 'palco_silver' | 'palco_gold' | 'palco_platinum'
 
-export const TICKET_TYPES: TicketType[] = ['general', 'palco_silver', 'palco_gold', 'palco_platinum']
+export const TICKET_TYPES: TicketType[] = ['general', 'lista', 'palco_silver', 'palco_gold', 'palco_platinum']
+
+export const TICKET_LABELS: Record<TicketType, string> = {
+  general: 'Entrada General',
+  lista: 'Lista',
+  palco_silver: 'Palco Silver',
+  palco_gold: 'Palco Gold',
+  palco_platinum: 'Palco Platinum',
+}
+
+export function ticketLabel(type: string): string {
+  return TICKET_LABELS[type as TicketType] ?? type
+}
+
+/** Precio a cobrar: la general usa el precio del evento, la lista no cuesta y cada palco tiene precio fijo. */
+export function ticketPriceCents(type: TicketType, eventPriceCents: number): number {
+  if (type === 'general') return eventPriceCents
+  if (type === 'lista') return 0
+  return PALCO_PRICES_CENTS[type] ?? eventPriceCents
+}
 
 export const PALCO_TIERS = ['silver', 'gold', 'platinum'] as const
 export type PalcoTier = (typeof PALCO_TIERS)[number]

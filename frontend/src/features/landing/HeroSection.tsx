@@ -5,9 +5,9 @@ export function HeroSection() {
         className="absolute inset-0 pointer-events-none"
         style={{
           background: `
-            radial-gradient(ellipse 80% 60% at 50% 20%, #8b5cf620 0%, transparent 70%),
-            radial-gradient(ellipse 60% 40% at 80% 80%, #ec489915 0%, transparent 60%),
-            radial-gradient(ellipse 40% 30% at 10% 90%, #06b6d410 0%, transparent 50%)
+            radial-gradient(ellipse 80% 60% at 50% 20%, #d4a63a20 0%, transparent 70%),
+            radial-gradient(ellipse 60% 40% at 80% 80%, #f2d38a15 0%, transparent 60%),
+            radial-gradient(ellipse 40% 30% at 10% 90%, #2f80ff10 0%, transparent 50%)
           `,
         }}
       />
@@ -15,7 +15,7 @@ export function HeroSection() {
         className="absolute inset-0 pointer-events-none opacity-[0.06]"
         style={{
           backgroundImage:
-            'linear-gradient(#2a2a4a 1px, transparent 1px), linear-gradient(90deg, #2a2a4a 1px, transparent 1px)',
+            'linear-gradient(#3a3022 1px, transparent 1px), linear-gradient(90deg, #3a3022 1px, transparent 1px)',
           backgroundSize: '60px 60px',
         }}
       />
@@ -26,7 +26,7 @@ export function HeroSection() {
         SKPAT
       </h1>
       <p
-        className="relative text-skpat-purple uppercase mt-2"
+        className="relative text-skpat-oro uppercase mt-2"
         style={{ letterSpacing: '12px', fontSize: 'clamp(14px, 2.5vw, 22px)' }}
       >
         V I P
@@ -41,17 +41,17 @@ export function HeroSection() {
       <div className="relative flex gap-4 mt-10 flex-wrap justify-center">
         <a
           href="/login"
-          className="px-8 py-3.5 rounded-full text-white font-bold text-[15px] tracking-wide transition-all hover:-translate-y-0.5"
+          className="px-8 py-3.5 rounded-full text-skpat-bg font-bold text-[15px] tracking-wide transition-all hover:-translate-y-0.5"
           style={{
-            background: 'linear-gradient(135deg, #8b5cf6, #ec4899)',
-            boxShadow: '0 4px 20px #8b5cf640',
+            background: 'linear-gradient(135deg, #d4a63a, #f2d38a)',
+            boxShadow: '0 4px 20px #d4a63a40',
           }}
         >
           🎫 Comprar tiquetes
         </a>
         <a
           href="#eventos"
-          className="px-8 py-3.5 rounded-full border border-skpat-purple text-skpat-purple bg-transparent font-semibold text-[15px] transition-all hover:-translate-y-0.5 hover:bg-[#8b5cf610]"
+          className="px-8 py-3.5 rounded-full border border-skpat-oro text-skpat-oro bg-transparent font-semibold text-[15px] transition-all hover:-translate-y-0.5 hover:bg-[#d4a63a10]"
         >
           📅 Ver eventos
         </a>

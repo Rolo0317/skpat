@@ -14,7 +14,7 @@ const posicionPin = `--pin-x: ${(CRUCE.x / LIENZO.ancho) * PORCENTAJE}%; --pin-y
 const DATOS: { icono: NombreIcono; titulo: string; texto: string }[] = [
   { icono: 'pin', titulo: NEGOCIO.direccion.calle, texto: `${NEGOCIO.direccion.ciudad}, Colombia` },
   { icono: 'reloj', titulo: NEGOCIO.horario.dias, texto: NEGOCIO.horario.texto },
-  { icono: 'instagram', titulo: NEGOCIO.instagram.usuario, texto: 'Line-ups, fotos y anuncios' },
+  { icono: 'instagram', titulo: NEGOCIO.redes.instagram.usuario, texto: 'Line-ups, fotos y anuncios' },
 ]
 ---
 <Seccion id="ubicacion" titulo="En la 93, Bogotá">
@@ -66,13 +66,13 @@ const DATOS: { icono: NombreIcono; titulo: string; texto: string }[] = [
     border-radius: var(--radio);
     overflow: hidden;
     border: 1px solid var(--linea);
-    background: radial-gradient(circle at var(--pin-x) var(--pin-y), color-mix(in oklab, var(--violeta) 30%, transparent), transparent 55%), var(--fondo-2);
+    background: radial-gradient(circle at var(--pin-x) var(--pin-y), color-mix(in oklab, var(--primario) 30%, transparent), transparent 55%), var(--fondo-2);
   }
   .mapa__dibujo { width: 100%; height: 100%; display: block; }
   .mapa__cuadricula { stroke: var(--linea); stroke-width: 1; }
   .mapa__via { stroke-width: 14; stroke-linecap: square; }
-  .mapa__via--calle { stroke: color-mix(in oklab, var(--violeta) 55%, var(--fondo-3)); }
-  .mapa__via--carrera { stroke: color-mix(in oklab, var(--cian) 45%, var(--fondo-3)); }
+  .mapa__via--calle { stroke: color-mix(in oklab, var(--primario) 55%, var(--fondo-3)); }
+  .mapa__via--carrera { stroke: color-mix(in oklab, var(--azul) 45%, var(--fondo-3)); }
   .mapa__rotulo { fill: var(--tinta); font-family: var(--fuente-display); font-weight: 700; font-size: 16px; letter-spacing: 0.06em; text-transform: uppercase; }
 
   .mapa__pin {
@@ -85,18 +85,18 @@ const DATOS: { icono: NombreIcono; titulo: string; texto: string }[] = [
     height: 3.25rem;
     translate: -50% -50%;
     border-radius: 50%;
-    background: var(--rosa);
+    background: var(--acento);
     color: var(--fondo);
     animation: pin-pulso 1.9s var(--curva-salida) infinite;
   }
   @keyframes pin-pulso {
-    from { box-shadow: 0 0 0 0 color-mix(in oklab, var(--rosa) 70%, transparent); }
+    from { box-shadow: 0 0 0 0 color-mix(in oklab, var(--acento) 70%, transparent); }
     to { box-shadow: 0 0 0 1.5rem transparent; }
   }
 
   .ubicacion__datos { display: grid; gap: 1.25rem; padding: 0; margin: 0; list-style: none; }
   .ubicacion__datos li { display: flex; gap: 1rem; align-items: flex-start; }
-  .ubicacion__datos :global(svg) { flex: none; margin-top: 0.3rem; color: var(--rosa-claro); }
+  .ubicacion__datos :global(svg) { flex: none; margin-top: 0.3rem; color: var(--acento-claro); }
   .ubicacion__titulo { font-family: var(--fuente-display); font-weight: 900; font-size: 1.75rem; line-height: 1.05; text-transform: uppercase; color: var(--tinta); }
   .ubicacion__texto { color: var(--tinta-suave); }
   .ubicacion__acciones { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 2rem; }

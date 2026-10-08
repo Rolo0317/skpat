@@ -52,7 +52,7 @@ export default function AdminMenuPage() {
           <p style={{ fontSize: 13, color: '#64748b', marginTop: 3 }}>Gestiona los productos disponibles en las mesas</p>
         </div>
         <button onClick={() => setShowForm(s => !s)}
-          style={{ padding: '9px 18px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#7c3aed,#e11d48)', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+          style={{ padding: '9px 18px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#b8892a,#e11d48)', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
           + Agregar producto
         </button>
       </div>
@@ -86,11 +86,11 @@ export default function AdminMenuPage() {
             {error && <p style={{ gridColumn: '1/-1', color: '#f87171', fontSize: 12, margin: 0 }}>{error}</p>}
             <div style={{ gridColumn: '1/-1', display: 'flex', gap: 10 }}>
               <button type="submit" disabled={saving}
-                style={{ padding: '10px 20px', borderRadius: 8, border: 'none', background: '#7c3aed', color: '#fff', fontWeight: 700, fontSize: 13, cursor: saving?'not-allowed':'pointer' }}>
+                style={{ padding: '10px 20px', borderRadius: 8, border: 'none', background: '#b8892a', color: '#fff', fontWeight: 700, fontSize: 13, cursor: saving?'not-allowed':'pointer' }}>
                 {saving ? 'Guardando...' : 'Crear producto'}
               </button>
               <button type="button" onClick={() => setShowForm(false)}
-                style={{ padding: '10px 16px', borderRadius: 8, border: '1px solid rgba(255,255,255,.1)', background: 'transparent', color: '#94a3b8', cursor: 'pointer' }}>
+                style={{ padding: '10px 16px', borderRadius: 8, border: '1px solid rgba(255,255,255,.1)', background: 'transparent', color: '#a89f8f', cursor: 'pointer' }}>
                 Cancelar
               </button>
             </div>
@@ -103,7 +103,7 @@ export default function AdminMenuPage() {
 
       {Object.entries(grouped).map(([cat, catItems]) => (
         <div key={cat} style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: '#7c3aed', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: 10 }}>{cat}</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#b8892a', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: 10 }}>{cat}</div>
           <div style={{ ...cardStyle, overflow: 'hidden' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
@@ -122,13 +122,13 @@ export default function AdminMenuPage() {
                     </td>
                     <td style={{ padding: '12px 16px', fontWeight: 700, color: '#059669', fontSize: 14 }}>{formatCOP(item.price_cents)}</td>
                     <td style={{ padding: '12px 16px' }}>
-                      <span style={{ background: item.is_active ? 'rgba(5,150,105,.12)' : 'rgba(100,116,139,.12)', color: item.is_active ? '#059669' : '#94a3b8', border: `1px solid ${item.is_active ? 'rgba(5,150,105,.25)' : 'rgba(100,116,139,.2)'}`, padding: '2px 8px', borderRadius: 6, fontSize: 11, fontWeight: 600 }}>
+                      <span style={{ background: item.is_active ? 'rgba(5,150,105,.12)' : 'rgba(100,116,139,.12)', color: item.is_active ? '#059669' : '#a89f8f', border: `1px solid ${item.is_active ? 'rgba(5,150,105,.25)' : 'rgba(100,116,139,.2)'}`, padding: '2px 8px', borderRadius: 6, fontSize: 11, fontWeight: 600 }}>
                         {item.is_active ? 'Activo' : 'Inactivo'}
                       </span>
                     </td>
                     <td style={{ padding: '12px 16px' }}>
                       <button onClick={() => toggleActive(item)}
-                        style={{ padding: '5px 12px', borderRadius: 6, border: '1px solid rgba(255,255,255,.1)', background: 'rgba(255,255,255,.06)', color: '#94a3b8', fontSize: 12, cursor: 'pointer' }}>
+                        style={{ padding: '5px 12px', borderRadius: 6, border: '1px solid rgba(255,255,255,.1)', background: 'rgba(255,255,255,.06)', color: '#a89f8f', fontSize: 12, cursor: 'pointer' }}>
                         {item.is_active ? 'Desactivar' : 'Activar'}
                       </button>
                     </td>

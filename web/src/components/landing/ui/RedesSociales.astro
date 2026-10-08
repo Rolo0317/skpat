@@ -1,0 +1,44 @@
+---
+import Icono from './Icono.astro'
+import { REDES } from '../contenido/negocio'
+
+/** Enlaces a todas las redes del negocio, con icono y nombre accesible. */
+interface Props {
+  conTexto?: boolean
+  class?: string
+}
+
+const { conTexto = false, class: clase } = Astro.props
+---
+<ul class:list={['redes', { 'redes--texto': conTexto }, clase]}>
+  {
+    REDES.map(({ id, nombre, usuario, url }) => (
+      <li>
+        <a href={url} target="_blank" rel="noopener noreferrer" class="redes__enlace" aria-label={`${nombre}: ${usuario}`}>
+          <Icono nombre={id} />
+          {conTexto && <span>{nombre}</span>}
+        </a>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .redes { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+  .redes__enlace {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    border: 1px solid var(--linea);
+    border-radius: 999px;
+    color: var(--tinta);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+  }
+  .redes--texto .redes__enlace { padding-inline: 1rem; }
+  .redes__enlace:hover { color: var(--fondo); border-color: var(--primario); background: var(--primario); }
+</style>

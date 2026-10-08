@@ -6,7 +6,7 @@ import { encrypt } from '../../lib/encrypt.js'
 import { generateQrToken, generateQrDataUrl } from '../../lib/qr.js'
 import { sendTicketEmail } from '../../lib/email.js'
 import { optionalAuth } from '../../plugins/auth.js'
-import { PALCO_PRICES_CENTS, TICKET_TYPES, type TicketType } from '../../lib/ticketPrices.js'
+import { TICKET_TYPES, ticketPriceCents, type TicketType } from '../../lib/ticketPrices.js'
 
 const purchaseSchema = z.object({
   event_id: z.string().min(1),
@@ -26,8 +26,10 @@ const EMAIL_DATE_FORMAT: Intl.DateTimeFormatOptions = {
   timeZone: 'America/Bogota',
 }
 
-function priceFor(ticketType: TicketType, basePrice: number): number {
-  return ticketType === 'general' ? basePrice : (PALCO_PRICES_CENTS[ticketType] ?? basePrice)
+const UNIQUE_VIOLATION = '23505'
+
+function isUniqueViolation(err: unknown): boolean {
+  return typeof err === 'object' && err !== null && (err as { code?: string }).code === UNIQUE_VIOLATION
 }
 
 /**
@@ -52,9 +54,10 @@ async function createTicket(input: PurchaseInput, userId: string | null) {
   if (!isUuid(input.event_id)) throw new HttpError(404, 'EventNotFound')
   const qrToken = generateQrToken()
 
+  // El índice único tickets_lista_unica garantiza un solo QR de lista por correo y evento.
   return db.transaction(async (tx) => {
     const event = await reserveSpot(tx, input.event_id)
-    const priceCents = priceFor(input.ticket_type, event.price)
+    const priceCents = ticketPriceCents(input.ticket_type, event.price)
     const ticket = await tx.one<{ id: string }>(
       `insert into tickets (event_id, user_id, nombre, cedula_enc, email, telefono_enc, qr_token, ticket_type, price_cents)
        values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
@@ -65,6 +68,9 @@ async function createTicket(input: PurchaseInput, userId: string | null) {
       ],
     )
     return { event, ticketId: ticket!.id, priceCents, qrToken }
+  }).catch((err: unknown) => {
+    if (isUniqueViolation(err)) throw new HttpError(409, 'AlreadyOnList')
+    throw err
   })
 }
 

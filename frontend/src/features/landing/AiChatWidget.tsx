@@ -104,11 +104,11 @@ export function AiChatWidget() {
     <div className="fixed bottom-6 right-6 z-[900] flex flex-col items-end gap-3">
       {open && (
         <div
-          className="bg-skpat-card border border-skpat-purple rounded-2xl shadow-lg w-[320px] max-h-[480px] flex flex-col overflow-hidden"
-          style={{ boxShadow: '0 8px 32px #8b5cf640' }}
+          className="bg-skpat-card border border-skpat-oro rounded-2xl shadow-lg w-[320px] max-h-[480px] flex flex-col overflow-hidden"
+          style={{ boxShadow: '0 8px 32px #d4a63a40' }}
         >
           <div className="px-4 py-3 border-b border-skpat-border flex items-center justify-between">
-            <div className="text-skpat-purple text-xs font-bold">🤖 Asistente Skpat</div>
+            <div className="text-skpat-oro text-xs font-bold">🤖 Asistente Skpat</div>
             <button
               className="text-skpat-muted hover:text-white text-xs"
               onClick={() => setOpen(false)}
@@ -124,7 +124,7 @@ export function AiChatWidget() {
                 className={`text-sm leading-relaxed ${m.role === 'user' ? 'text-right text-white' : 'text-skpat-text'}`}
               >
                 <div
-                  className={`inline-block px-3 py-2 rounded-2xl ${m.role === 'user' ? 'bg-skpat-purple text-white' : 'bg-skpat-bg3'}`}
+                  className={`inline-block px-3 py-2 rounded-2xl ${m.role === 'user' ? 'bg-skpat-oro text-skpat-bg' : 'bg-skpat-bg3'}`}
                 >
                   {m.text}
                 </div>
@@ -138,7 +138,7 @@ export function AiChatWidget() {
           </div>
           <form onSubmit={handleSend} className="border-t border-skpat-border p-3 flex gap-2">
             <input
-              className="flex-1 bg-skpat-bg2 border border-skpat-border rounded-full px-3 py-2 text-sm text-white outline-none focus:border-skpat-purple"
+              className="flex-1 bg-skpat-bg2 border border-skpat-border rounded-full px-3 py-2 text-sm text-white outline-none focus:border-skpat-oro"
               placeholder="Pregúntame sobre Skpat…"
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -147,8 +147,8 @@ export function AiChatWidget() {
             <button
               type="submit"
               disabled={busy || !input.trim()}
-              className="text-white px-4 py-2 rounded-full text-sm font-semibold disabled:opacity-50"
-              style={{ background: 'linear-gradient(135deg, #8b5cf6, #ec4899)' }}
+              className="text-skpat-bg px-4 py-2 rounded-full text-sm font-semibold disabled:opacity-50"
+              style={{ background: 'linear-gradient(135deg, #d4a63a, #f2d38a)' }}
             >
               {busy ? '…' : 'Enviar'}
             </button>
@@ -158,9 +158,9 @@ export function AiChatWidget() {
       <button
         onClick={() => setOpen((v) => !v)}
         aria-label="Abrir chat con asistente Skpat"
-        className="w-[52px] h-[52px] rounded-full border-none cursor-pointer flex items-center justify-center text-[22px] text-white"
+        className="w-[52px] h-[52px] rounded-full border-none cursor-pointer flex items-center justify-center text-[22px] text-skpat-bg"
         style={{
-          background: 'linear-gradient(135deg, #8b5cf6, #ec4899)',
+          background: 'linear-gradient(135deg, #d4a63a, #f2d38a)',
           animation: 'ai-pulse 2s infinite',
         }}
       >

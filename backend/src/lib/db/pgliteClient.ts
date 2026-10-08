@@ -2,8 +2,11 @@ import { readFile } from 'node:fs/promises'
 import { PGlite, types, type Transaction } from '@electric-sql/pglite'
 import type { SqlClient } from './types.js'
 
-/** Única fuente del esquema: la migración que también se aplicó en Supabase. */
-const SCHEMA_FILE = new URL('../../../../supabase/migrations/0002_skpat_schema.sql', import.meta.url)
+/** Única fuente del esquema: las migraciones que también se aplicaron en Supabase (0003 es solo de Supabase). */
+const MIGRATIONS_DIR = new URL('../../../../supabase/migrations/', import.meta.url)
+const SCHEMA_FILE = new URL('0002_skpat_schema.sql', MIGRATIONS_DIR)
+/** Migraciones idempotentes: se aplican en cada arranque para poner al día también las bases persistidas. */
+const IDEMPOTENT_MIGRATIONS = ['0004_skpat_lista.sql'].map((file) => new URL(file, MIGRATIONS_DIR))
 
 type Executor = PGlite | Transaction
 
@@ -37,6 +40,7 @@ export async function createPgliteClient(dataDir?: string): Promise<SqlClient> {
   if (!alreadyMigrated.rows[0]?.exists) {
     await pg.exec(await readFile(SCHEMA_FILE, 'utf8'))
   }
+  for (const migration of IDEMPOTENT_MIGRATIONS) await pg.exec(await readFile(migration, 'utf8'))
   await pg.exec('set search_path to skpat, public')
   return wrap(pg)
 }

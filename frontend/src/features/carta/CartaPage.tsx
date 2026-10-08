@@ -16,7 +16,7 @@ function CartaHeader({ tableNumber }: { tableNumber?: string }) {
     <header className="sticky top-0 z-10 bg-skpat-bg2 border-b border-skpat-border px-5 py-4">
       <div className="max-w-[480px] mx-auto flex justify-between items-center">
         <div>
-          <div className="text-[11px] font-bold text-skpat-purple tracking-[2px] uppercase">
+          <div className="text-[11px] font-bold text-skpat-oro tracking-[2px] uppercase">
             {tableNumber ? `Mesa ${tableNumber}` : 'Carta Digital'}
           </div>
           <div className="text-[17px] font-extrabold text-skpat-white mt-0.5">Skpat VIP</div>
@@ -33,7 +33,7 @@ function OrderSentNotice({ onNewOrder }: { onNewOrder: () => void }) {
       <CheckCircle2 className="mx-auto text-skpat-green mb-2" size={32} />
       <div className="font-bold text-skpat-green">¡Pedido enviado!</div>
       <p className="text-sm text-skpat-muted mt-1">Tu mesero ya lo recibió y va en camino.</p>
-      <button type="button" onClick={onNewOrder} className="mt-3 text-sm font-semibold text-skpat-purple underline">
+      <button type="button" onClick={onNewOrder} className="mt-3 text-sm font-semibold text-skpat-oro underline">
         Hacer otro pedido
       </button>
     </div>

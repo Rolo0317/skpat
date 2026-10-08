@@ -18,7 +18,7 @@ export default function AdminLayout() {
       <aside className="w-56 shrink-0 flex flex-col bg-skpat-bg2 border-r border-skpat-border">
         {/* Logo */}
         <div className="px-5 py-5 border-b border-skpat-border">
-          <div className="text-skpat-purple font-black text-lg tracking-tight">SKPAT</div>
+          <div className="text-skpat-oro font-black text-lg tracking-tight">SKPAT</div>
           <div className="text-skpat-muted text-[10px] uppercase tracking-widest mt-0.5">Admin Panel</div>
         </div>
 
@@ -32,16 +32,16 @@ export default function AdminLayout() {
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all group ${
                   isActive
-                    ? 'bg-skpat-purple/15 text-skpat-purple'
+                    ? 'bg-skpat-oro/15 text-skpat-oro'
                     : 'text-skpat-muted hover:text-skpat-text hover:bg-white/5'
                 }`
               }
             >
               {({ isActive }) => (
                 <>
-                  <Icon size={16} className={isActive ? 'text-skpat-purple' : 'text-skpat-muted group-hover:text-skpat-text'} />
+                  <Icon size={16} className={isActive ? 'text-skpat-oro' : 'text-skpat-muted group-hover:text-skpat-text'} />
                   <span className="flex-1">{label}</span>
-                  {isActive && <ChevronRight size={12} className="text-skpat-purple" />}
+                  {isActive && <ChevronRight size={12} className="text-skpat-oro" />}
                 </>
               )}
             </NavLink>

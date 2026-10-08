@@ -39,9 +39,9 @@ const { pasos, class: clase } = Astro.props
     width: 3rem;
     height: 3rem;
     border-radius: 50%;
-    border: 1px solid color-mix(in oklab, var(--violeta) 60%, transparent);
-    background: color-mix(in oklab, var(--violeta) 18%, var(--fondo));
-    color: var(--violeta-claro);
+    border: 1px solid color-mix(in oklab, var(--primario) 60%, transparent);
+    background: color-mix(in oklab, var(--primario) 18%, var(--fondo));
+    color: var(--primario-claro);
   }
   .paso__icono::after {
     content: counter(paso);
@@ -53,7 +53,7 @@ const { pasos, class: clase } = Astro.props
     width: 1.35rem;
     height: 1.35rem;
     border-radius: 50%;
-    background: var(--rosa);
+    background: var(--acento);
     color: var(--fondo);
     font-size: 0.75rem;
     font-weight: 700;

@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { api } from '@/lib/api'
 import { QrScannerWidget } from './QrScannerWidget'
+import { ticketLabel } from '@skpat/backend/src/lib/ticketPrices'
 
 type ScanMode = 'camera' | 'manual'
 
@@ -72,10 +73,10 @@ export default function PorteroHome() {
   const resultLabel = !result ? '' : result.valid ? 'VALIDO' : (result.reason === 'AlreadyUsed' ? 'YA USADO' : 'INVALIDO')
 
   return (
-    <section style={{ maxWidth: 720, margin: '0 auto', padding: 24, color: '#e2e8f0' }}>
+    <section style={{ maxWidth: 720, margin: '0 auto', padding: 24, color: '#ece6da' }}>
       <header style={{ textAlign: 'center', marginBottom: 24 }}>
         <h1 style={{ fontSize: 26, fontWeight: 700, margin: 0 }}>Panel Portero</h1>
-        <p style={{ color: '#94a3b8', fontSize: 14, marginTop: 4 }}>Validacion de tiquetes Skpat VIP</p>
+        <p style={{ color: '#a89f8f', fontSize: 14, marginTop: 4 }}>Validacion de tiquetes Skpat VIP</p>
       </header>
 
       <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
@@ -85,9 +86,9 @@ export default function PorteroHome() {
           aria-pressed={mode === 'camera'}
           style={{
             flex: 1, padding: 10, borderRadius: 8,
-            border: `2px solid ${mode === 'camera' ? '#8b5cf6' : '#2a2a4a'}`,
-            background: mode === 'camera' ? '#1a0a3a' : '#16162a',
-            color: '#e2e8f0', cursor: 'pointer',
+            border: `2px solid ${mode === 'camera' ? '#d4a63a' : '#3a3022'}`,
+            background: mode === 'camera' ? '#2a1f0e' : '#1b1711',
+            color: '#ece6da', cursor: 'pointer',
           }}
         >Camara</button>
         <button
@@ -96,9 +97,9 @@ export default function PorteroHome() {
           aria-pressed={mode === 'manual'}
           style={{
             flex: 1, padding: 10, borderRadius: 8,
-            border: `2px solid ${mode === 'manual' ? '#8b5cf6' : '#2a2a4a'}`,
-            background: mode === 'manual' ? '#1a0a3a' : '#16162a',
-            color: '#e2e8f0', cursor: 'pointer',
+            border: `2px solid ${mode === 'manual' ? '#d4a63a' : '#3a3022'}`,
+            background: mode === 'manual' ? '#2a1f0e' : '#1b1711',
+            color: '#ece6da', cursor: 'pointer',
           }}
         >Pegar token</button>
       </div>
@@ -111,7 +112,7 @@ export default function PorteroHome() {
 
       {mode === 'manual' && (
         <div style={{ marginBottom: 16 }}>
-          <label style={{ display: 'block', color: '#94a3b8', fontSize: 12, marginBottom: 6 }}>
+          <label style={{ display: 'block', color: '#a89f8f', fontSize: 12, marginBottom: 6 }}>
             QR token (64 caracteres hex)
           </label>
           <textarea
@@ -120,8 +121,8 @@ export default function PorteroHome() {
             placeholder="Pega aqui el token del QR..."
             rows={3}
             style={{
-              width: '100%', background: '#16162a', border: '1px solid #2a2a4a',
-              borderRadius: 8, padding: 12, color: '#f8fafc', fontFamily: 'monospace',
+              width: '100%', background: '#1b1711', border: '1px solid #3a3022',
+              borderRadius: 8, padding: 12, color: '#faf7f0', fontFamily: 'monospace',
               fontSize: 12, boxSizing: 'border-box',
             }}
           />
@@ -131,7 +132,7 @@ export default function PorteroHome() {
             disabled={submitting}
             style={{
               marginTop: 8, padding: '12px 20px', borderRadius: 8,
-              border: 'none', background: '#8b5cf6', color: 'white',
+              border: 'none', background: '#d4a63a', color: '#0a0806',
               fontWeight: 700, cursor: submitting ? 'not-allowed' : 'pointer',
             }}
           >
@@ -161,9 +162,9 @@ export default function PorteroHome() {
           </div>
           {result.valid && (
             <>
-              <div style={{ fontSize: 18, fontWeight: 700, color: '#f8fafc' }}>{result.nombre}</div>
-              <div style={{ fontSize: 13, color: '#94a3b8', marginTop: 4 }}>
-                {result.event_title} · {result.ticket_type}
+              <div style={{ fontSize: 18, fontWeight: 700, color: '#faf7f0' }}>{result.nombre}</div>
+              <div style={{ fontSize: 13, color: '#a89f8f', marginTop: 4 }}>
+                {result.event_title} · {ticketLabel(result.ticket_type)}
               </div>
             </>
           )}
@@ -171,7 +172,7 @@ export default function PorteroHome() {
             <>
               <div style={{ fontSize: 14, color: '#fca5a5' }}>{result.message}</div>
               {result.nombre && (
-                <div style={{ fontSize: 13, color: '#94a3b8', marginTop: 4 }}>{result.nombre}</div>
+                <div style={{ fontSize: 13, color: '#a89f8f', marginTop: 4 }}>{result.nombre}</div>
               )}
             </>
           )}
@@ -179,17 +180,17 @@ export default function PorteroHome() {
       )}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
-        <div data-testid="stat-ingresados" style={{ background: '#16162a', border: '1px solid #2a2a4a', borderRadius: 10, padding: 16, textAlign: 'center' }}>
+        <div data-testid="stat-ingresados" style={{ background: '#1b1711', border: '1px solid #3a3022', borderRadius: 10, padding: 16, textAlign: 'center' }}>
           <div style={{ fontSize: 28, fontWeight: 800, color: '#10b981' }}>{stats.ingresados}</div>
-          <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>Ingresados</div>
+          <div style={{ fontSize: 12, color: '#a89f8f', marginTop: 4 }}>Ingresados</div>
         </div>
-        <div data-testid="stat-rechazados" style={{ background: '#16162a', border: '1px solid #2a2a4a', borderRadius: 10, padding: 16, textAlign: 'center' }}>
+        <div data-testid="stat-rechazados" style={{ background: '#1b1711', border: '1px solid #3a3022', borderRadius: 10, padding: 16, textAlign: 'center' }}>
           <div style={{ fontSize: 28, fontWeight: 800, color: '#ef4444' }}>{stats.rechazados}</div>
-          <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>Rechazados</div>
+          <div style={{ fontSize: 12, color: '#a89f8f', marginTop: 4 }}>Rechazados</div>
         </div>
-        <div data-testid="stat-total" style={{ background: '#16162a', border: '1px solid #2a2a4a', borderRadius: 10, padding: 16, textAlign: 'center' }}>
-          <div style={{ fontSize: 28, fontWeight: 800, color: '#f8fafc' }}>{stats.total}</div>
-          <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>Total</div>
+        <div data-testid="stat-total" style={{ background: '#1b1711', border: '1px solid #3a3022', borderRadius: 10, padding: 16, textAlign: 'center' }}>
+          <div style={{ fontSize: 28, fontWeight: 800, color: '#faf7f0' }}>{stats.total}</div>
+          <div style={{ fontSize: 12, color: '#a89f8f', marginTop: 4 }}>Total</div>
         </div>
       </div>
     </section>

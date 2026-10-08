@@ -1,42 +1,43 @@
 @import "tailwindcss";
 
 @theme {
-  --color-skpat-bg:     #07070f;
-  --color-skpat-bg2:    #0f0f1e;
-  --color-skpat-bg3:    #16162a;
-  --color-skpat-card:   #1a1a30;
-  --color-skpat-border: #2a2a4a;
-  --color-skpat-purple: #8b5cf6;
-  --color-skpat-purple2:#6d28d9;
-  --color-skpat-pink:   #ec4899;
-  --color-skpat-cyan:   #06b6d4;
-  --color-skpat-gold:   #f59e0b;
+  --color-skpat-bg:     #0a0806;
+  --color-skpat-bg2:    #13100b;
+  --color-skpat-bg3:    #1b1711;
+  --color-skpat-card:   #221c14;
+  --color-skpat-border: #3a3022;
+  /* Paleta del logo: oro metálico sobre negro, con las luces del club (azul eléctrico, rojo neón). */
+  --color-skpat-oro:     #d4a63a;
+  --color-skpat-bronce:  #8a6420;
+  --color-skpat-champan: #f2d38a;
+  --color-skpat-azul:    #2f80ff;
+  --color-skpat-gold:    #f0c75e;
   --color-skpat-green:  #10b981;
   --color-skpat-red:    #ef4444;
-  --color-skpat-white:  #f8fafc;
-  --color-skpat-muted:  #94a3b8;
-  --color-skpat-text:   #e2e8f0;
+  --color-skpat-white:  #faf7f0;
+  --color-skpat-muted:  #a89f8f;
+  --color-skpat-text:   #ece6da;
 }
 
 @layer utilities {
-  .glow-purple { box-shadow: 0 0 24px #8b5cf640, 0 0 60px #8b5cf620; }
-  .glow-pink   { box-shadow: 0 0 24px #ec489940, 0 0 60px #ec489920; }
-  .glow-cyan   { box-shadow: 0 0 20px #06b6d440; }
-  .text-glow   { text-shadow: 0 0 20px #8b5cf680; }
+  .glow-oro { box-shadow: 0 0 24px #d4a63a40, 0 0 60px #d4a63a20; }
+  .glow-champan   { box-shadow: 0 0 24px #f2d38a40, 0 0 60px #f2d38a20; }
+  .glow-azul   { box-shadow: 0 0 20px #2f80ff40; }
+  .text-glow   { text-shadow: 0 0 20px #d4a63a80; }
   .gradient-text {
-    background: linear-gradient(135deg, #fff 0%, #8b5cf6 50%, #ec4899 100%);
+    background: linear-gradient(135deg, #fff 0%, #d4a63a 50%, #f2d38a 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
   .gradient-stat {
-    background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+    background: linear-gradient(135deg, #d4a63a, #2f80ff);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
   .gradient-section-title {
-    background: linear-gradient(90deg, #f8fafc, #8b5cf6);
+    background: linear-gradient(90deg, #faf7f0, #d4a63a);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -48,12 +49,12 @@
   50%       { transform: translateX(-50%) translateY(8px); }
 }
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 4px 20px #8b5cf660; }
-  50%       { box-shadow: 0 4px 32px #8b5cf6a0; }
+  0%, 100% { box-shadow: 0 4px 20px #d4a63a60; }
+  50%       { box-shadow: 0 4px 32px #d4a63aa0; }
 }
 @keyframes ai-pulse {
-  0%, 100% { box-shadow: 0 4px 20px #8b5cf660; }
-  50%       { box-shadow: 0 4px 32px #8b5cf6a0; }
+  0%, 100% { box-shadow: 0 4px 20px #d4a63a60; }
+  50%       { box-shadow: 0 4px 32px #d4a63aa0; }
 }
 
 @keyframes scan {
@@ -62,4 +63,4 @@
 }
 
 html { scroll-behavior: smooth; }
-body { background: #07070f; color: #e2e8f0; font-family: 'Segoe UI', system-ui, sans-serif; }
+body { background: #0a0806; color: #ece6da; font-family: 'Segoe UI', system-ui, sans-serif; }

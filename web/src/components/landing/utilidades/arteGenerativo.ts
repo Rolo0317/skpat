@@ -3,10 +3,10 @@
  * Mismo evento, mismo arte, sin depender de imágenes externas.
  */
 const TONOS_NEON = [
-  'var(--color-skpat-purple)',
-  'var(--color-skpat-pink)',
-  'var(--color-skpat-cyan)',
-  'var(--color-skpat-purple2)',
+  'var(--color-skpat-oro)',
+  'var(--color-skpat-champan)',
+  'var(--color-skpat-azul)',
+  'var(--color-skpat-bronce)',
 ] as const
 
 const GRADOS_CIRCULO = 360

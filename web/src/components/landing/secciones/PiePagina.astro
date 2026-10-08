@@ -1,6 +1,6 @@
 ---
-import Icono from '../ui/Icono.astro'
-import Marca from '../ui/Marca.astro'
+import RedesSociales from '../ui/RedesSociales.astro'
+import Logo from '../ui/Logo.astro'
 import { NEGOCIO, RUTAS_APP } from '../contenido/negocio'
 
 const ENLACES_CUENTA = [
@@ -13,15 +13,16 @@ const anio = new Date().getFullYear()
 <footer class="pie">
   <div class="contenedor pie__rejilla">
     <div>
-      <p class="pie__marca"><Marca variante="contorno" /></p>
+      <Logo class="pie__logo" sizes="16rem" />
       <p class="pie__lema">{NEGOCIO.eslogan}.</p>
     </div>
     <address class="pie__contacto">
       <span>{NEGOCIO.direccion.calle}, {NEGOCIO.direccion.ciudad}</span>
       <span>{NEGOCIO.horario.dias} · {NEGOCIO.horario.texto}</span>
-      <a href={NEGOCIO.instagram.url} target="_blank" rel="noopener noreferrer" class="pie__instagram">
-        <Icono nombre="instagram" />{NEGOCIO.instagram.usuario}
+      <a href={NEGOCIO.redes.whatsapp.url} target="_blank" rel="noopener noreferrer" class="pie__whatsapp">
+        Reservas: {NEGOCIO.redes.whatsapp.usuario}
       </a>
+      <RedesSociales conTexto class="pie__redes" />
     </address>
     <nav aria-label="Tu cuenta" class="pie__cuenta">
       {ENLACES_CUENTA.map(({ href, texto }) => <a href={href}>{texto}</a>)}
@@ -35,14 +36,15 @@ const anio = new Date().getFullYear()
 <style>
   .pie { padding-block: 4rem 6rem; border-top: 1px solid var(--linea); background: var(--fondo); }
   .pie__rejilla { display: grid; gap: 2.5rem; }
-  .pie__marca { font-size: 3.5rem; }
+  .pie :global(.pie__logo) { width: min(100%, 16rem); }
   .pie__lema { margin-top: 0.5rem; color: var(--tinta-suave); }
   .pie__contacto { display: grid; gap: 0.5rem; font-style: normal; color: var(--color-skpat-text); }
-  .pie__instagram { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--tinta); font-weight: 700; padding-block: 0.25rem; }
+  .pie__whatsapp { color: var(--tinta); font-weight: 700; padding-block: 0.25rem; }
+  .pie__contacto :global(.pie__redes) { margin-top: 0.75rem; }
   .pie__cuenta { display: grid; gap: 0.25rem; align-content: start; }
-  .pie__cuenta a, .pie__instagram { text-decoration: none; }
+  .pie__cuenta a, .pie__whatsapp { text-decoration: none; }
   .pie__cuenta a { color: var(--tinta-suave); padding-block: 0.5rem; }
-  .pie__cuenta a:hover, .pie__instagram:hover { color: var(--rosa-claro); }
+  .pie__cuenta a:hover, .pie__whatsapp:hover { color: var(--acento-claro); }
   .pie__legal { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--linea); font-size: 0.875rem; color: var(--tinta-suave); }
 
   @media (min-width: 48rem) {

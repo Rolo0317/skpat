@@ -5,7 +5,7 @@ export function EventCard({ event }: { event: SkpatEvent }) {
   const isSoldOut = event.available_spots === 0
   const isVip = event.is_vip === 1
   const tagText = isSoldOut ? 'Sold out 🔥' : isVip ? 'Palcos VIP' : 'Disponible'
-  const tagBg = isSoldOut ? '#ef4444' : isVip ? '#f59e0b' : '#8b5cf6'
+  const tagBg = isSoldOut ? '#ef4444' : isVip ? '#f0c75e' : '#d4a63a'
   const dateLabel = new Date(event.date).toLocaleString('es-CO', {
     weekday: 'long',
     day: 'numeric',
@@ -17,8 +17,8 @@ export function EventCard({ event }: { event: SkpatEvent }) {
   const imageBaseUrl = (import.meta.env.VITE_API_URL ?? '') as string
 
   return (
-    <article className="bg-skpat-card border border-skpat-border rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:border-skpat-purple hover:shadow-[0_8px_40px_#8b5cf630]">
-      <div className="h-40 relative overflow-hidden flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #1a0533, #4c1d95)' }}>
+    <article className="bg-skpat-card border border-skpat-border rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:border-skpat-oro hover:shadow-[0_8px_40px_#d4a63a30]">
+      <div className="h-40 relative overflow-hidden flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #2a1f0e, #3d2c0c)' }}>
         {event.image_url ? (
           <img src={`${imageBaseUrl}${event.image_url}`} alt={event.title} className="w-full h-full object-cover" />
         ) : (
@@ -32,24 +32,24 @@ export function EventCard({ event }: { event: SkpatEvent }) {
         </span>
       </div>
       <div className="p-4">
-        <h3 className="text-[#f8fafc] font-bold text-lg">{event.title}</h3>
-        <p className="text-skpat-cyan text-xs mt-1">📅 {dateLabel}</p>
+        <h3 className="text-[#faf7f0] font-bold text-lg">{event.title}</h3>
+        <p className="text-skpat-azul text-xs mt-1">📅 {dateLabel}</p>
         <div className="flex justify-between items-center mt-4">
           <span className="text-skpat-green font-black text-xl">
             ${priceCop} <small className="text-skpat-muted font-normal text-xs">COP</small>
           </span>
           {isSoldOut ? (
             <span
-              className="px-4 py-2 rounded-full border border-skpat-purple text-skpat-purple text-xs font-semibold opacity-50 cursor-not-allowed"
-              style={{ background: '#8b5cf610' }}
+              className="px-4 py-2 rounded-full border border-skpat-oro text-skpat-oro text-xs font-semibold opacity-50 cursor-not-allowed"
+              style={{ background: '#d4a63a10' }}
             >
               Agotado
             </span>
           ) : (
             <Link
               to={`/comprar/${event.id}`}
-              className="px-4 py-2 rounded-full border border-skpat-purple text-skpat-purple text-xs font-semibold transition-all hover:bg-skpat-purple hover:text-white"
-              style={{ background: '#8b5cf610' }}
+              className="px-4 py-2 rounded-full border border-skpat-oro text-skpat-oro text-xs font-semibold transition-all hover:bg-skpat-oro hover:text-skpat-bg"
+              style={{ background: '#d4a63a10' }}
             >
               Comprar
             </Link>

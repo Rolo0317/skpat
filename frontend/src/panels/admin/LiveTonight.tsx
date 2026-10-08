@@ -10,8 +10,8 @@ function LiveStats({ live }: { live: LiveDashboard }) {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-4">
       <StatTile label="Ventas de la noche" value={formatCOP(live.sales_tonight.total_cents)} sub={`${live.sales_tonight.count} ventas`} icon={ShoppingCart} colorClass="text-skpat-green" />
-      <StatTile label="Tiquetes de hoy" value={String(live.tickets_today.count)} sub={formatCOP(live.tickets_today.total_cents)} icon={Ticket} colorClass="text-skpat-purple" />
-      <StatTile label="Asistentes dentro" value={String(live.attendees_inside)} icon={Users} colorClass="text-skpat-cyan" />
+      <StatTile label="Tiquetes de hoy" value={String(live.tickets_today.count)} sub={formatCOP(live.tickets_today.total_cents)} icon={Ticket} colorClass="text-skpat-oro" />
+      <StatTile label="Asistentes dentro" value={String(live.attendees_inside)} icon={Users} colorClass="text-skpat-azul" />
       <StatTile label="Pedidos pendientes" value={String(live.table_orders.pending)} sub={`${live.table_orders.attending} en atención`} icon={BellRing} colorClass="text-skpat-gold" />
     </div>
   )
@@ -66,7 +66,7 @@ export function LiveTonight() {
   return (
     <section aria-labelledby="live-tonight-title" data-testid="live-tonight" className="mb-6">
       <h2 id="live-tonight-title" className="flex items-center gap-2 font-bold text-sm text-skpat-white mb-3">
-        <Radio size={14} className="text-skpat-pink" />
+        <Radio size={14} className="text-skpat-champan" />
         En vivo esta noche
       </h2>
       {!live && isError && <p className="text-skpat-muted text-sm">Datos en vivo no disponibles por ahora.</p>}

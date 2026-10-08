@@ -80,8 +80,8 @@ export default function AdminInventoryPage() {
       {categories.map(cat => (
         <div key={cat} className="mb-5">
           <div className="flex items-center gap-2 mb-2.5">
-            <Package size={11} className="text-skpat-purple" />
-            <span className="text-[10px] font-bold text-skpat-purple uppercase tracking-widest">{cat}</span>
+            <Package size={11} className="text-skpat-oro" />
+            <span className="text-[10px] font-bold text-skpat-oro uppercase tracking-widest">{cat}</span>
           </div>
 
           <div className="bg-skpat-card border border-skpat-border rounded-xl overflow-hidden">
@@ -112,7 +112,7 @@ export default function AdminInventoryPage() {
                           min="-1"
                           value={editVals.stock_qty}
                           onChange={e => setEditVals(s => ({ ...s, stock_qty: e.target.value }))}
-                          className="w-20 bg-skpat-bg border border-skpat-purple/40 rounded-md px-2 py-1 text-skpat-text text-sm focus:outline-none focus:border-skpat-purple"
+                          className="w-20 bg-skpat-bg border border-skpat-oro/40 rounded-md px-2 py-1 text-skpat-text text-sm focus:outline-none focus:border-skpat-oro"
                         />
                       ) : (
                         <span className={`text-base font-bold ${
@@ -135,7 +135,7 @@ export default function AdminInventoryPage() {
                           min="0"
                           value={editVals.min_stock}
                           onChange={e => setEditVals(s => ({ ...s, min_stock: e.target.value }))}
-                          className="w-16 bg-skpat-bg border border-skpat-purple/40 rounded-md px-2 py-1 text-skpat-text text-sm focus:outline-none focus:border-skpat-purple"
+                          className="w-16 bg-skpat-bg border border-skpat-oro/40 rounded-md px-2 py-1 text-skpat-text text-sm focus:outline-none focus:border-skpat-oro"
                         />
                       ) : (
                         <span className="text-sm text-skpat-muted">{item.min_stock}</span>
@@ -166,7 +166,7 @@ export default function AdminInventoryPage() {
                           <button
                             onClick={() => save(item.id)}
                             disabled={saving}
-                            className="flex items-center gap-1 px-3 py-1.5 rounded-md bg-skpat-purple text-white text-xs font-semibold disabled:opacity-50 hover:bg-skpat-purple2 transition-colors"
+                            className="flex items-center gap-1 px-3 py-1.5 rounded-md bg-skpat-oro text-skpat-bg text-xs font-semibold disabled:opacity-50 hover:bg-skpat-bronce transition-colors"
                           >
                             <Check size={11} />
                             {saving ? '...' : 'Guardar'}

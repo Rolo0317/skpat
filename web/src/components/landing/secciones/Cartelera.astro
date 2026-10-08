@@ -27,7 +27,7 @@ const [destacado, ...resto] = cartelera.eventos
       <div class="cartelera__vacia">
         <p>Estamos armando el próximo line-up. Las fechas salen primero en Instagram y en tu cuenta.</p>
         <div class="cartelera__acciones">
-          <BotonNeon href={NEGOCIO.instagram.url} externo icono="instagram">Seguir {NEGOCIO.instagram.usuario}</BotonNeon>
+          <BotonNeon href={NEGOCIO.redes.instagram.url} externo icono="instagram">Seguir {NEGOCIO.redes.instagram.usuario}</BotonNeon>
           <BotonNeon href={RUTAS_APP.registro} variante="secundario">Crear cuenta</BotonNeon>
         </div>
       </div>
@@ -43,7 +43,7 @@ const [destacado, ...resto] = cartelera.eventos
     gap: 1.5rem;
     max-width: 40rem;
     padding: 2rem;
-    border: 1px dashed color-mix(in oklab, var(--violeta) 50%, transparent);
+    border: 1px dashed color-mix(in oklab, var(--primario) 50%, transparent);
     border-radius: var(--radio);
     font-size: 1.1rem;
   }

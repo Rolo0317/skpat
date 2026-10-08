@@ -20,8 +20,8 @@ const TIERS: PalcoTier[] = [
     name: 'Palco Silver',
     desc: 'Hasta 6 personas · 2 botellas incluidas',
     price: '$450.000',
-    borderColor: '#f59e0b',
-    priceColor: '#f59e0b',
+    borderColor: '#f0c75e',
+    priceColor: '#f0c75e',
     tier: 'silver',
   },
   {
@@ -29,8 +29,8 @@ const TIERS: PalcoTier[] = [
     name: 'Palco Gold',
     desc: 'Hasta 10 personas · 4 botellas + servicio',
     price: '$850.000',
-    borderColor: '#8b5cf6',
-    priceColor: '#8b5cf6',
+    borderColor: '#d4a63a',
+    priceColor: '#d4a63a',
     popular: true,
     tier: 'gold',
   },
@@ -39,9 +39,9 @@ const TIERS: PalcoTier[] = [
     name: 'Palco Platinum',
     desc: 'Hasta 15 personas · Abierto + servicio dedicado',
     price: '$1.500.000',
-    borderColor: '#ec4899',
-    priceColor: '#ec4899',
-    ctaGradient: 'linear-gradient(135deg, #ec4899, #8b5cf6)',
+    borderColor: '#f2d38a',
+    priceColor: '#f2d38a',
+    ctaGradient: 'linear-gradient(135deg, #f2d38a, #d4a63a)',
     tier: 'platinum',
   },
 ]
@@ -100,7 +100,7 @@ export function VipSection() {
                     top: '-12px',
                     left: '50%',
                     transform: 'translateX(-50%)',
-                    background: 'linear-gradient(135deg, #8b5cf6, #ec4899)',
+                    background: 'linear-gradient(135deg, #d4a63a, #f2d38a)',
                     letterSpacing: '1px',
                   }}
                 >
@@ -118,11 +118,11 @@ export function VipSection() {
               </div>
               <button
                 onClick={() => { setSelectedTier(tier.tier); setShowForm(true); setSuccess(false); setFormError(null) }}
-                className="block text-center w-full mt-4 py-3.5 rounded-full text-white font-bold text-[15px] cursor-pointer"
+                className="block text-center w-full mt-4 py-3.5 rounded-full text-skpat-bg font-bold text-[15px] cursor-pointer"
                 style={{
                   background:
-                    tier.ctaGradient ?? 'linear-gradient(135deg, #8b5cf6, #ec4899)',
-                  boxShadow: '0 4px 20px #8b5cf640',
+                    tier.ctaGradient ?? 'linear-gradient(135deg, #d4a63a, #f2d38a)',
+                  boxShadow: '0 4px 20px #d4a63a40',
                   border: 'none',
                 }}
               >
@@ -141,7 +141,7 @@ export function VipSection() {
                 <div style={{ fontSize: 32, marginBottom: 8 }}>✓</div>
                 <p style={{ fontWeight: 700 }}>Reserva enviada con éxito</p>
                 <p style={{ fontSize: 13, color: '#64748b', marginTop: 4 }}>Recibirás confirmación en tu email.</p>
-                <button onClick={() => { setSuccess(false); setShowForm(false) }} style={{ marginTop: 16, padding: '8px 20px', borderRadius: 8, background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.12)', color: '#94a3b8', cursor: 'pointer' }}>Cerrar</button>
+                <button onClick={() => { setSuccess(false); setShowForm(false) }} style={{ marginTop: 16, padding: '8px 20px', borderRadius: 8, background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.12)', color: '#a89f8f', cursor: 'pointer' }}>Cerrar</button>
               </div>
             ) : (
               <form onSubmit={async (e) => {
@@ -173,11 +173,11 @@ export function VipSection() {
                 {formError && <p style={{ color: '#ef4444', fontSize: 13, margin: 0 }}>{formError}</p>}
                 <div style={{ display: 'flex', gap: 10 }}>
                   <button type="submit" disabled={submitting}
-                    style={{ flex: 1, padding: '12px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#7c3aed,#e11d48)', color: '#fff', fontWeight: 700, cursor: submitting ? 'not-allowed' : 'pointer' }}>
+                    style={{ flex: 1, padding: '12px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#b8892a,#e11d48)', color: '#fff', fontWeight: 700, cursor: submitting ? 'not-allowed' : 'pointer' }}>
                     {submitting ? 'Enviando...' : 'Confirmar reserva'}
                   </button>
                   <button type="button" onClick={() => setShowForm(false)}
-                    style={{ padding: '12px 16px', borderRadius: 8, border: '1px solid rgba(255,255,255,.1)', background: 'transparent', color: '#94a3b8', cursor: 'pointer' }}>
+                    style={{ padding: '12px 16px', borderRadius: 8, border: '1px solid rgba(255,255,255,.1)', background: 'transparent', color: '#a89f8f', cursor: 'pointer' }}>
                     Cancelar
                   </button>
                 </div>

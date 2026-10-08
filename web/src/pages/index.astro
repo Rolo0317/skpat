@@ -25,6 +25,7 @@ const ahora = new Date()
 const { eventos, carta } = await obtenerDatosLanding()
 const cartelera = armarCartelera(eventos, ahora)
 const enlaceCompra = cartelera.proximo ? RUTAS_APP.comprar(cartelera.proximo.id) : RUTAS_APP.registro
+const enlaceLista = cartelera.proximo ? RUTAS_APP.lista(cartelera.proximo.id) : RUTAS_APP.registro
 const jsonLd = datosEstructurados(cartelera.eventos, Astro.url.origin)
 ---
 <BaseLayout
@@ -39,7 +40,7 @@ const jsonLd = datosEstructurados(cartelera.eventos, Astro.url.origin)
     <Tarifas ahora={ahora} />
     <Cartelera cartelera={cartelera} />
     <Palcos enlaceReserva={enlaceCompra} />
-    <EntradaQr enlaceCompra={enlaceCompra} />
+    <EntradaQr enlaceCompra={enlaceCompra} enlaceLista={enlaceLista} />
     <TuMesa carta={carta} />
     <Ubicacion />
     <Preguntas />

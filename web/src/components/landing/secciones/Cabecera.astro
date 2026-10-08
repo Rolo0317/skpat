@@ -1,5 +1,5 @@
 ---
-import Marca from '../ui/Marca.astro'
+import Logo from '../ui/Logo.astro'
 import { RUTAS_APP } from '../contenido/negocio'
 
 interface Props {
@@ -11,12 +11,13 @@ const ANCLAS = [
   { href: '#tarifas', texto: 'Tarifas' },
   { href: '#cartelera', texto: 'Cartelera' },
   { href: '#palcos', texto: 'Palcos' },
+  { href: '#entrada', texto: 'Lista' },
   { href: '#ubicacion', texto: 'Cómo llegar' },
 ]
 ---
 <header class="cabecera">
   <div class="contenedor cabecera__fila">
-    <a href="/" class="cabecera__marca" aria-label="Skpat VIP, inicio"><Marca /></a>
+    <a href="/" class="cabecera__marca" aria-label="Skpat VIP, inicio"><Logo class="cabecera__logo" sizes="7.5rem" /></a>
     <nav aria-label="Secciones" class="cabecera__anclas">
       {ANCLAS.map(({ href, texto }) => <a href={href}>{texto}</a>)}
     </nav>
@@ -35,7 +36,8 @@ const ANCLAS = [
     background: linear-gradient(var(--fondo), color-mix(in oklab, var(--fondo) 70%, transparent) 70%, transparent);
   }
   .cabecera__fila { display: flex; align-items: center; gap: 1rem; min-height: 4rem; }
-  .cabecera__marca { font-size: 1.6rem; text-decoration: none; }
+  .cabecera__marca { text-decoration: none; }
+  .cabecera :global(.cabecera__logo) { width: 7.5rem; }
   .cabecera__anclas { display: none; gap: 1.75rem; margin-inline: auto; }
   .cabecera__anclas a, .cabecera__entrar { color: var(--tinta-suave); text-decoration: none; font-weight: 500; transition: color 0.2s; }
   .cabecera__anclas a:hover, .cabecera__entrar:hover { color: var(--tinta); }
@@ -44,13 +46,13 @@ const ANCLAS = [
   .cabecera__comprar {
     padding: 0.6rem 1.15rem;
     border-radius: 999px;
-    background: var(--tinta);
+    background: var(--degradado-oro);
     color: var(--fondo);
     font-weight: 700;
     text-decoration: none;
     transition: background-color 0.2s;
   }
-  .cabecera__comprar:hover { background: var(--rosa-claro); }
+  .cabecera__comprar:hover { background: var(--acento-claro); }
 
   @media (min-width: 60rem) {
     .cabecera__anclas { display: flex; }

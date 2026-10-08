@@ -15,7 +15,7 @@ export default function LandingPage() {
         <VipSection />
         <MapSection />
         <footer className="text-center py-10 px-6 border-t border-skpat-border text-[#475569] text-[13px]">
-          <div className="text-2xl font-black text-skpat-purple mb-2">SKPAT VIP</div>
+          <div className="text-2xl font-black text-skpat-oro mb-2">SKPAT VIP</div>
           © 2025 Skpat VIP · Todos los derechos reservados · Bogotá, Colombia
         </footer>
       </main>

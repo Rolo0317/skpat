@@ -70,7 +70,7 @@ export default function MeseroHome() {
   const innerStyle: React.CSSProperties = { maxWidth: 700, margin: '0 auto', padding: '20px 16px' }
   const headerStyle: React.CSSProperties = { background: '#111118', border: '1px solid rgba(255,255,255,.08)', borderRadius: 12, padding: '16px 20px', marginBottom: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }
   const tabsStyle: React.CSSProperties = { display: 'flex', gap: 4, background: '#111118', border: '1px solid rgba(255,255,255,.08)', borderRadius: 8, padding: 4, marginBottom: 20 }
-  const tabStyle = (active: boolean): React.CSSProperties => ({ flex: 1, padding: '8px 16px', borderRadius: 6, border: 'none', background: active ? '#7c3aed' : 'transparent', color: active ? '#fff' : '#64748b', fontWeight: 600, fontSize: 13, cursor: 'pointer', transition: 'all .15s' })
+  const tabStyle = (active: boolean): React.CSSProperties => ({ flex: 1, padding: '8px 16px', borderRadius: 6, border: 'none', background: active ? '#b8892a' : 'transparent', color: active ? '#fff' : '#64748b', fontWeight: 600, fontSize: 13, cursor: 'pointer', transition: 'all .15s' })
 
   return (
     <div style={pageStyle}>
@@ -123,7 +123,7 @@ export default function MeseroHome() {
             {menuLoading ? <p style={{ color: '#64748b' }}>Cargando carta...</p> : (
               Object.entries(grouped).map(([cat, catItems]) => (
                 <div key={cat} style={{ marginBottom: 20 }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: '#7c3aed', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: 8 }}>{cat}</div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#b8892a', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: 8 }}>{cat}</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {catItems.map(item => (
                       <div key={item.id} style={{ background: '#18181f', border: '1px solid rgba(255,255,255,.07)', borderRadius: 9, padding: '11px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
@@ -132,7 +132,7 @@ export default function MeseroHome() {
                           <div style={{ fontSize: 12, color: '#059669', fontWeight: 700, marginTop: 2 }}>{formatCOP(item.price_cents)}</div>
                         </div>
                         <button onClick={() => cart.add(item)}
-                          style={{ width: 28, height: 28, borderRadius: 7, background: '#7c3aed', border: 'none', color: '#fff', fontSize: 17, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          style={{ width: 28, height: 28, borderRadius: 7, background: '#b8892a', border: 'none', color: '#fff', fontSize: 17, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                           +
                         </button>
                       </div>
@@ -164,7 +164,7 @@ export default function MeseroHome() {
                 </div>
                 {saleError && <p style={{ color: '#f87171', fontSize: 12, marginTop: 8 }}>{saleError}</p>}
                 <button onClick={submitSale} disabled={submitting}
-                  style={{ width: '100%', marginTop: 12, padding: '12px', borderRadius: 9, border: 'none', background: submitting ? '#4c1d95' : 'linear-gradient(135deg,#7c3aed,#e11d48)', color: '#fff', fontWeight: 700, fontSize: 14, cursor: submitting ? 'not-allowed' : 'pointer' }}>
+                  style={{ width: '100%', marginTop: 12, padding: '12px', borderRadius: 9, border: 'none', background: submitting ? '#3d2c0c' : 'linear-gradient(135deg,#b8892a,#e11d48)', color: '#fff', fontWeight: 700, fontSize: 14, cursor: submitting ? 'not-allowed' : 'pointer' }}>
                   {submitting ? 'Registrando...' : 'Confirmar venta'}
                 </button>
               </div>
@@ -176,7 +176,7 @@ export default function MeseroHome() {
         {tab === 'sales' && (
           <div>
             <div style={{ background: '#111118', border: '1px solid rgba(255,255,255,.08)', borderRadius: 10, padding: '12px 18px', marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 13, color: '#94a3b8' }}>Total acumulado hoy</span>
+              <span style={{ fontSize: 13, color: '#a89f8f' }}>Total acumulado hoy</span>
               <span style={{ fontWeight: 800, fontSize: 18, color: '#059669' }}>{formatCOP(totalTonight)}</span>
             </div>
             {salesLoading && <p style={{ color: '#64748b', textAlign: 'center' }}>Cargando...</p>}

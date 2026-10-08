@@ -40,12 +40,12 @@ const atributosExternos = externo ? { target: '_blank', rel: 'noopener noreferre
 
   .boton--primario {
     color: var(--fondo);
-    background: var(--tinta);
-    box-shadow: 0 0.5rem 1.5rem -0.5rem color-mix(in oklab, var(--rosa) 70%, transparent);
+    background: var(--degradado-oro);
+    box-shadow: 0 0.5rem 1.5rem -0.5rem color-mix(in oklab, var(--primario) 70%, transparent);
   }
   .boton--primario:hover {
-    background: var(--rosa-claro);
-    box-shadow: 0 0.75rem 2rem -0.5rem color-mix(in oklab, var(--rosa) 90%, transparent);
+    background: var(--acento-claro);
+    box-shadow: 0 0.75rem 2rem -0.5rem color-mix(in oklab, var(--acento) 90%, transparent);
   }
 
   .boton--secundario {
@@ -53,5 +53,5 @@ const atributosExternos = externo ? { target: '_blank', rel: 'noopener noreferre
     border: 1px solid color-mix(in oklab, var(--tinta) 30%, transparent);
     background: color-mix(in oklab, var(--fondo) 60%, transparent);
   }
-  .boton--secundario:hover { border-color: var(--violeta-claro); background: color-mix(in oklab, var(--violeta) 18%, var(--fondo)); }
+  .boton--secundario:hover { border-color: var(--primario-claro); background: color-mix(in oklab, var(--primario) 18%, var(--fondo)); }
 </style>

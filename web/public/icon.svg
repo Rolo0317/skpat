@@ -1,16 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
   <defs>
     <radialGradient id="h" cx="50%" cy="0%" r="90%">
-      <stop offset="0" stop-color="#8b5cf6" stop-opacity=".7"/>
-      <stop offset="1" stop-color="#07070f" stop-opacity="0"/>
+      <stop offset="0" stop-color="#d4a63a" stop-opacity=".7"/>
+      <stop offset="1" stop-color="#0a0806" stop-opacity="0"/>
     </radialGradient>
   </defs>
-  <rect width="512" height="512" fill="#07070f"/>
+  <rect width="512" height="512" fill="#0a0806"/>
   <rect width="512" height="512" fill="url(#h)"/>
   <g stroke-width="4" opacity=".85">
-    <line x1="256" y1="-10" x2="40" y2="520" stroke="#06b6d4"/>
-    <line x1="256" y1="-10" x2="256" y2="520" stroke="#ec4899"/>
-    <line x1="256" y1="-10" x2="472" y2="520" stroke="#8b5cf6"/>
+    <line x1="256" y1="-10" x2="40" y2="520" stroke="#2f80ff"/>
+    <line x1="256" y1="-10" x2="256" y2="520" stroke="#f2d38a"/>
+    <line x1="256" y1="-10" x2="472" y2="520" stroke="#d4a63a"/>
   </g>
-  <text x="256" y="350" text-anchor="middle" font-family="'Big Shoulders Display','Arial Narrow',sans-serif" font-weight="900" font-size="300" fill="#f8fafc">S</text>
+  <text x="256" y="350" text-anchor="middle" font-family="'Big Shoulders Display','Arial Narrow',sans-serif" font-weight="900" font-size="300" fill="#faf7f0">S</text>
 </svg>

@@ -65,3 +65,8 @@ vitest.config.js
 # Vercel / Astro
 .vercel
 .astro/
+
+# Local dev DB (PGlite) and seeded demo credentials
+backend/data/pglite/
+web/data/
+.demo-credentials.txt

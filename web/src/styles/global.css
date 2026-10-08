@@ -1,0 +1,5 @@
+/* Tokens y utilidades compartidos con el frontend React (una sola fuente de verdad). */
+@import "../../../frontend/src/index.css";
+@source "../../../frontend/src";
+
+html { background: var(--color-skpat-bg); color: var(--color-skpat-text); }

@@ -1,0 +1,31 @@
+---
+import '~/styles/global.css'
+
+interface Props {
+  title?: string
+  description?: string
+}
+
+const {
+  title = 'Skpat VIP · Electrónica y guaracha en Bogotá',
+  description = 'Boletería digital con QR, palcos VIP, carta en tu mesa y la mejor noche electrónica de Bogotá.',
+} = Astro.props
+---
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#07070f" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <slot name="head" />
+  </head>
+  <body class="min-h-dvh bg-skpat-bg text-skpat-text antialiased">
+    <slot />
+  </body>
+</html>

@@ -22,7 +22,7 @@ vi.mock('@anthropic-ai/sdk', () => {
 process.env.ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY ?? 'sk-ant-test-key'
 process.env.AI_MODEL = process.env.AI_MODEL ?? 'claude-haiku-4-5-20251001'
 
-const { buildServer } = await import('../../src/server.js')
+const { buildServer } = await import('../../src/app.js')
 
 let app: FastifyInstance
 

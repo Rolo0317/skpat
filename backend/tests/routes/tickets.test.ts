@@ -1,8 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { buildServer } from '../../src/server.js'
+import { buildServer } from '../../src/app.js'
 import type { FastifyInstance } from 'fastify'
 import { db } from '../../src/lib/db.js'
-import { signAccessToken } from '../../src/lib/jwt.js'
+import { createUser, resetDb } from '../helpers.js'
 
 let app: FastifyInstance
 let porteroToken: string
@@ -15,25 +15,19 @@ beforeAll(async () => {
   await app.ready()
 
   // Clean up
-  db.exec('DELETE FROM tickets')
-  db.exec('DELETE FROM events')
+  await resetDb()
 
   // Create a test event
-  const row = db
-    .prepare(
-      "INSERT INTO events (title, date, price, is_active) VALUES ('Test Night', '2026-12-01T22:00:00Z', 3000000, 1) RETURNING id"
-    )
-    .get() as { id: string }
+  const row = (await db.one("INSERT INTO events (title, date, price, is_active) VALUES ('Test Night', '2026-12-01T22:00:00Z', 3000000, true) RETURNING id")) as { id: string }
   testEventId = row.id
 
-  porteroToken = await signAccessToken({ sub: 'portero-1', email: 'portero@test.co', role: 'portero' })
-  adminToken = await signAccessToken({ sub: 'admin-1', email: 'admin@test.co', role: 'admin' })
-  clienteToken = await signAccessToken({ sub: 'cliente-1', email: 'cliente@test.co', role: 'cliente' })
+  porteroToken = (await createUser('portero')).token
+  adminToken = (await createUser('admin')).token
+  clienteToken = (await createUser('cliente')).token
 })
 
 afterAll(async () => {
-  db.exec('DELETE FROM tickets')
-  db.exec('DELETE FROM events')
+  await resetDb()
   await app.close()
 })
 
@@ -78,11 +72,7 @@ describe('POST /tickets/purchase', () => {
   })
 
   it('returns 422 for inactive event', async () => {
-    const inactive = db
-      .prepare(
-        "INSERT INTO events (title, date, price, is_active) VALUES ('Hidden', '2026-12-02T22:00:00Z', 1000, 0) RETURNING id"
-      )
-      .get() as { id: string }
+    const inactive = (await db.one("INSERT INTO events (title, date, price, is_active) VALUES ('Hidden', '2026-12-02T22:00:00Z', 1000, false) RETURNING id")) as { id: string }
     const res = await app.inject({
       method: 'POST',
       url: '/tickets/purchase',
@@ -258,9 +248,7 @@ describe('GET /tickets/event/:event_id (admin attendee list)', () => {
 
 describe('POST /tickets/purchase — concurrency and spot decrement', () => {
   it('decrements available_spots by 1 on successful purchase', async () => {
-    const evt = db.prepare(
-      "INSERT INTO events (title, date, price, available_spots, is_active) VALUES ('Decrement Night', '2026-12-15T22:00:00Z', 1000, 50, 1) RETURNING id"
-    ).get() as { id: string }
+    const evt = (await db.one("INSERT INTO events (title, date, price, available_spots, is_active) VALUES ('Decrement Night', '2026-12-15T22:00:00Z', 1000, 50, true) RETURNING id")) as { id: string }
 
     const res = await app.inject({
       method: 'POST',
@@ -275,14 +263,12 @@ describe('POST /tickets/purchase — concurrency and spot decrement', () => {
     })
     expect(res.statusCode).toBe(201)
 
-    const after = db.prepare('SELECT available_spots FROM events WHERE id = ?').get(evt.id) as { available_spots: number }
+    const after = (await db.one('SELECT available_spots FROM events WHERE id = $1', [evt.id])) as { available_spots: number }
     expect(after.available_spots).toBe(49)
   })
 
   it('returns 422 SoldOut when available_spots is 0', async () => {
-    const evt = db.prepare(
-      "INSERT INTO events (title, date, price, available_spots, is_active) VALUES ('Sold Out Night', '2026-12-16T22:00:00Z', 1000, 0, 1) RETURNING id"
-    ).get() as { id: string }
+    const evt = (await db.one("INSERT INTO events (title, date, price, available_spots, is_active) VALUES ('Sold Out Night', '2026-12-16T22:00:00Z', 1000, 0, true) RETURNING id")) as { id: string }
 
     const res = await app.inject({
       method: 'POST',
@@ -298,14 +284,12 @@ describe('POST /tickets/purchase — concurrency and spot decrement', () => {
     expect(res.statusCode).toBe(422)
     expect(res.json().error).toBe('SoldOut')
 
-    const count = db.prepare('SELECT COUNT(*) AS n FROM tickets WHERE event_id = ?').get(evt.id) as { n: number }
+    const count = (await db.one('SELECT COUNT(*) AS n FROM tickets WHERE event_id = $1', [evt.id])) as { n: number }
     expect(count.n).toBe(0)
   })
 
   it('exhausts available_spots sequentially without going negative', async () => {
-    const evt = db.prepare(
-      "INSERT INTO events (title, date, price, available_spots, is_active) VALUES ('Last Spot Night', '2026-12-17T22:00:00Z', 1000, 1, 1) RETURNING id"
-    ).get() as { id: string }
+    const evt = (await db.one("INSERT INTO events (title, date, price, available_spots, is_active) VALUES ('Last Spot Night', '2026-12-17T22:00:00Z', 1000, 1, true) RETURNING id")) as { id: string }
 
     const ok = await app.inject({
       method: 'POST',
@@ -326,7 +310,7 @@ describe('POST /tickets/purchase — concurrency and spot decrement', () => {
     expect(fail.statusCode).toBe(422)
     expect(fail.json().error).toBe('SoldOut')
 
-    const after = db.prepare('SELECT available_spots FROM events WHERE id = ?').get(evt.id) as { available_spots: number }
+    const after = (await db.one('SELECT available_spots FROM events WHERE id = $1', [evt.id])) as { available_spots: number }
     expect(after.available_spots).toBe(0)
   })
 })

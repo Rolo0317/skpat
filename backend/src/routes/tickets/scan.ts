@@ -12,9 +12,21 @@ interface TicketRow {
   nombre: string
   ticket_type: string
   event_title: string
-  qr_used: number
+  qr_used: boolean
   status: string
 }
+
+const findTicket = (qrToken: string) =>
+  db.one<TicketRow>(
+    `select t.id, t.nombre, t.ticket_type, t.qr_used, t.status, e.title as event_title
+       from tickets t join events e on e.id = t.event_id
+      where t.qr_token = $1`,
+    [qrToken],
+  )
+
+/** Marca el QR como usado solo si nadie lo marcó antes: dos porteros no pueden dejar pasar el mismo QR. */
+const markAsUsed = (ticketId: string) =>
+  db.run('update tickets set qr_used = true, qr_used_at = now() where id = $1 and not qr_used', [ticketId])
 
 export async function scanTicketRoute(app: FastifyInstance) {
   app.post(
@@ -26,60 +38,20 @@ export async function scanTicketRoute(app: FastifyInstance) {
         return reply.code(400).send({ error: 'ValidationError', issues: parsed.error.issues })
       }
 
-      const { qr_token } = parsed.data
-
-      // Find ticket with event info
-      const ticket = db
-        .prepare(`
-          SELECT t.id, t.nombre, t.ticket_type, t.qr_used, t.status,
-                 e.title AS event_title
-          FROM tickets t
-          JOIN events e ON e.id = t.event_id
-          WHERE t.qr_token = ?
-        `)
-        .get(qr_token) as TicketRow | undefined
-
+      const ticket = await findTicket(parsed.data.qr_token)
       if (!ticket) {
-        return reply.code(200).send({
-          valid: false,
-          reason: 'InvalidQR',
-          message: 'QR no encontrado en el sistema',
-        })
+        return reply.send({ valid: false, reason: 'InvalidQR', message: 'QR no encontrado en el sistema' })
       }
 
-      if (ticket.qr_used === 1) {
-        return reply.code(200).send({
-          valid: false,
-          reason: 'AlreadyUsed',
-          message: 'Este QR ya fue escaneado',
-          nombre: ticket.nombre,
-          ticket_type: ticket.ticket_type,
-          event_title: ticket.event_title,
-        })
-      }
+      const holder = { nombre: ticket.nombre, ticket_type: ticket.ticket_type, event_title: ticket.event_title }
 
       if (ticket.status !== 'confirmed') {
-        return reply.code(200).send({
-          valid: false,
-          reason: 'TicketNotConfirmed',
-          message: `Estado del tiquete: ${ticket.status}`,
-          nombre: ticket.nombre,
-          ticket_type: ticket.ticket_type,
-          event_title: ticket.event_title,
-        })
+        return reply.send({ valid: false, reason: 'TicketNotConfirmed', message: `Estado del tiquete: ${ticket.status}`, ...holder })
       }
-
-      // Mark as used
-      db.prepare(
-        'UPDATE tickets SET qr_used = 1, qr_used_at = unixepoch() WHERE id = ?'
-      ).run(ticket.id)
-
-      return reply.code(200).send({
-        valid: true,
-        nombre: ticket.nombre,
-        ticket_type: ticket.ticket_type,
-        event_title: ticket.event_title,
-      })
+      if (ticket.qr_used || (await markAsUsed(ticket.id)) === 0) {
+        return reply.send({ valid: false, reason: 'AlreadyUsed', message: 'Este QR ya fue escaneado', ...holder })
+      }
+      return reply.send({ valid: true, ...holder })
     }
   )
 }

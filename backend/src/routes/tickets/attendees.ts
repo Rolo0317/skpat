@@ -1,9 +1,10 @@
 import type { FastifyInstance } from 'fastify'
 import { db } from '../../lib/db.js'
+import { isUuid } from '../../lib/ids.js'
 import { decrypt } from '../../lib/encrypt.js'
 import { verifyAuth, requireRole } from '../../plugins/auth.js'
 
-interface TicketAttendeeRow {
+interface AttendeeRow {
   id: string
   nombre: string
   email: string
@@ -11,9 +12,13 @@ interface TicketAttendeeRow {
   ticket_type: string
   price_cents: number
   status: string
-  qr_used: number
-  qr_used_at: number | null
-  created_at: number
+  qr_used: boolean
+  qr_used_at: Date | null
+  created_at: Date
+}
+
+function safeDecrypt(ciphertext: string): string {
+  try { return decrypt(ciphertext) } catch { return '[cifrado]' }
 }
 
 export async function listAttendeesRoute(app: FastifyInstance) {
@@ -22,42 +27,19 @@ export async function listAttendeesRoute(app: FastifyInstance) {
     { preHandler: [verifyAuth, requireRole('admin')] },
     async (req, reply) => {
       const { event_id } = req.params as { event_id: string }
+      const event = isUuid(event_id)
+        ? await db.one<{ id: string; title: string }>('select id, title from events where id = $1', [event_id])
+        : undefined
+      if (!event) return reply.code(404).send({ error: 'EventNotFound' })
 
-      // Verify event exists
-      const event = db
-        .prepare('SELECT id, title FROM events WHERE id = ?')
-        .get(event_id) as { id: string; title: string } | undefined
+      const rows = await db.many<AttendeeRow>(
+        `select id, nombre, email, cedula_enc, ticket_type, price_cents, status, qr_used, qr_used_at, created_at
+           from tickets where event_id = $1 order by created_at desc`,
+        [event_id],
+      )
+      const attendees = rows.map(({ cedula_enc, ...row }) => ({ ...row, cedula: safeDecrypt(cedula_enc) }))
 
-      if (!event) {
-        return reply.code(404).send({ error: 'EventNotFound' })
-      }
-
-      const rows = db
-        .prepare(`
-          SELECT id, nombre, email, cedula_enc, ticket_type, price_cents,
-                 status, qr_used, qr_used_at, created_at
-          FROM tickets
-          WHERE event_id = ?
-          ORDER BY created_at DESC
-        `)
-        .all(event_id) as TicketAttendeeRow[]
-
-      const attendees = rows.map((row) => ({
-        id: row.id,
-        nombre: row.nombre,
-        email: row.email,
-        cedula: (() => {
-          try { return decrypt(row.cedula_enc) } catch { return '[cifrado]' }
-        })(),
-        ticket_type: row.ticket_type,
-        price_cents: row.price_cents,
-        status: row.status,
-        qr_used: row.qr_used === 1,
-        qr_used_at: row.qr_used_at ? new Date(row.qr_used_at * 1000).toISOString() : null,
-        created_at: new Date(row.created_at * 1000).toISOString(),
-      }))
-
-      return reply.code(200).send({
+      return reply.send({
         event_id: event.id,
         event_title: event.title,
         total: attendees.length,

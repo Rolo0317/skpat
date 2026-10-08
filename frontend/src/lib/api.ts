@@ -1,4 +1,5 @@
-const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3001'
+// Mismo origen por defecto: Astro sirve la API en /api. VITE_API_URL permite apuntar a otro backend.
+const BASE = import.meta.env.VITE_API_URL ?? '/api'
 
 function authHeader(): Record<string, string> {
   const token = localStorage.getItem('skpat_access')

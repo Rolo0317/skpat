@@ -1,10 +1,7 @@
-// Inject test env vars BEFORE any module loads
-process.env.DATABASE_PATH = process.env.DATABASE_PATH || ':memory:'
+// Variables de prueba ANTES de cargar cualquier módulo. Sin DATABASE_URL se usa PGlite en memoria.
+delete process.env.DATABASE_URL
 process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-jwt-secret-change-in-production-min-32'
 process.env.JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'test-refresh-secret-change-in-production-min-32'
 process.env.ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || '00000000000000000000000000000000000000000000000000000000000000aa'
 process.env.NODE_ENV = 'test'
 process.env.PORT = '3001'
-
-// Run SQLite migrations once so tables exist before any test's beforeEach runs
-import('../src/lib/migrations.js').then(({ runMigrations }) => runMigrations())

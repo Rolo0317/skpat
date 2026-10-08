@@ -3,7 +3,11 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "workspaces": ["frontend", "backend"],
+  "workspaces": [
+    "frontend",
+    "backend",
+    "web"
+  ],
   "scripts": {
     "dev:frontend": "npm --workspace frontend run dev",
     "dev:backend": "npm --workspace backend run dev",
@@ -11,6 +15,10 @@
     "build:backend": "npm --workspace backend run build",
     "test": "npm --workspaces run test",
     "test:frontend": "npm --workspace frontend run test",
-    "test:backend": "npm --workspace backend run test"
+    "test:backend": "npm --workspace backend run test",
+    "dev": "npm --workspace web run dev",
+    "dev:web": "npm --workspace web run dev",
+    "build": "npm --workspace web run build",
+    "db:seed": "npm --workspace backend run db:seed"
   }
 }

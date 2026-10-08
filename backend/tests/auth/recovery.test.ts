@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { createHash, randomBytes } from 'node:crypto'
-import { buildServer } from '../../src/server.js'
+import { buildServer } from '../../src/app.js'
 import { db } from '../../src/lib/db.js'
 import { hashSecret } from '../../src/lib/argon2.js'
 

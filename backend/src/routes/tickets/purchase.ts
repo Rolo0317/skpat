@@ -1,11 +1,11 @@
 import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
-import { db } from '../../lib/db.js'
+import { db, HttpError, type SqlClient } from '../../lib/db.js'
+import { isUuid } from '../../lib/ids.js'
 import { encrypt } from '../../lib/encrypt.js'
 import { generateQrToken, generateQrDataUrl } from '../../lib/qr.js'
 import { sendTicketEmail } from '../../lib/email.js'
-import { PALCO_PRICES_CENTS, TICKET_TYPES } from '../../lib/ticketPrices.js'
-import { verifyAuth } from '../../plugins/auth.js'
+import { PALCO_PRICES_CENTS, TICKET_TYPES, type TicketType } from '../../lib/ticketPrices.js'
 
 const purchaseSchema = z.object({
   event_id: z.string().min(1),
@@ -13,124 +13,89 @@ const purchaseSchema = z.object({
   email: z.string().trim().toLowerCase().email().max(255),
   cedula: z.string().regex(/^\d{5,15}$/, 'Cedula must be 5-15 digits'),
   telefono: z.string().regex(/^\d{7,15}$/).optional(),
-  ticket_type: z.enum(['general', 'palco_silver', 'palco_gold', 'palco_platinum']).default('general'),
+  ticket_type: z.enum(TICKET_TYPES as [TicketType, ...TicketType[]]).default('general'),
 })
 
-export async function purchaseTicketRoute(app: FastifyInstance) {
-  app.post(
-    '/purchase',
-    async (req, reply) => {
-      const parsed = purchaseSchema.safeParse(req.body)
-      if (!parsed.success) {
-        return reply.code(400).send({ error: 'ValidationError', issues: parsed.error.issues })
-      }
+type PurchaseInput = z.infer<typeof purchaseSchema>
 
-      const { event_id, nombre, email, cedula, telefono, ticket_type } = parsed.data
+interface EventRow { id: string; title: string; date: Date; price: number }
 
-      // Pre-compute side-effect-free values
-      const qrToken = generateQrToken()
-      const cedulaEnc = encrypt(cedula)
-      const telefonoEnc = telefono ? encrypt(telefono) : null
-      const userId = req.user?.id ?? null
+const EMAIL_DATE_FORMAT: Intl.DateTimeFormatOptions = {
+  weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit',
+  timeZone: 'America/Bogota',
+}
 
-      // Atomic transaction: check event, validate spots, decrement, insert ticket
-      interface EventRow { id: string; title: string; date: string; price: number; available_spots: number; is_active: number }
-      interface TxResult { event: EventRow; ticketId: string; priceCents: number }
+function priceFor(ticketType: TicketType, basePrice: number): number {
+  return ticketType === 'general' ? basePrice : (PALCO_PRICES_CENTS[ticketType] ?? basePrice)
+}
 
-      const purchaseTx = db.transaction((): TxResult => {
-        const ev = db.prepare(
-          'SELECT id, title, date, price, available_spots, is_active FROM events WHERE id = ?'
-        ).get(event_id) as EventRow | undefined
-
-        if (!ev) {
-          const err = new Error('EventNotFound') as Error & { statusCode: number }
-          err.statusCode = 404
-          throw err
-        }
-        if (!ev.is_active) {
-          const err = new Error('EventNotActive') as Error & { statusCode: number }
-          err.statusCode = 422
-          throw err
-        }
-        if (ev.available_spots <= 0) {
-          const err = new Error('SoldOut') as Error & { statusCode: number }
-          err.statusCode = 422
-          throw err
-        }
-
-        const priceCents = ticket_type === 'general'
-          ? ev.price
-          : (PALCO_PRICES_CENTS[ticket_type] ?? ev.price)
-
-        db.prepare('UPDATE events SET available_spots = available_spots - 1 WHERE id = ?').run(event_id)
-
-        const row = db.prepare(`
-          INSERT INTO tickets
-            (event_id, user_id, nombre, cedula_enc, email, telefono_enc, qr_token, ticket_type, price_cents)
-          VALUES
-            (@event_id, @user_id, @nombre, @cedula_enc, @email, @telefono_enc, @qr_token, @ticket_type, @price_cents)
-          RETURNING id
-        `).get({
-          event_id,
-          user_id: userId,
-          nombre,
-          cedula_enc: cedulaEnc,
-          email,
-          telefono_enc: telefonoEnc,
-          qr_token: qrToken,
-          ticket_type,
-          price_cents: priceCents,
-        }) as { id: string }
-
-        return { event: ev, ticketId: row.id, priceCents }
-      })
-
-      let txOut: TxResult
-      try {
-        txOut = purchaseTx()
-      } catch (err: unknown) {
-        const e = err as { statusCode?: number; message?: string }
-        if (e.statusCode === 404) return reply.code(404).send({ error: 'EventNotFound' })
-        if (e.statusCode === 422 && e.message === 'EventNotActive') return reply.code(422).send({ error: 'EventNotActive' })
-        if (e.statusCode === 422 && e.message === 'SoldOut') return reply.code(422).send({ error: 'SoldOut' })
-        throw err
-      }
-
-      const { event: ev, ticketId, priceCents } = txOut
-
-      // QR data URL generation (async — MUST be after commit)
-      const qrDataUrl = await generateQrDataUrl(qrToken)
-
-      // Send email — non-fatal if it fails
-      try {
-        await sendTicketEmail({
-          to: email,
-          nombre,
-          eventTitle: ev.title,
-          eventDate: new Date(ev.date).toLocaleString('es-CO', {
-            weekday: 'long',
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-          }),
-          ticketType: ticket_type,
-          qrDataUrl,
-          qrToken,
-        })
-      } catch (emailErr) {
-        app.log.warn({ emailErr }, 'Failed to send ticket email')
-      }
-
-      return reply.code(201).send({
-        ticket_id: ticketId,
-        qr_token: qrToken,
-        qr_data_url: qrDataUrl,
-        event_title: ev.title,
-        ticket_type,
-        price_cents: priceCents,
-      })
-    }
+/**
+ * Reserva un cupo de forma atómica: el UPDATE condicionado evita sobreventa aunque
+ * lleguen compras simultáneas (no hay lectura-luego-escritura).
+ */
+async function reserveSpot(tx: SqlClient, eventId: string): Promise<EventRow> {
+  const reserved = await tx.one<EventRow>(
+    `update events set available_spots = available_spots - 1
+      where id = $1 and is_active and available_spots > 0
+      returning id, title, date, price`,
+    [eventId],
   )
+  if (reserved) return reserved
+
+  const existing = await tx.one<{ is_active: boolean }>('select is_active from events where id = $1', [eventId])
+  if (!existing) throw new HttpError(404, 'EventNotFound')
+  throw new HttpError(422, existing.is_active ? 'SoldOut' : 'EventNotActive')
+}
+
+async function createTicket(input: PurchaseInput, userId: string | null) {
+  if (!isUuid(input.event_id)) throw new HttpError(404, 'EventNotFound')
+  const qrToken = generateQrToken()
+
+  return db.transaction(async (tx) => {
+    const event = await reserveSpot(tx, input.event_id)
+    const priceCents = priceFor(input.ticket_type, event.price)
+    const ticket = await tx.one<{ id: string }>(
+      `insert into tickets (event_id, user_id, nombre, cedula_enc, email, telefono_enc, qr_token, ticket_type, price_cents)
+       values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+       returning id`,
+      [
+        event.id, userId, input.nombre, encrypt(input.cedula), input.email,
+        input.telefono ? encrypt(input.telefono) : null, qrToken, input.ticket_type, priceCents,
+      ],
+    )
+    return { event, ticketId: ticket!.id, priceCents, qrToken }
+  })
+}
+
+export async function purchaseTicketRoute(app: FastifyInstance) {
+  app.post('/purchase', async (req, reply) => {
+    const parsed = purchaseSchema.safeParse(req.body)
+    if (!parsed.success) {
+      return reply.code(400).send({ error: 'ValidationError', issues: parsed.error.issues })
+    }
+    const input = parsed.data
+    const { event, ticketId, priceCents, qrToken } = await createTicket(input, req.user?.id ?? null)
+    const qrDataUrl = await generateQrDataUrl(qrToken)
+
+    // El correo no debe tumbar una compra ya confirmada. Se espera porque en serverless
+    // el proceso puede congelarse apenas sale la respuesta.
+    await sendTicketEmail({
+      to: input.email,
+      nombre: input.nombre,
+      eventTitle: event.title,
+      eventDate: new Date(event.date).toLocaleString('es-CO', EMAIL_DATE_FORMAT),
+      ticketType: input.ticket_type,
+      qrDataUrl,
+      qrToken,
+    }).catch((emailErr) => app.log.warn({ emailErr }, 'Failed to send ticket email'))
+
+    return reply.code(201).send({
+      ticket_id: ticketId,
+      qr_token: qrToken,
+      qr_data_url: qrDataUrl,
+      event_title: event.title,
+      ticket_type: input.ticket_type,
+      price_cents: priceCents,
+    })
+  })
 }

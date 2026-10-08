@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { buildServer } from '../../src/server.js'
+import { buildServer } from '../../src/app.js'
 import type { FastifyInstance } from 'fastify'
 import { db } from '../../src/lib/db.js'
 

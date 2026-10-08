@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { buildServer } from '../../src/server.js'
+import { buildServer } from '../../src/app.js'
 import { db } from '../../src/lib/db.js'
 
 // Each test gets a clean DB (in-memory via DATABASE_PATH=:memory: in setup.ts)

@@ -5,6 +5,7 @@ import Cabecera from '~/components/landing/secciones/Cabecera.astro'
 import Portada from '~/components/landing/secciones/Portada.astro'
 import Tarifas from '~/components/landing/secciones/Tarifas.astro'
 import Cartelera from '~/components/landing/secciones/Cartelera.astro'
+import Aniversario from '~/components/landing/secciones/Aniversario.astro'
 import Palcos from '~/components/landing/secciones/Palcos.astro'
 import EntradaQr from '~/components/landing/secciones/EntradaQr.astro'
 import TuMesa from '~/components/landing/secciones/TuMesa.astro'
@@ -39,6 +40,7 @@ const jsonLd = datosEstructurados(cartelera.eventos, Astro.url.origin)
     <Portada proximo={cartelera.proximo} ahora={ahora} />
     <Tarifas ahora={ahora} />
     <Cartelera cartelera={cartelera} />
+    <Aniversario />
     <Palcos enlaceReserva={enlaceCompra} />
     <EntradaQr enlaceCompra={enlaceCompra} enlaceLista={enlaceLista} />
     <TuMesa carta={carta} />

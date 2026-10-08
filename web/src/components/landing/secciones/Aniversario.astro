@@ -1,0 +1,151 @@
+---
+import Seccion from '../ui/Seccion.astro'
+import Logo from '../ui/Logo.astro'
+import BotonNeon from '../ui/BotonNeon.astro'
+import Icono from '../ui/Icono.astro'
+import { VIDEO_ANIVERSARIO } from '../contenido/videos'
+import { NEGOCIO } from '../contenido/negocio'
+
+const TAMANO_ICONO_PLAY = 34
+const { anios, titulo, descripcion, urlPublica, urlReproductor } = VIDEO_ANIVERSARIO
+---
+<Seccion id="aniversario" titulo={titulo} intro={descripcion} class="aniversario">
+  <div class="aniversario__rejilla">
+    <!--
+      Fachada liviana: el reproductor de TikTok (pesado) solo se carga al dar play.
+      Sin JavaScript, la fachada es un enlace normal al video en TikTok.
+    -->
+    <a
+      href={urlPublica}
+      class="aniversario__video"
+      data-reproductor={urlReproductor}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={`Reproducir el video del ${anios}.º aniversario de ${NEGOCIO.nombre}`}
+    >
+      <span class="aniversario__numero" aria-hidden="true">{anios}</span>
+      <Logo class="aniversario__logo" sizes="16rem" />
+      <span class="aniversario__play" aria-hidden="true">
+        <Icono nombre="reproducir" tamano={TAMANO_ICONO_PLAY} />
+      </span>
+      <span class="aniversario__leyenda">Aniversario · Ver video</span>
+    </a>
+
+    <div class="aniversario__texto">
+      <p class="aniversario__lema">La casa de la guaracha y la electrónica en Bogotá.</p>
+      <BotonNeon href={NEGOCIO.redes.tiktok.url} icono="tiktok" externo>
+        Síguenos en TikTok {NEGOCIO.redes.tiktok.usuario}
+      </BotonNeon>
+    </div>
+  </div>
+</Seccion>
+
+<script>
+  /** Cambia la fachada por el reproductor oficial dentro de la página. */
+  function activarReproductor(fachada: HTMLAnchorElement) {
+    const iframe = document.createElement('iframe')
+    iframe.src = fachada.dataset.reproductor ?? ''
+    iframe.title = fachada.getAttribute('aria-label') ?? 'Video'
+    iframe.allow = 'autoplay; encrypted-media; fullscreen; picture-in-picture'
+    iframe.allowFullscreen = true
+    iframe.className = 'aniversario__iframe'
+    fachada.replaceWith(iframe)
+  }
+
+  document.querySelectorAll<HTMLAnchorElement>('[data-reproductor]').forEach((fachada) => {
+    fachada.addEventListener('click', (evento) => {
+      evento.preventDefault()
+      activarReproductor(fachada)
+    })
+  })
+</script>
+
+<style>
+  .aniversario__rejilla {
+    display: grid;
+    gap: clamp(2rem, 6vw, 4rem);
+    align-items: center;
+  }
+  @media (min-width: 52rem) {
+    .aniversario__rejilla { grid-template-columns: minmax(0, 22rem) 1fr; }
+  }
+
+  /* El video de TikTok es vertical (9:16); fachada e iframe comparten la misma caja. */
+  .aniversario__video,
+  :global(.aniversario__iframe) {
+    width: 100%;
+    max-width: 22rem;
+    aspect-ratio: 9 / 16;
+    margin-inline: auto;
+    border-radius: var(--radio);
+    border: 1px solid color-mix(in oklab, var(--primario) 45%, transparent);
+    box-shadow: var(--sombra-profunda), 0 0 3rem -1rem color-mix(in oklab, var(--primario) 60%, transparent);
+  }
+
+  .aniversario__video {
+    position: relative;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    isolation: isolate;
+    text-decoration: none;
+    color: var(--tinta);
+    background:
+      radial-gradient(circle at 50% 35%, color-mix(in oklab, var(--primario) 35%, transparent), transparent 60%),
+      linear-gradient(180deg, var(--fondo-3), var(--fondo));
+  }
+
+  .aniversario__numero {
+    position: absolute;
+    inset: auto 0 -4% 0;
+    z-index: -1;
+    text-align: center;
+    font-family: var(--fuente-display);
+    font-weight: 900;
+    font-size: clamp(14rem, 60vw, 20rem);
+    line-height: 0.8;
+    background: var(--degradado-oro);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    opacity: 0.14;
+  }
+
+  .aniversario__video :global(.aniversario__logo) { width: 85%; margin-top: -30%; }
+
+  .aniversario__play {
+    position: absolute;
+    top: 56%;
+    display: grid;
+    place-items: center;
+    width: 4.5rem;
+    height: 4.5rem;
+    border-radius: 50%;
+    color: var(--fondo);
+    background: var(--degradado-oro);
+    box-shadow: 0 0 0 0.6rem color-mix(in oklab, var(--primario) 20%, transparent);
+    transition: transform 0.35s var(--curva-salida), box-shadow 0.35s var(--curva-salida);
+  }
+  .aniversario__video:hover .aniversario__play,
+  .aniversario__video:focus-visible .aniversario__play {
+    transform: scale(1.08);
+    box-shadow: 0 0 0 0.9rem color-mix(in oklab, var(--primario) 28%, transparent);
+  }
+
+  .aniversario__leyenda {
+    position: absolute;
+    bottom: 1.25rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    color: var(--acento);
+  }
+
+  .aniversario__texto { display: grid; gap: 1.5rem; justify-items: start; }
+  .aniversario__lema { max-width: 22ch; font-size: clamp(1.3rem, 3.4vw, 1.75rem); color: var(--tinta); text-wrap: balance; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .aniversario__play { transition: none; }
+  }
+</style>

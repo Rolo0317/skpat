@@ -33,6 +33,31 @@ afterAll(async () => {
 })
 
 describe('POST /tickets/purchase', () => {
+  it('links the ticket to the logged-in buyer so it shows up in /tickets/mine', async () => {
+    const buyer = await createUser('cliente')
+    const auth = { authorization: `Bearer ${buyer.token}` }
+    const purchase = await app.inject({
+      method: 'POST',
+      url: '/tickets/purchase',
+      headers: auth,
+      payload: { event_id: testEventId, nombre: 'Ana', email: 'ana@test.co', cedula: '55556666', ticket_type: 'general' },
+    })
+    expect(purchase.statusCode).toBe(201)
+
+    const mine = await app.inject({ method: 'GET', url: '/tickets/mine', headers: auth })
+    expect(mine.json().map((t: { id: string }) => t.id)).toEqual([purchase.json().ticket_id])
+  })
+
+  it('still sells to anonymous buyers when the optional token is invalid', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/tickets/purchase',
+      headers: { authorization: 'Bearer not-a-valid-token' },
+      payload: { event_id: testEventId, nombre: 'Anon', email: 'anon@test.co', cedula: '77778888', ticket_type: 'general' },
+    })
+    expect(res.statusCode).toBe(201)
+  })
+
   it('purchases a general ticket successfully', async () => {
     const res = await app.inject({
       method: 'POST',

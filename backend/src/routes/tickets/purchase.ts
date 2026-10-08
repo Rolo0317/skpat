@@ -5,6 +5,7 @@ import { isUuid } from '../../lib/ids.js'
 import { encrypt } from '../../lib/encrypt.js'
 import { generateQrToken, generateQrDataUrl } from '../../lib/qr.js'
 import { sendTicketEmail } from '../../lib/email.js'
+import { optionalAuth } from '../../plugins/auth.js'
 import { PALCO_PRICES_CENTS, TICKET_TYPES, type TicketType } from '../../lib/ticketPrices.js'
 
 const purchaseSchema = z.object({
@@ -68,7 +69,7 @@ async function createTicket(input: PurchaseInput, userId: string | null) {
 }
 
 export async function purchaseTicketRoute(app: FastifyInstance) {
-  app.post('/purchase', async (req, reply) => {
+  app.post('/purchase', { preHandler: [optionalAuth] }, async (req, reply) => {
     const parsed = purchaseSchema.safeParse(req.body)
     if (!parsed.success) {
       return reply.code(400).send({ error: 'ValidationError', issues: parsed.error.issues })

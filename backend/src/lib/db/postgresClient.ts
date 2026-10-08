@@ -1,6 +1,17 @@
 import postgres from 'postgres'
 import type { SqlClient } from './types.js'
 
+const JSON_OID = 114
+const JSONB_OID = 3802
+
+/**
+ * postgres.js describe los parámetros con el servidor y serializa con JSON.stringify los de tipo json/jsonb.
+ * Las rutas envían JSON ya serializado (igual que con PGlite), así que un string se pasa tal cual
+ * para no codificarlo dos veces (lo que lo convertiría en un escalar).
+ */
+const serializeJson = (value: unknown) => (typeof value === 'string' ? value : JSON.stringify(value))
+const jsonType = (oid: number) => ({ to: oid, from: [oid], serialize: serializeJson, parse: JSON.parse })
+
 type Executor = postgres.Sql | postgres.TransactionSql
 
 function wrap(executor: Executor): SqlClient {
@@ -32,7 +43,11 @@ export function createPostgresClient(databaseUrl: string): SqlClient {
     idle_timeout: 20,
     connect_timeout: 10,
     // count(*)/sum() llegan como int8/numeric; los exponemos como number (montos en centavos caben de sobra).
-    types: { bigint: { to: 20, from: [20, 1700], serialize: String, parse: Number } },
+    types: {
+      bigint: { to: 20, from: [20, 1700], serialize: String, parse: Number },
+      json: jsonType(JSON_OID),
+      jsonb: jsonType(JSONB_OID),
+    },
     transform: { undefined: null },
   })
   return wrap(sql)

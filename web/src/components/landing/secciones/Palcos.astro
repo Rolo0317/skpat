@@ -1,0 +1,92 @@
+---
+import Seccion from '../ui/Seccion.astro'
+import BotonNeon from '../ui/BotonNeon.astro'
+import Icono from '../ui/Icono.astro'
+import { PALCOS, precioDePalco } from '../contenido/palcos'
+import { formatoCOP } from '../utilidades/formato'
+
+interface Props {
+  enlaceReserva: string
+}
+
+const { enlaceReserva } = Astro.props
+const TAMANO_ICONO = 18
+---
+<Seccion
+  id="palcos"
+  titulo="Palcos VIP"
+  intro="Tu grupo, tu espacio y tus botellas, con la pista a un paso. Elige el palco según cuántos vienen."
+  class="palcos-seccion"
+>
+  <ul class="palcos">
+    {
+      PALCOS.map((palco) => (
+        <li class:list={['palco', `palco--${palco.tipo}`, { 'palco--destacado': palco.destacado }]}>
+          <div class="palco__encabezado">
+            <h3 class="palco__nombre">{palco.nombre}</h3>
+            {palco.destacado && <span class="palco__sello">El más pedido</span>}
+          </div>
+          <p class="palco__capacidad">
+            <span class="palco__personas" aria-hidden="true">
+              {Array.from({ length: palco.capacidad }, () => <Icono nombre="persona" tamano={TAMANO_ICONO} />)}
+            </span>
+            Hasta {palco.capacidad} personas
+          </p>
+          <ul class="palco__incluye">
+            {palco.incluye.map((beneficio) => (
+              <li><Icono nombre="check" tamano={TAMANO_ICONO} />{beneficio}</li>
+            ))}
+          </ul>
+          <div class="palco__cierre">
+            <p class="palco__precio cifra">{formatoCOP(precioDePalco(palco))}</p>
+            <BotonNeon href={enlaceReserva} variante={palco.destacado ? 'primario' : 'secundario'} icono="flecha">
+              Reservar<span class="solo-lector"> palco {palco.nombre}</span>
+            </BotonNeon>
+          </div>
+        </li>
+      ))
+    }
+  </ul>
+</Seccion>
+
+<style>
+  :global(.palcos-seccion) {
+    background:
+      radial-gradient(80% 50% at 0% 100%, color-mix(in oklab, var(--violeta) 30%, transparent), transparent 70%),
+      var(--fondo);
+  }
+  .palcos { display: grid; gap: 1rem; padding: 0; margin: 0; list-style: none; }
+  .palco {
+    --palco-color: var(--cian);
+    display: grid;
+    gap: 1.25rem;
+    padding: 1.5rem;
+    border-radius: var(--radio);
+    border: 1px solid color-mix(in oklab, var(--palco-color) 45%, var(--linea));
+    background: linear-gradient(160deg, color-mix(in oklab, var(--palco-color) 16%, var(--fondo-2)), var(--fondo-2) 60%);
+  }
+  .palco--palco_gold { --palco-color: var(--oro); }
+  .palco--palco_platinum { --palco-color: var(--rosa); }
+  .palco--destacado { box-shadow: 0 1.5rem 3rem -1.5rem color-mix(in oklab, var(--palco-color) 60%, transparent); }
+
+  .palco__encabezado { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+  .palco__nombre { font-family: var(--fuente-display); font-weight: 900; font-size: clamp(2.75rem, 12vw, 4rem); line-height: 0.9; text-transform: uppercase; color: var(--tinta); }
+  .palco__sello { padding: 0.35rem 0.75rem; border-radius: 999px; background: var(--palco-color); color: var(--fondo); font-size: 0.8rem; font-weight: 700; white-space: nowrap; }
+
+  .palco__capacidad { display: grid; gap: 0.5rem; color: var(--tinta); font-weight: 500; }
+  .palco__personas { display: flex; flex-wrap: wrap; gap: 2px; color: color-mix(in oklab, var(--palco-color) 70%, white); }
+
+  .palco__incluye { display: grid; gap: 0.4rem; padding: 0; margin: 0; list-style: none; color: var(--color-skpat-text); }
+  .palco__incluye li { display: flex; align-items: center; gap: 0.5rem; }
+  .palco__incluye :global(svg) { color: var(--palco-color); flex: none; }
+
+  .palco__cierre { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin-top: auto; padding-top: 1.25rem; border-top: 1px solid var(--linea); }
+  .palco__precio { font-family: var(--fuente-display); font-weight: 900; font-size: 2.25rem; line-height: 1; color: var(--tinta); }
+
+  @media (min-width: 60rem) {
+    .palcos { grid-template-columns: repeat(3, 1fr); align-items: end; }
+    .palco--palco_silver { min-height: 26rem; }
+    .palco--palco_gold { min-height: 29rem; }
+    .palco--palco_platinum { min-height: 32rem; }
+  }
+</style>

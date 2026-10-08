@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+import { env } from '../../src/lib/env.js'
 
 // Covers AUTH-09 — secrets in env, not source.
 describe('env / secrets exposure', () => {
@@ -25,5 +26,9 @@ describe('env / secrets exposure', () => {
     // The actual secret values are only in .env files (gitignored).
     expect(process.env.JWT_SECRET).not.toBe('')
     expect(process.env.JWT_SECRET).not.toBeUndefined()
+  })
+
+  it('never points tests at a real database (backend/.env is not loaded)', () => {
+    expect(env.DATABASE_URL).toBeUndefined()
   })
 })

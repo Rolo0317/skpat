@@ -1,8 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3001'
+import { api, isApiError } from '@/lib/api'
+import { formatCOP } from '@/lib/format'
+import { groupBy } from '@/lib/collections'
+
+const CENTS_PER_PESO = 100
 interface MenuItem { id: string; name: string; description: string | null; category: string; price_cents: number; is_active: number; sort_order: number }
-function formatCOP(cents: number) { return (cents/100).toLocaleString('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0}) }
 
 export default function AdminMenuPage() {
   const [items, setItems] = useState<MenuItem[]>([])
@@ -13,8 +16,7 @@ export default function AdminMenuPage() {
   const [error, setError] = useState<string | null>(null)
 
   const loadMenu = useCallback(async () => {
-    const res = await fetch(`${API_URL}/menu`)
-    if (res.ok) setItems(await res.json())
+    await api.get<MenuItem[]>('/menu').then(setItems).catch(() => {})
     setLoading(false)
   }, [])
 
@@ -23,33 +25,22 @@ export default function AdminMenuPage() {
   const createItem = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true); setError(null)
-    const token = localStorage.getItem('skpat_access')
     try {
-      const res = await fetch(`${API_URL}/menu`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ name: form.name, description: form.description || undefined, category: form.category, price_cents: Math.round(parseFloat(form.price) * 100), sort_order: parseInt(form.sort_order) || 0 }),
-      })
-      if (!res.ok) { setError((await res.json()).error ?? 'Error'); return }
+      await api.post('/menu', { name: form.name, description: form.description || undefined, category: form.category, price_cents: Math.round(parseFloat(form.price) * CENTS_PER_PESO), sort_order: parseInt(form.sort_order) || 0 })
       setShowForm(false)
       setForm({ name:'', description:'', category:'cervezas', price:'', sort_order:'0' })
       loadMenu()
-    } catch { setError('Error de conexión') }
+    } catch (error) { setError(isApiError(error) ? error.error : 'Error de conexión') }
     finally { setSaving(false) }
   }
 
   const toggleActive = async (item: MenuItem) => {
-    const token = localStorage.getItem('skpat_access')
-    await fetch(`${API_URL}/menu/${item.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ is_active: item.is_active === 0 }),
-    })
+    await api.put(`/menu/${item.id}`, { is_active: item.is_active === 0 }).catch(() => {})
     loadMenu()
   }
 
   const categories = ['cervezas', 'licores', 'rones', 'whiskies', 'mezcladores', 'hidratacion', 'combos', 'general']
-  const grouped = items.reduce<Record<string, MenuItem[]>>((acc, i) => { (acc[i.category] ??= []).push(i); return acc }, {})
+  const grouped = groupBy(items, (item) => item.category)
 
   const cardStyle: React.CSSProperties = { background: '#1c1c2e', border: '1px solid rgba(255,255,255,.08)', borderRadius: 12 }
 

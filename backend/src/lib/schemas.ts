@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { HttpError } from './db/types.js'
 
 const passwordSchema = z.string().min(8).max(128)
 const emailSchema = z.string().trim().toLowerCase().email().max(255)
@@ -40,6 +41,7 @@ export type RecoverInput = z.infer<typeof recoverSchema>
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>
 
 export const SKPAT_ROLES = ['cliente', 'mesero', 'portero', 'admin'] as const
+export type SkpatRole = (typeof SKPAT_ROLES)[number]
 export const skpatRoleSchema = z.enum(SKPAT_ROLES)
 
 export const assignRoleSchema = z.object({
@@ -48,3 +50,10 @@ export const assignRoleSchema = z.object({
 })
 
 export type AssignRoleInput = z.infer<typeof assignRoleSchema>
+
+/** Valida `input` o aborta la petición con 400 ValidationError (lo traduce el handler central). */
+export function parseOrThrow<T extends z.ZodType>(schema: T, input: unknown): z.infer<T> {
+  const parsed = schema.safeParse(input)
+  if (!parsed.success) throw new HttpError(400, 'ValidationError', { issues: parsed.error.issues })
+  return parsed.data
+}

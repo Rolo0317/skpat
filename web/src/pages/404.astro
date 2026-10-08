@@ -1,0 +1,14 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro'
+---
+<BaseLayout title="Página no encontrada · Skpat VIP" description="La página que buscas no existe en Skpat VIP.">
+  <meta slot="head" name="robots" content="noindex" />
+  <main class="min-h-dvh flex flex-col items-center justify-center gap-6 px-6 text-center">
+    <p class="gradient-text text-7xl font-black tracking-tight">404</p>
+    <h1 class="text-2xl font-extrabold text-skpat-white">Esta pista no está en el line-up</h1>
+    <p class="max-w-md text-skpat-muted">La página que buscas no existe o cambió de lugar. Vuelve a la pista principal y sigue la fiesta.</p>
+    <a href="/" class="rounded-xl bg-skpat-purple px-6 py-3 font-semibold text-white transition-colors hover:bg-skpat-purple2">
+      Volver al inicio
+    </a>
+  </main>
+</BaseLayout>

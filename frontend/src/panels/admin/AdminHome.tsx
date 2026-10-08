@@ -1,9 +1,14 @@
 import { useState, useEffect } from 'react'
 import { RefreshCw, TrendingUp, Ticket, ShoppingCart, AlertTriangle, X } from 'lucide-react'
+import { api } from '@/lib/api'
+import { formatCOP } from '@/lib/format'
+import { LiveTonight } from './LiveTonight'
+import { StatTile } from './StatTile'
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3001'
-function token() { return localStorage.getItem('skpat_access') ?? '' }
-function formatCOP(c: number) { return (c / 100).toLocaleString('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }) }
+const SUMMARY_POLL_INTERVAL_MS = 15_000
+const NIGHT_START_HOUR = 18
+const NIGHT_HOURS_SHOWN = 11
+const HOURS_PER_DAY = 24
 
 interface Summary {
   period: string
@@ -16,6 +21,11 @@ interface Summary {
 interface HourData { hour: string; sales_cents: number; ticket_cents: number; total_cents: number }
 interface InvData { alert_count: number; items: Array<{ name: string; stock_qty: number; min_stock: number; is_low_stock: number }> }
 
+/** Las secciones del dashboard son independientes: un fallo deja su bloque vacío sin romper la página. */
+function getOrNull<T>(path: string): Promise<T | null> {
+  return api.get<T>(path).catch(() => null)
+}
+
 export default function AdminHome() {
   const [period, setPeriod] = useState<'tonight' | 'week' | 'month'>('tonight')
   const [filterMesero, setFilterMesero] = useState('')
@@ -27,31 +37,31 @@ export default function AdminHome() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const h = { Authorization: `Bearer ${token()}` }
     setLoading(true)
     const params = new URLSearchParams({ period })
     if (filterMesero) params.set('mesero_id', filterMesero)
     if (filterHour) params.set('hour', filterHour)
     if (filterEvent) params.set('event_id', filterEvent)
-    Promise.all([
-      fetch(`${API_URL}/dashboard/summary?${params}`, { headers: h }).then(r => r.ok ? r.json() : null),
-      fetch(`${API_URL}/dashboard/hours`, { headers: h }).then(r => r.ok ? r.json() : null),
-      fetch(`${API_URL}/dashboard/inventory`, { headers: h }).then(r => r.ok ? r.json() : null),
-    ]).then(([s, hr, iv]) => {
-      setSummary(s)
-      setHours(hr?.hours ?? [])
-      setInv(iv)
-    }).catch(() => {}).finally(() => setLoading(false))
+    const loadSummary = () => getOrNull<Summary>(`/dashboard/summary?${params}`)
+    const loadInventory = () => getOrNull<InvData>('/dashboard/inventory')
+
+    Promise.all([loadSummary(), getOrNull<{ hours: HourData[] }>('/dashboard/hours'), loadInventory()])
+      .then(([s, hr, iv]) => {
+        setSummary(s)
+        setHours(hr?.hours ?? [])
+        setInv(iv)
+      })
+      .finally(() => setLoading(false))
 
     const interval = setInterval(() => {
-      fetch(`${API_URL}/dashboard/summary?${params}`, { headers: h }).then(r => r.ok ? r.json() : null).then(s => s && setSummary(s))
-      fetch(`${API_URL}/dashboard/inventory`, { headers: h }).then(r => r.ok ? r.json() : null).then(iv => iv && setInv(iv))
-    }, 15000)
+      loadSummary().then(s => s && setSummary(s))
+      loadInventory().then(iv => iv && setInv(iv))
+    }, SUMMARY_POLL_INTERVAL_MS)
     return () => clearInterval(interval)
   }, [period, filterMesero, filterHour, filterEvent])
 
-  const nightHours = [...Array(11)].map((_, i) => {
-    const h = String((18 + i) % 24).padStart(2, '0')
+  const nightHours = [...Array(NIGHT_HOURS_SHOWN)].map((_, i) => {
+    const h = String((NIGHT_START_HOUR + i) % HOURS_PER_DAY).padStart(2, '0')
     return hours.find(hr => hr.hour === h) ?? { hour: h, sales_cents: 0, ticket_cents: 0, total_cents: 0 }
   })
   const maxBar = Math.max(...nightHours.map(h => h.total_cents), 1)
@@ -65,7 +75,7 @@ export default function AdminHome() {
           <h1 className="text-[22px] font-extrabold text-skpat-white">Dashboard</h1>
           <p className="text-xs text-skpat-muted mt-0.5 flex items-center gap-1">
             <RefreshCw size={10} className="animate-spin-slow" />
-            Actualización automática cada 15s
+            Actualización automática cada {SUMMARY_POLL_INTERVAL_MS / 1000}s
           </p>
         </div>
         <div className="flex gap-1 bg-skpat-bg3 border border-skpat-border rounded-lg p-1">
@@ -84,6 +94,8 @@ export default function AdminHome() {
           ))}
         </div>
       </div>
+
+      <LiveTonight />
 
       {/* Filters */}
       <div className="flex gap-2 mb-5 flex-wrap">
@@ -141,15 +153,8 @@ export default function AdminHome() {
               { label: 'Total general', value: summary.grand_total_cents, color: 'text-skpat-white', sub: `${summary.sales.count + summary.tickets.count} transacciones`, icon: TrendingUp },
               { label: 'Ventas en mesa', value: summary.sales.total_cents, color: 'text-skpat-green', sub: `${summary.sales.count} ventas`, icon: ShoppingCart },
               { label: 'Boletería', value: summary.tickets.total_cents, color: 'text-skpat-purple', sub: `${summary.tickets.count} tiquetes`, icon: Ticket },
-            ].map(({ label, value, color, sub, icon: Icon }) => (
-              <div key={label} className="bg-skpat-card border border-skpat-border rounded-xl p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[10px] font-bold text-skpat-muted uppercase tracking-widest">{label}</span>
-                  <Icon size={14} className={color} />
-                </div>
-                <div className={`text-2xl font-extrabold ${color}`}>{formatCOP(value)}</div>
-                <div className="text-xs text-skpat-muted mt-1">{sub}</div>
-              </div>
+            ].map(({ label, value, color, sub, icon }) => (
+              <StatTile key={label} label={label} value={formatCOP(value)} sub={sub} icon={icon} colorClass={color} />
             ))}
           </div>
 

@@ -1,0 +1,51 @@
+---
+import Icono from '../ui/Icono.astro'
+import Marca from '../ui/Marca.astro'
+import { NEGOCIO, RUTAS_APP } from '../contenido/negocio'
+
+const ENLACES_CUENTA = [
+  { href: RUTAS_APP.cliente, texto: 'Mis entradas' },
+  { href: RUTAS_APP.login, texto: 'Entrar' },
+  { href: RUTAS_APP.registro, texto: 'Crear cuenta' },
+]
+const anio = new Date().getFullYear()
+---
+<footer class="pie">
+  <div class="contenedor pie__rejilla">
+    <div>
+      <p class="pie__marca"><Marca variante="contorno" /></p>
+      <p class="pie__lema">{NEGOCIO.eslogan}.</p>
+    </div>
+    <address class="pie__contacto">
+      <span>{NEGOCIO.direccion.calle}, {NEGOCIO.direccion.ciudad}</span>
+      <span>{NEGOCIO.horario.dias} · {NEGOCIO.horario.texto}</span>
+      <a href={NEGOCIO.instagram.url} target="_blank" rel="noopener noreferrer" class="pie__instagram">
+        <Icono nombre="instagram" />{NEGOCIO.instagram.usuario}
+      </a>
+    </address>
+    <nav aria-label="Tu cuenta" class="pie__cuenta">
+      {ENLACES_CUENTA.map(({ href, texto }) => <a href={href}>{texto}</a>)}
+    </nav>
+  </div>
+  <div class="contenedor pie__legal">
+    <p>© {anio} {NEGOCIO.nombre}. Solo mayores de {NEGOCIO.edadMinima}. Consume con moderación.</p>
+  </div>
+</footer>
+
+<style>
+  .pie { padding-block: 4rem 6rem; border-top: 1px solid var(--linea); background: var(--fondo); }
+  .pie__rejilla { display: grid; gap: 2.5rem; }
+  .pie__marca { font-size: 3.5rem; }
+  .pie__lema { margin-top: 0.5rem; color: var(--tinta-suave); }
+  .pie__contacto { display: grid; gap: 0.5rem; font-style: normal; color: var(--color-skpat-text); }
+  .pie__instagram { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--tinta); font-weight: 700; padding-block: 0.25rem; }
+  .pie__cuenta { display: grid; gap: 0.25rem; align-content: start; }
+  .pie__cuenta a, .pie__instagram { text-decoration: none; }
+  .pie__cuenta a { color: var(--tinta-suave); padding-block: 0.5rem; }
+  .pie__cuenta a:hover, .pie__instagram:hover { color: var(--rosa-claro); }
+  .pie__legal { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--linea); font-size: 0.875rem; color: var(--tinta-suave); }
+
+  @media (min-width: 48rem) {
+    .pie__rejilla { grid-template-columns: 1.5fr 1fr auto; }
+  }
+</style>

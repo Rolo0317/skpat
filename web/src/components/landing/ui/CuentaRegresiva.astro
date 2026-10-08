@@ -1,0 +1,59 @@
+---
+import { tiempoRestante, type UnidadTiempo } from './cuentaRegresiva'
+
+interface Props {
+  objetivo: Date
+  ahora: Date
+  enVivo: boolean
+}
+
+const { objetivo, ahora, enVivo } = Astro.props
+const inicial = tiempoRestante(objetivo, ahora)
+const UNIDADES: { clave: UnidadTiempo; etiqueta: string }[] = [
+  { clave: 'dias', etiqueta: 'días' },
+  { clave: 'horas', etiqueta: 'horas' },
+  { clave: 'minutos', etiqueta: 'min' },
+  { clave: 'segundos', etiqueta: 'seg' },
+]
+---
+<div class="cuenta" data-cuenta-regresiva data-objetivo={objetivo.toISOString()} data-estado={enVivo ? 'en-vivo' : 'contando'}>
+  <p class="cuenta__vivo"><span class="cuenta__punto"></span>Está pasando ahora</p>
+  <ol class="cuenta__reloj" aria-label="Tiempo para que empiece">
+    {
+      UNIDADES.map(({ clave, etiqueta }) => (
+        <li class="cuenta__celda">
+          <span class="cuenta__cifra cifra" data-unidad={clave}>{inicial[clave]}</span>
+          <span class="cuenta__etiqueta">{etiqueta}</span>
+        </li>
+      ))
+    }
+  </ol>
+</div>
+
+<script>
+  import { iniciarCuentaRegresiva } from './cuentaRegresiva'
+
+  document.querySelectorAll<HTMLElement>('[data-cuenta-regresiva]').forEach(iniciarCuentaRegresiva)
+</script>
+
+<style>
+  .cuenta__reloj { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; list-style: none; padding: 0; margin: 0; }
+  .cuenta__celda {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 0.6rem 0.25rem 0.5rem;
+    border-radius: var(--radio-pequeno);
+    background: color-mix(in oklab, var(--fondo) 75%, var(--violeta));
+  }
+  .cuenta__cifra { font-family: var(--fuente-display); font-weight: 900; font-size: clamp(2rem, 9vw, 2.75rem); line-height: 1; color: var(--tinta); }
+  .cuenta__etiqueta { font-size: 0.75rem; color: var(--tinta-suave); text-transform: uppercase; letter-spacing: 0.08em; }
+
+  .cuenta__vivo { display: none; align-items: center; gap: 0.6rem; font-family: var(--fuente-display); font-weight: 900; font-size: 2rem; text-transform: uppercase; color: var(--rosa-claro); }
+  .cuenta__punto { width: 0.75rem; height: 0.75rem; border-radius: 50%; background: var(--rosa); animation: latido 0.94s ease-out infinite; }
+  .cuenta[data-estado='en-vivo'] .cuenta__vivo { display: flex; }
+  .cuenta[data-estado='en-vivo'] .cuenta__reloj { display: none; }
+
+  @keyframes latido {
+    from { box-shadow: 0 0 0 0 color-mix(in oklab, var(--rosa) 70%, transparent); }
+    to { box-shadow: 0 0 0 0.75rem transparent; }
+  }
+</style>

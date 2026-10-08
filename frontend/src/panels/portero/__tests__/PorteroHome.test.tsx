@@ -1,6 +1,7 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import PorteroHome from '../PorteroHome'
+import { jsonResponse } from '../../../../tests/utils'
 
 // Mock the QrScannerWidget so jsdom doesn't pull in qr-scanner / worker
 vi.mock('../QrScannerWidget', () => ({
@@ -25,14 +26,11 @@ describe('PorteroHome', () => {
   })
 
   it('shows VALIDO and increments ingresados on a valid scan', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => ({
-      ok: true,
-      json: async () => ({
-        valid: true,
-        nombre: 'Juan Perez',
-        ticket_type: 'general',
-        event_title: 'Test Night',
-      }),
+    vi.stubGlobal('fetch', vi.fn(async () => jsonResponse({
+      valid: true,
+      nombre: 'Juan Perez',
+      ticket_type: 'general',
+      event_title: 'Test Night',
     })))
     render(<PorteroHome />)
 
@@ -49,14 +47,11 @@ describe('PorteroHome', () => {
   })
 
   it('shows YA USADO and increments rechazados on AlreadyUsed', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => ({
-      ok: true,
-      json: async () => ({
-        valid: false,
-        reason: 'AlreadyUsed',
-        message: 'Este QR ya fue escaneado',
-        nombre: 'Maria Lopez',
-      }),
+    vi.stubGlobal('fetch', vi.fn(async () => jsonResponse({
+      valid: false,
+      reason: 'AlreadyUsed',
+      message: 'Este QR ya fue escaneado',
+      nombre: 'Maria Lopez',
     })))
     render(<PorteroHome />)
 

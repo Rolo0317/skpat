@@ -1,0 +1,107 @@
+---
+import Seccion from '../ui/Seccion.astro'
+import BotonNeon from '../ui/BotonNeon.astro'
+import Icono, { type NombreIcono } from '../ui/Icono.astro'
+import { ENLACES_MAPA, NEGOCIO } from '../contenido/negocio'
+
+const TAMANO_PIN = 28
+const TAMANO_ICONO = 22
+const LIENZO = { ancho: 400, alto: 300 } as const
+const CRUCE = { x: 230, y: 150 } as const
+const PORCENTAJE = 100
+const posicionPin = `--pin-x: ${(CRUCE.x / LIENZO.ancho) * PORCENTAJE}%; --pin-y: ${(CRUCE.y / LIENZO.alto) * PORCENTAJE}%`
+
+const DATOS: { icono: NombreIcono; titulo: string; texto: string }[] = [
+  { icono: 'pin', titulo: NEGOCIO.direccion.calle, texto: `${NEGOCIO.direccion.ciudad}, Colombia` },
+  { icono: 'reloj', titulo: NEGOCIO.horario.dias, texto: NEGOCIO.horario.texto },
+  { icono: 'instagram', titulo: NEGOCIO.instagram.usuario, texto: 'Line-ups, fotos y anuncios' },
+]
+---
+<Seccion id="ubicacion" titulo="En la 93, Bogotá">
+  <div class="ubicacion">
+    <div class="mapa" style={posicionPin} role="img" aria-label={`Mapa esquemático: Skpat VIP en ${NEGOCIO.direccion.calle}, ${NEGOCIO.direccion.ciudad}`}>
+      <svg viewBox={`0 0 ${LIENZO.ancho} ${LIENZO.alto}`} aria-hidden="true" class="mapa__dibujo">
+        <defs>
+          <pattern id="mapa-cuadricula" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M40 0H0v40" fill="none" class="mapa__cuadricula" />
+          </pattern>
+        </defs>
+        <rect width={LIENZO.ancho} height={LIENZO.alto} fill="url(#mapa-cuadricula)" />
+        <path d={`M0 ${CRUCE.y}h${LIENZO.ancho}`} class="mapa__via mapa__via--calle" />
+        <path d={`M${CRUCE.x} 0v${LIENZO.alto}`} class="mapa__via mapa__via--carrera" />
+        <text x="16" y={CRUCE.y - 12} class="mapa__rotulo">Calle 93</text>
+        <text x={CRUCE.x + 12} y={LIENZO.alto - 10} class="mapa__rotulo">Cra. 15</text>
+      </svg>
+      <span class="mapa__pin"><Icono nombre="pin" tamano={TAMANO_PIN} /></span>
+    </div>
+
+    <div class="ubicacion__info">
+      <ul class="ubicacion__datos">
+        {
+          DATOS.map(({ icono, titulo, texto }) => (
+            <li>
+              <Icono nombre={icono} tamano={TAMANO_ICONO} />
+              <div>
+                <p class="ubicacion__titulo">{titulo}</p>
+                <p class="ubicacion__texto">{texto}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ul>
+      <div class="ubicacion__acciones">
+        <BotonNeon href={ENLACES_MAPA.google} externo icono="navegar">Abrir en Google Maps</BotonNeon>
+        <BotonNeon href={ENLACES_MAPA.waze} externo variante="secundario">Ir con Waze</BotonNeon>
+      </div>
+    </div>
+  </div>
+</Seccion>
+
+<style>
+  .ubicacion { display: grid; gap: 2.5rem; align-items: center; }
+
+  .mapa {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    border-radius: var(--radio);
+    overflow: hidden;
+    border: 1px solid var(--linea);
+    background: radial-gradient(circle at var(--pin-x) var(--pin-y), color-mix(in oklab, var(--violeta) 30%, transparent), transparent 55%), var(--fondo-2);
+  }
+  .mapa__dibujo { width: 100%; height: 100%; display: block; }
+  .mapa__cuadricula { stroke: var(--linea); stroke-width: 1; }
+  .mapa__via { stroke-width: 14; stroke-linecap: square; }
+  .mapa__via--calle { stroke: color-mix(in oklab, var(--violeta) 55%, var(--fondo-3)); }
+  .mapa__via--carrera { stroke: color-mix(in oklab, var(--cian) 45%, var(--fondo-3)); }
+  .mapa__rotulo { fill: var(--tinta); font-family: var(--fuente-display); font-weight: 700; font-size: 16px; letter-spacing: 0.06em; text-transform: uppercase; }
+
+  .mapa__pin {
+    position: absolute;
+    left: var(--pin-x);
+    top: var(--pin-y);
+    display: grid;
+    place-items: center;
+    width: 3.25rem;
+    height: 3.25rem;
+    translate: -50% -50%;
+    border-radius: 50%;
+    background: var(--rosa);
+    color: var(--fondo);
+    animation: pin-pulso 1.9s var(--curva-salida) infinite;
+  }
+  @keyframes pin-pulso {
+    from { box-shadow: 0 0 0 0 color-mix(in oklab, var(--rosa) 70%, transparent); }
+    to { box-shadow: 0 0 0 1.5rem transparent; }
+  }
+
+  .ubicacion__datos { display: grid; gap: 1.25rem; padding: 0; margin: 0; list-style: none; }
+  .ubicacion__datos li { display: flex; gap: 1rem; align-items: flex-start; }
+  .ubicacion__datos :global(svg) { flex: none; margin-top: 0.3rem; color: var(--rosa-claro); }
+  .ubicacion__titulo { font-family: var(--fuente-display); font-weight: 900; font-size: 1.75rem; line-height: 1.05; text-transform: uppercase; color: var(--tinta); }
+  .ubicacion__texto { color: var(--tinta-suave); }
+  .ubicacion__acciones { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 2rem; }
+
+  @media (min-width: 56rem) {
+    .ubicacion { grid-template-columns: 1.2fr 1fr; gap: 4rem; }
+  }
+</style>

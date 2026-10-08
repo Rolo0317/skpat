@@ -1,0 +1,13 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro'
+import ReactApp from '~/islands/ReactApp'
+import { isReactAppRoute } from '~/islands/reactAppRoutes'
+
+export const prerender = false
+
+if (!isReactAppRoute(Astro.url.pathname)) return Astro.rewrite('/404')
+---
+<BaseLayout title="Skpat VIP">
+  <meta slot="head" name="robots" content="noindex" />
+  <ReactApp client:only="react" />
+</BaseLayout>

@@ -1,78 +1,72 @@
 import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
-import { db } from '../../lib/db.js'
+import { db, HttpError } from '../../lib/db.js'
+import { isUuid } from '../../lib/ids.js'
 import { encrypt } from '../../lib/encrypt.js'
-import { PALCO_PRICES_CENTS } from '../../lib/ticketPrices.js'
+import { PALCO_TIERS, palcoLabel, palcoPriceCents, type PalcoTier } from '../../lib/ticketPrices.js'
+import { parseOrThrow } from '../../services/validation.js'
 
 const reserveSchema = z.object({
   event_id: z.string().min(1),
-  palco_tier: z.enum(['silver', 'gold', 'platinum']),
+  palco_tier: z.enum(PALCO_TIERS),
   nombre: z.string().trim().min(1).max(80),
   email: z.string().trim().toLowerCase().email().max(255),
   telefono: z.string().regex(/^\d{7,15}$/).optional(),
 })
 
+type ReserveInput = z.infer<typeof reserveSchema>
+
+interface ReservationRow {
+  id: string
+  event_id: string
+  palco_tier: PalcoTier
+  nombre: string
+  email: string
+  price_cents: number
+  status: string
+}
+
+async function findReservableEvent(eventId: string): Promise<{ id: string; title: string }> {
+  const event = isUuid(eventId)
+    ? await db.one<{ id: string; title: string; is_active: boolean }>('select id, title, is_active from events where id = $1', [eventId])
+    : undefined
+  if (!event) throw new HttpError(404, 'EventNotFound')
+  if (!event.is_active) throw new HttpError(422, 'EventNotActive')
+  return event
+}
+
+async function insertReservation(input: ReserveInput): Promise<ReservationRow> {
+  const row = await db.one<ReservationRow>(
+    `insert into palco_reservations (event_id, palco_tier, nombre, email, telefono_enc, price_cents)
+     values ($1, $2, $3, $4, $5, $6)
+     returning id, event_id, palco_tier, nombre, email, price_cents, status`,
+    [
+      input.event_id, input.palco_tier, input.nombre, input.email,
+      input.telefono ? encrypt(input.telefono) : null, palcoPriceCents(input.palco_tier),
+    ],
+  )
+  return row!
+}
+
+const confirmationMessage = (tier: PalcoTier) =>
+  `Reserva de ${palcoLabel(tier)} confirmada. El equipo de Skpat VIP se pondra en contacto contigo pronto.`
+
 export async function palcosRoutes(app: FastifyInstance) {
   app.post('/reserve', async (req, reply) => {
-    const parsed = reserveSchema.safeParse(req.body)
-    if (!parsed.success) {
-      return reply.code(400).send({ error: 'ValidationError', issues: parsed.error.issues })
-    }
-
-    const { event_id, palco_tier, nombre, email, telefono } = parsed.data
-
-    // Verify event exists and is active
-    const event = db
-      .prepare('SELECT id, title, date, is_active FROM events WHERE id = ?')
-      .get(event_id) as { id: string; title: string; date: string; is_active: number } | undefined
-
-    if (!event) {
-      return reply.code(404).send({ error: 'EventNotFound' })
-    }
-    if (!event.is_active) {
-      return reply.code(422).send({ error: 'EventNotActive' })
-    }
-
-    const ticketTypeKey = `palco_${palco_tier}` as const
-    const priceCents = PALCO_PRICES_CENTS[ticketTypeKey] ?? 0
-    const telefonoEnc = telefono ? encrypt(telefono) : null
-
-    const stmt = db.prepare(`
-      INSERT INTO palco_reservations
-        (event_id, palco_tier, nombre, email, telefono_enc, price_cents)
-      VALUES
-        (@event_id, @palco_tier, @nombre, @email, @telefono_enc, @price_cents)
-      RETURNING id, event_id, palco_tier, nombre, email, price_cents, status, created_at
-    `)
-
-    const row = stmt.get({
-      event_id,
-      palco_tier,
-      nombre,
-      email,
-      telefono_enc: telefonoEnc,
-      price_cents: priceCents,
-    }) as {
-      id: string
-      event_id: string
-      palco_tier: string
-      nombre: string
-      email: string
-      price_cents: number
-      status: string
-      created_at: number
-    }
+    const input = parseOrThrow(reserveSchema, req.body)
+    const event = await findReservableEvent(input.event_id)
+    const reservation = await insertReservation(input)
 
     return reply.code(201).send({
-      reservation_id: row.id,
-      event_id: row.event_id,
+      reservation_id: reservation.id,
+      event_id: reservation.event_id,
       event_title: event.title,
-      palco_tier: row.palco_tier,
-      nombre: row.nombre,
-      email: row.email,
-      price_cents: row.price_cents,
-      status: row.status,
-      message: `Reserva de Palco ${palco_tier.charAt(0).toUpperCase() + palco_tier.slice(1)} confirmada. El equipo de Skpat VIP se pondra en contacto contigo pronto.`,
+      palco_tier: reservation.palco_tier,
+      nombre: reservation.nombre,
+      email: reservation.email,
+      price_cents: reservation.price_cents,
+      status: reservation.status,
+      message: confirmationMessage(reservation.palco_tier),
     })
   })
 }

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
-
-const API_URL = (import.meta.env.VITE_API_URL ?? 'http://localhost:3001') as string
+import { api, apiAssetUrl, isApiError } from '@/lib/api'
+import { formatCOP } from '@/lib/format'
+import { PALCO_PRICES_CENTS } from '@skpat/backend/src/lib/ticketPrices'
 
 interface SkpatEvent {
   id: string
@@ -33,15 +34,13 @@ const TICKET_LABELS: Record<TicketType, string> = {
   palco_platinum: 'Palco Platinum',
 }
 
-const PALCO_PRICES: Record<TicketType, number | null> = {
-  general: null,
-  palco_silver: 20000_00,
-  palco_gold: 40000_00,
-  palco_platinum: 80000_00,
-}
+// Los precios de palco vienen de la fuente única del backend; la entrada general usa el precio del evento.
+const PALCO_PRICES = { general: null, ...PALCO_PRICES_CENTS } as Record<TicketType, number | null>
 
-function formatCOP(cents: number) {
-  return (cents / 100).toLocaleString('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 })
+function purchaseErrorMessage(error: unknown): string {
+  if (!isApiError(error)) return 'Error de conexión. Intenta de nuevo.'
+  if (Array.isArray(error.issues)) return error.issues.map((issue: { message: string }) => issue.message).join(', ')
+  return error.error
 }
 
 export default function TicketPurchasePage() {
@@ -61,9 +60,9 @@ export default function TicketPurchasePage() {
 
   useEffect(() => {
     if (!event_id) return
-    fetch(`${API_URL}/events`)
-      .then((r) => r.json())
-      .then((events: SkpatEvent[]) => {
+    api
+      .get<SkpatEvent[]>('/events')
+      .then((events) => {
         const ev = events.find((e) => e.id === event_id)
         if (!ev) {
           setEventError('Evento no encontrado')
@@ -100,30 +99,17 @@ export default function TicketPurchasePage() {
     }
 
     try {
-      const res = await fetch(`${API_URL}/tickets/purchase`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          event_id,
-          nombre: nombre.trim(),
-          email: email.trim().toLowerCase(),
-          cedula,
-          telefono: telefono || undefined,
-          ticket_type: ticketType,
-        }),
+      const purchase = await api.post<PurchaseResult>('/tickets/purchase', {
+        event_id,
+        nombre: nombre.trim(),
+        email: email.trim().toLowerCase(),
+        cedula,
+        telefono: telefono || undefined,
+        ticket_type: ticketType,
       })
-      const body = await res.json()
-      if (!res.ok) {
-        if (body.issues && Array.isArray(body.issues)) {
-          setFormError(body.issues.map((i: { message: string }) => i.message).join(', '))
-        } else {
-          setFormError(body.error ?? 'Error al procesar la compra')
-        }
-        return
-      }
-      setResult(body as PurchaseResult)
-    } catch {
-      setFormError('Error de conexión. Intenta de nuevo.')
+      setResult(purchase)
+    } catch (error) {
+      setFormError(purchaseErrorMessage(error))
     } finally {
       setSubmitting(false)
     }
@@ -141,7 +127,7 @@ export default function TicketPurchasePage() {
     return (
       <div style={{ minHeight: '100vh', background: '#07070f', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
         <p style={{ color: '#ef4444', fontSize: 18 }}>{eventError}</p>
-        <Link to="/" style={{ color: '#8b5cf6', textDecoration: 'none' }}>← Volver al inicio</Link>
+        <Link to="/" reloadDocument style={{ color: '#8b5cf6', textDecoration: 'none' }}>← Volver al inicio</Link>
       </div>
     )
   }
@@ -192,6 +178,7 @@ export default function TicketPurchasePage() {
 
           <Link
             to="/"
+            reloadDocument
             style={{ color: '#8b5cf6', textDecoration: 'none', fontSize: 14 }}
           >
             ← Volver al inicio
@@ -205,7 +192,7 @@ export default function TicketPurchasePage() {
     <div style={{ minHeight: '100vh', background: '#07070f', color: '#e2e8f0', fontFamily: "'Segoe UI',system-ui,sans-serif" }}>
       {/* Navbar simple */}
       <nav style={{ padding: '16px 24px', borderBottom: '1px solid #2a2a4a', display: 'flex', alignItems: 'center', gap: 16, background: '#07070fcc', backdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 100 }}>
-        <Link to="/" style={{ color: '#8b5cf6', textDecoration: 'none', fontSize: 13 }}>← Skpat VIP</Link>
+        <Link to="/" reloadDocument style={{ color: '#8b5cf6', textDecoration: 'none', fontSize: 13 }}>← Skpat VIP</Link>
         <span style={{ color: '#4b5563', fontSize: 12 }}>Comprar tiquete</span>
       </nav>
 
@@ -215,7 +202,7 @@ export default function TicketPurchasePage() {
           <div style={{ background: '#1a1a30', border: '1px solid #2a2a4a', borderRadius: 16, padding: 20, marginBottom: 32 }}>
             <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
               {event.image_url ? (
-                <img src={`${API_URL}${event.image_url}`} alt={event.title} style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 10, flexShrink: 0 }} />
+                <img src={apiAssetUrl(event.image_url)} alt={event.title} style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 10, flexShrink: 0 }} />
               ) : (
                 <div style={{ width: 80, height: 80, background: 'linear-gradient(135deg,#1a0533,#4c1d95)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, flexShrink: 0 }}>🎵</div>
               )}

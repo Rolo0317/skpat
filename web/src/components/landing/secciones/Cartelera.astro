@@ -1,0 +1,51 @@
+---
+import type { Cartelera } from '../utilidades/agenda'
+import Seccion from '../ui/Seccion.astro'
+import EventoCartel from '../ui/EventoCartel.astro'
+import BotonNeon from '../ui/BotonNeon.astro'
+import { NEGOCIO, RUTAS_APP } from '../contenido/negocio'
+
+interface Props {
+  cartelera: Cartelera
+}
+
+const { cartelera } = Astro.props
+const [destacado, ...resto] = cartelera.eventos
+---
+<Seccion id="cartelera" titulo={cartelera.titulo}>
+  {
+    destacado ? (
+      <div class="cartelera">
+        <EventoCartel evento={destacado} destacado />
+        {resto.length > 0 && (
+          <div class="cartelera__resto">
+            {resto.map((evento) => <EventoCartel evento={evento} />)}
+          </div>
+        )}
+      </div>
+    ) : (
+      <div class="cartelera__vacia">
+        <p>Estamos armando el próximo line-up. Las fechas salen primero en Instagram y en tu cuenta.</p>
+        <div class="cartelera__acciones">
+          <BotonNeon href={NEGOCIO.instagram.url} externo icono="instagram">Seguir {NEGOCIO.instagram.usuario}</BotonNeon>
+          <BotonNeon href={RUTAS_APP.registro} variante="secundario">Crear cuenta</BotonNeon>
+        </div>
+      </div>
+    )
+  }
+</Seccion>
+
+<style>
+  .cartelera { display: grid; gap: 3rem; }
+  .cartelera__resto { display: grid; }
+  .cartelera__vacia {
+    display: grid;
+    gap: 1.5rem;
+    max-width: 40rem;
+    padding: 2rem;
+    border: 1px dashed color-mix(in oklab, var(--violeta) 50%, transparent);
+    border-radius: var(--radio);
+    font-size: 1.1rem;
+  }
+  .cartelera__acciones { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+</style>

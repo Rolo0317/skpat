@@ -29,3 +29,22 @@ export async function createEvent(overrides: Partial<{ title: string; date: stri
   )
   return row!.id
 }
+
+/** Usuario con contraseña real (argon2) para probar login y recuperación de contraseña. */
+export async function createUserWithPassword(email: string, password: string, role: SkpatRole = 'cliente') {
+  const { hashSecret } = await import('../src/lib/argon2.js')
+  const user = await db.one<{ id: string }>(
+    `insert into users (email, password_hash, role, nombre) values ($1, $2, $3, 'Test User') returning id`,
+    [email, await hashSecret(password), role],
+  )
+  return { id: user!.id, email, password }
+}
+
+export async function createMenuItem(overrides: Partial<{ name: string; category: string; price_cents: number; stock_qty: number; min_stock: number; is_active: boolean }> = {}) {
+  const item = { name: 'Club Colombia', category: 'cervezas', price_cents: 1200000, stock_qty: -1, min_stock: 0, is_active: true, ...overrides }
+  const row = await db.one<{ id: string }>(
+    `insert into menu_items (name, category, price_cents, stock_qty, min_stock, is_active) values ($1, $2, $3, $4, $5, $6) returning id`,
+    [item.name, item.category, item.price_cents, item.stock_qty, item.min_stock, item.is_active],
+  )
+  return row!.id
+}

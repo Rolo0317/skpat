@@ -70,3 +70,6 @@ vitest.config.js
 backend/data/pglite/
 web/data/
 .demo-credentials.txt
+
+.vercel
+.env*

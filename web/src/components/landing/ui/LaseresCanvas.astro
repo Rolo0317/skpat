@@ -1,0 +1,29 @@
+---
+interface Props {
+  class?: string
+}
+const { class: clase } = Astro.props
+---
+<div class:list={['escenario', clase]} aria-hidden="true">
+  <span class="escenario__humo"></span>
+  <canvas class="escenario__lienzo" data-laseres></canvas>
+</div>
+
+<script>
+  import { iniciarLaseres } from './laseres'
+
+  document.querySelectorAll<HTMLCanvasElement>('[data-laseres]').forEach(iniciarLaseres)
+</script>
+
+<style>
+  .escenario { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+  .escenario__humo {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(60% 45% at 50% 0%, color-mix(in oklab, var(--violeta) 35%, transparent), transparent 70%),
+      radial-gradient(50% 40% at 85% 75%, color-mix(in oklab, var(--rosa) 18%, transparent), transparent 70%),
+      radial-gradient(45% 35% at 10% 85%, color-mix(in oklab, var(--cian) 14%, transparent), transparent 70%);
+  }
+  .escenario__lienzo { position: absolute; inset: 0; width: 100%; height: 100%; }
+</style>

@@ -1,0 +1,105 @@
+---
+import type { EventoPublico } from '~/lib/data'
+import ArteEvento from './ArteEvento.astro'
+import BotonNeon from './BotonNeon.astro'
+import { RUTAS_APP } from '../contenido/negocio'
+import { formatoCOP, partesDeFecha } from '../utilidades/formato'
+
+interface Props {
+  evento: EventoPublico
+  destacado?: boolean
+}
+
+const POCOS_CUPOS = 25
+const { evento, destacado = false } = Astro.props
+const fecha = partesDeFecha(evento.fecha)
+const agotado = evento.cuposDisponibles <= 0
+const quedanPocos = !agotado && evento.cuposDisponibles <= POCOS_CUPOS
+---
+<article class:list={['cartel', { 'cartel--destacado': destacado }]}>
+  <ArteEvento class="cartel__arte" semilla={evento.id} imagenUrl={evento.imagenUrl} alt={`Flyer de ${evento.titulo}`} prioridad={destacado} />
+  <time class="cartel__fecha" datetime={evento.fecha.toISOString()}>
+    <span class="cartel__dia">{fecha.dia}</span>
+    <span class="cartel__numero cifra">{fecha.numero}</span>
+    <span class="cartel__mes">{fecha.mes}</span>
+  </time>
+  <div class="cartel__cuerpo">
+    <h3 class="cartel__titulo">{evento.titulo}</h3>
+    {evento.lineup.length > 0 && <p class="cartel__lineup">{evento.lineup.join(' · ')}</p>}
+    <p class="cartel__meta">
+      <span>{fecha.hora}</span>
+      {evento.genero && <span>{evento.genero}</span>}
+      {evento.esVip && <span class="cartel__vip">VIP</span>}
+    </p>
+    {destacado && evento.descripcion && <p class="cartel__descripcion">{evento.descripcion}</p>}
+    <div class="cartel__compra">
+      <p class="cartel__precio">
+        <span class="cifra">{formatoCOP(evento.precioCentavos)}</span>
+        {quedanPocos && <span class="cartel__aviso">Últimos {evento.cuposDisponibles} cupos</span>}
+        {agotado && <span class="cartel__aviso">Agotado</span>}
+      </p>
+      {
+        !agotado && (
+          <BotonNeon href={RUTAS_APP.comprar(evento.id)} variante={destacado ? 'primario' : 'secundario'} icono="flecha">
+            Comprar<span class="solo-lector"> entrada para {evento.titulo}</span>
+          </BotonNeon>
+        )
+      }
+    </div>
+  </div>
+</article>
+
+<style>
+  .cartel {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1rem 1.25rem;
+    padding-block: 1.5rem;
+    border-top: 1px solid var(--linea);
+  }
+  .cartel :global(.cartel__arte) { display: none; }
+
+  .cartel__fecha {
+    display: flex; flex-direction: column; align-items: center;
+    min-width: 4.25rem;
+    font-family: var(--fuente-display); font-weight: 700; text-transform: uppercase; line-height: 1;
+    color: var(--tinta-suave);
+  }
+  .cartel__numero { font-size: 2.75rem; font-weight: 900; color: var(--tinta); }
+  .cartel__dia, .cartel__mes { font-size: 1rem; letter-spacing: 0.08em; }
+  .cartel__dia { color: var(--rosa-claro); }
+
+  .cartel__cuerpo { display: grid; gap: 0.5rem; min-width: 0; }
+  .cartel__titulo { font-family: var(--fuente-display); font-weight: 900; font-size: clamp(1.9rem, 7vw, 2.6rem); line-height: 0.95; text-transform: uppercase; color: var(--tinta); text-wrap: balance; }
+  .cartel__lineup { color: var(--violeta-claro); font-weight: 500; }
+  .cartel__meta { display: flex; flex-wrap: wrap; gap: 0.35rem 1rem; color: var(--tinta-suave); font-size: 0.95rem; }
+  .cartel__vip { color: var(--oro); font-weight: 700; letter-spacing: 0.08em; }
+  .cartel__descripcion { max-width: 60ch; color: var(--color-skpat-text); }
+  .cartel__compra { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem 1.5rem; margin-top: 0.5rem; }
+  .cartel__precio { display: flex; flex-direction: column; font-family: var(--fuente-display); font-weight: 700; font-size: 1.75rem; line-height: 1.1; color: var(--tinta); }
+  .cartel__aviso { font-family: var(--fuente-texto); font-size: 0.9rem; font-weight: 700; color: var(--rosa-claro); }
+
+  .cartel--destacado { grid-template-columns: 1fr; padding-top: 0; border-top: 0; }
+  .cartel--destacado :global(.cartel__arte) {
+    display: block;
+    aspect-ratio: 4 / 5;
+    border-radius: var(--radio);
+    box-shadow: var(--sombra-profunda);
+  }
+  .cartel--destacado .cartel__fecha {
+    position: absolute; top: 1rem; left: 1rem;
+    padding: 0.75rem 0.6rem;
+    border-radius: var(--radio-pequeno);
+    background: var(--fondo);
+  }
+  .cartel--destacado .cartel__titulo { font-size: clamp(2.5rem, 10vw, 4rem); }
+
+  @media (min-width: 48rem) {
+    .cartel :global(.cartel__arte) { display: block; width: 7rem; aspect-ratio: 4 / 5; border-radius: var(--radio-pequeno); grid-row: span 1; }
+    .cartel { grid-template-columns: auto 7rem 1fr; align-items: center; }
+    .cartel__fecha { grid-column: 1; grid-row: 1; }
+    .cartel--destacado { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 2.5rem; align-items: center; }
+    .cartel--destacado :global(.cartel__arte) { width: auto; }
+  }
+</style>

@@ -1,5 +1,6 @@
 import { createContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { api } from '@/lib/api'
+import { api, isApiError, onSessionExpired, refreshSession } from '@/lib/api'
+import { clearTokens, getAccessToken, saveTokens } from '@/lib/session'
 
 export type SkpatRole = 'cliente' | 'mesero' | 'portero' | 'admin'
 
@@ -10,150 +11,100 @@ export interface AuthUser {
   nombre: string
 }
 
+export interface SignUpInput {
+  email: string
+  password: string
+  nombre: string
+  cedula: string
+  telefono: string
+}
+
+type AuthResult = { error: string | null }
+
 export interface AuthContextValue {
   user: AuthUser | null
   role: SkpatRole | null
   loading: boolean
-  signIn(email: string, password: string): Promise<{ error: string | null }>
-  signUp(input: {
-    email: string
-    password: string
-    nombre: string
-    cedula: string
-    telefono: string
-  }): Promise<{ error: string | null }>
+  signIn(email: string, password: string): Promise<AuthResult>
+  signUp(input: SignUpInput): Promise<AuthResult>
   signOut(): Promise<void>
   refreshToken(): Promise<void>
 }
 
 export const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
-const ACCESS_KEY = 'skpat_access'
-const REFRESH_KEY = 'skpat_refresh'
-
 interface LoginResponse {
   access_token: string
   refresh_token: string
   expires_in: number
-  user: { id: string; email: string; role: SkpatRole }
 }
 
-interface MeResponse {
-  id: string
-  email: string
-  role: SkpatRole
-  nombre: string
+const INVALID_CREDENTIALS = 'InvalidCredentials'
+
+function errorMessage(error: unknown, fallback: string): string {
+  if (isApiError(error) && error.error === INVALID_CREDENTIALS) return 'Credenciales invalidas'
+  return isApiError(error) ? (error.message ?? fallback) : fallback
+}
+
+function fetchCurrentUser(): Promise<AuthUser> {
+  return api.get<AuthUser>('/auth/me').then(({ id, email, role, nombre }) => ({ id, email, role, nombre }))
+}
+
+async function logIn(email: string, password: string): Promise<AuthUser> {
+  saveTokens(await api.post<LoginResponse>('/auth/login', { email, password }))
+  return fetchCurrentUser()
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
   const [loading, setLoading] = useState(true)
 
-  // On mount: restore session from localStorage
+  useEffect(() => onSessionExpired(() => setUser(null)), [])
+
+  // Restaura la sesión guardada; api.ts renueva el token vencido automáticamente.
   useEffect(() => {
-    const token = localStorage.getItem(ACCESS_KEY)
-    if (!token) {
+    if (!getAccessToken()) {
       setLoading(false)
       return
     }
-    api
-      .get<MeResponse>('/auth/me')
-      .then((me) => {
-        setUser({ id: me.id, email: me.email, role: me.role, nombre: me.nombre })
-      })
-      .catch(() => {
-        // Token expired or invalid — attempt refresh
-        const refreshTk = localStorage.getItem(REFRESH_KEY)
-        if (!refreshTk) {
-          localStorage.removeItem(ACCESS_KEY)
-          localStorage.removeItem(REFRESH_KEY)
-          return
-        }
-        return api
-          .post<{ access_token: string }>('/auth/refresh', { refresh_token: refreshTk })
-          .then(({ access_token }) => {
-            localStorage.setItem(ACCESS_KEY, access_token)
-            return api.get<MeResponse>('/auth/me')
-          })
-          .then((me) => {
-            setUser({ id: me.id, email: me.email, role: me.role, nombre: me.nombre })
-          })
-          .catch(() => {
-            localStorage.removeItem(ACCESS_KEY)
-            localStorage.removeItem(REFRESH_KEY)
-          })
-      })
+    fetchCurrentUser()
+      .then(setUser)
+      .catch(clearTokens)
       .finally(() => setLoading(false))
   }, [])
 
-  const value = useMemo<AuthContextValue>(
-    () => ({
+  const value = useMemo<AuthContextValue>(() => {
+    async function startSession(email: string, password: string, fallback: string): Promise<AuthResult> {
+      try {
+        setUser(await logIn(email, password))
+        return { error: null }
+      } catch (error) {
+        return { error: errorMessage(error, fallback) }
+      }
+    }
+
+    return {
       user,
       role: user?.role ?? null,
       loading,
-      async signIn(email, password) {
-        try {
-          const out = await api.post<LoginResponse>('/auth/login', { email, password })
-          localStorage.setItem(ACCESS_KEY, out.access_token)
-          localStorage.setItem(REFRESH_KEY, out.refresh_token)
-          const me = await api.get<MeResponse>('/auth/me')
-          setUser({ id: me.id, email: me.email, role: me.role, nombre: me.nombre })
-          return { error: null }
-        } catch (e: unknown) {
-          const err = e as { error?: string; message?: string }
-          return {
-            error:
-              err?.error === 'InvalidCredentials'
-                ? 'Credenciales invalidas'
-                : (err?.message ?? 'Login fallo'),
-          }
-        }
-      },
+      signIn: (email, password) => startSession(email, password, 'Login fallo'),
       async signUp(input) {
         try {
           await api.post('/auth/register', input)
-        } catch (e: unknown) {
-          const err = e as { message?: string }
-          return { error: err?.message ?? 'Registro fallo' }
+        } catch (error) {
+          return { error: errorMessage(error, 'Registro fallo') }
         }
-        // After register, log in automatically
-        try {
-          const out = await api.post<LoginResponse>('/auth/login', {
-            email: input.email,
-            password: input.password,
-          })
-          localStorage.setItem(ACCESS_KEY, out.access_token)
-          localStorage.setItem(REFRESH_KEY, out.refresh_token)
-          const me = await api.get<MeResponse>('/auth/me')
-          setUser({ id: me.id, email: me.email, role: me.role, nombre: me.nombre })
-          return { error: null }
-        } catch (e: unknown) {
-          const err = e as { message?: string }
-          return { error: err?.message ?? 'Login fallo tras registro' }
-        }
+        return startSession(input.email, input.password, 'Login fallo tras registro')
       },
       async signOut() {
-        localStorage.removeItem(ACCESS_KEY)
-        localStorage.removeItem(REFRESH_KEY)
+        clearTokens()
         setUser(null)
       },
       async refreshToken() {
-        const refreshTk = localStorage.getItem(REFRESH_KEY)
-        if (!refreshTk) return
-        try {
-          const { access_token } = await api.post<{ access_token: string }>('/auth/refresh', {
-            refresh_token: refreshTk,
-          })
-          localStorage.setItem(ACCESS_KEY, access_token)
-        } catch {
-          localStorage.removeItem(ACCESS_KEY)
-          localStorage.removeItem(REFRESH_KEY)
-          setUser(null)
-        }
+        await refreshSession()
       },
-    }),
-    [user, loading]
-  )
+    }
+  }, [user, loading])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

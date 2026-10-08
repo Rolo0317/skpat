@@ -1,109 +1,70 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState } from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/features/auth/useAuth'
+import { api, isApiError } from '@/lib/api'
+import { formatCOP } from '@/lib/format'
+import { groupBy } from '@/lib/collections'
+import { useMenu } from '@/features/carta/menu'
+import { lineTotal, toOrderItems, useCart } from '@/features/carta/cart'
+import { DEFAULT_PAYMENT_METHOD, PAYMENT_METHODS, type PaymentMethod } from '@/features/orders/paymentMethods'
+import { PendingOrders } from './PendingOrders'
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3001'
+const SUCCESS_NOTICE_MS = 3_000
+const MY_SALES_QUERY_KEY = ['sales', 'mine'] as const
 
-interface MenuItem { id: string; name: string; category: string; price_cents: number }
-interface SaleItem { menu_item_id: string; name: string; price_cents: number; quantity: number }
 interface Sale {
   id: string; table_number: number | null; payment_method: string
-  total_cents: number; notes: string | null; sold_at: number
+  total_cents: number; notes: string | null
   items_summary: string | null
 }
+interface MySales { sales: Sale[]; total_tonight_cents: number }
 
-function formatCOP(cents: number) {
-  return (cents / 100).toLocaleString('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 })
+function parseTableNumber(value: string): number | undefined {
+  return value ? Number.parseInt(value, 10) : undefined
 }
 
 export default function MeseroHome() {
   const { user } = useAuth()
+  const queryClient = useQueryClient()
   const [tab, setTab] = useState<'register' | 'sales'>('register')
-
-  // Menu state
-  const [menuItems, setMenuItems] = useState<MenuItem[]>([])
-  const [menuLoading, setMenuLoading] = useState(true)
-
-  // New sale form state
-  const [cart, setCart] = useState<SaleItem[]>([])
+  const { data: menuItems = [], isLoading: menuLoading } = useMenu()
+  const cart = useCart()
   const [tableNumber, setTableNumber] = useState('')
-  const [paymentMethod, setPaymentMethod] = useState<'efectivo' | 'nequi' | 'transferencia'>('efectivo')
-  const [submitting, setSubmitting] = useState(false)
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(DEFAULT_PAYMENT_METHOD)
   const [saleError, setSaleError] = useState<string | null>(null)
   const [saleSuccess, setSaleSuccess] = useState(false)
 
-  // Own sales state
-  const [sales, setSales] = useState<Sale[]>([])
-  const [totalTonight, setTotalTonight] = useState(0)
-  const [salesLoading, setSalesLoading] = useState(false)
+  const { data: mySales, isLoading: salesLoading } = useQuery({
+    queryKey: MY_SALES_QUERY_KEY,
+    queryFn: () => api.get<MySales>('/sales/mine'),
+  })
+  const sales = mySales?.sales ?? []
+  const totalTonight = mySales?.total_tonight_cents ?? 0
 
-  // Load menu
-  useEffect(() => {
-    fetch(`${API_URL}/menu`)
-      .then(r => r.json())
-      .then(data => setMenuItems(Array.isArray(data) ? data : []))
-      .catch(() => {})
-      .finally(() => setMenuLoading(false))
-  }, [])
-
-  // Load own sales
-  const loadSales = useCallback(async () => {
-    const token = localStorage.getItem('skpat_access')
-    if (!token) return
-    setSalesLoading(true)
-    try {
-      const res = await fetch(`${API_URL}/sales/mine`, { headers: { Authorization: `Bearer ${token}` } })
-      if (res.ok) {
-        const data = await res.json()
-        setSales(data.sales ?? [])
-        setTotalTonight(data.total_tonight_cents ?? 0)
-      }
-    } catch {}
-    finally { setSalesLoading(false) }
-  }, [])
-
-  useEffect(() => { if (tab === 'sales') loadSales() }, [tab, loadSales])
-
-  // Cart helpers
-  const addToCart = (item: MenuItem) => {
-    setCart(prev => {
-      const existing = prev.find(i => i.menu_item_id === item.id)
-      if (existing) return prev.map(i => i.menu_item_id === item.id ? { ...i, quantity: i.quantity + 1 } : i)
-      return [...prev, { menu_item_id: item.id, name: item.name, price_cents: item.price_cents, quantity: 1 }]
-    })
-  }
-  const removeFromCart = (id: string) => setCart(prev => prev.filter(i => i.menu_item_id !== id))
-  const cartTotal = cart.reduce((sum, i) => sum + i.price_cents * i.quantity, 0)
-
-  // Submit sale
-  const submitSale = async () => {
-    if (cart.length === 0) { setSaleError('Agrega al menos un producto'); return }
-    setSubmitting(true); setSaleError(null)
-    const token = localStorage.getItem('skpat_access')
-    try {
-      const res = await fetch(`${API_URL}/sales`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          table_number: tableNumber ? parseInt(tableNumber) : undefined,
-          payment_method: paymentMethod,
-          items: cart.map(i => ({ menu_item_id: i.menu_item_id, quantity: i.quantity })),
-        }),
-      })
-      if (!res.ok) { const b = await res.json(); setSaleError(b.error ?? 'Error'); return }
+  const registerSale = useMutation({
+    mutationFn: () =>
+      api.post('/sales', {
+        table_number: parseTableNumber(tableNumber),
+        payment_method: paymentMethod,
+        items: toOrderItems(cart.lines),
+      }),
+    onSuccess: () => {
       setSaleSuccess(true)
-      setCart([])
+      cart.clear()
       setTableNumber('')
-      setTimeout(() => setSaleSuccess(false), 3000)
-    } catch { setSaleError('Error de conexión') }
-    finally { setSubmitting(false) }
-  }
+      setTimeout(() => setSaleSuccess(false), SUCCESS_NOTICE_MS)
+      queryClient.invalidateQueries({ queryKey: MY_SALES_QUERY_KEY })
+    },
+    onError: (error) => setSaleError(isApiError(error) ? error.error : 'Error de conexión'),
+  })
 
-  // Group menu by category
-  const grouped = menuItems.reduce<Record<string, MenuItem[]>>((acc, item) => {
-    if (!acc[item.category]) acc[item.category] = []
-    acc[item.category].push(item)
-    return acc
-  }, {})
+  const submitSale = () => {
+    if (cart.lines.length === 0) { setSaleError('Agrega al menos un producto'); return }
+    setSaleError(null)
+    registerSale.mutate()
+  }
+  const submitting = registerSale.isPending
+  const grouped = groupBy(menuItems, (item) => item.category)
 
   const pageStyle: React.CSSProperties = { minHeight: 'calc(100vh - 64px)', background: '#09090b', color: '#f1f5f9', fontFamily: 'Inter,system-ui,sans-serif' }
   const innerStyle: React.CSSProperties = { maxWidth: 700, margin: '0 auto', padding: '20px 16px' }
@@ -125,6 +86,8 @@ export default function MeseroHome() {
             <div style={{ fontSize: 11, color: '#64748b' }}>Mis ventas hoy</div>
           </div>
         </div>
+
+        <PendingOrders />
 
         {/* Tabs */}
         <div style={tabsStyle}>
@@ -151,9 +114,7 @@ export default function MeseroHome() {
                 <label style={{ display: 'block', fontSize: 11, color: '#64748b', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '1px' }}>Pago</label>
                 <select value={paymentMethod} onChange={e => setPaymentMethod(e.target.value as typeof paymentMethod)}
                   style={{ width: '100%', background: '#18181f', border: '1px solid rgba(255,255,255,.1)', borderRadius: 8, padding: '9px 12px', color: '#f1f5f9', fontSize: 13 }}>
-                  <option value="efectivo">Efectivo</option>
-                  <option value="nequi">Nequi</option>
-                  <option value="transferencia">Transferencia</option>
+                  {PAYMENT_METHODS.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}
                 </select>
               </div>
             </div>
@@ -170,7 +131,7 @@ export default function MeseroHome() {
                           <div style={{ fontSize: 13, fontWeight: 600, color: '#f1f5f9' }}>{item.name}</div>
                           <div style={{ fontSize: 12, color: '#059669', fontWeight: 700, marginTop: 2 }}>{formatCOP(item.price_cents)}</div>
                         </div>
-                        <button onClick={() => addToCart(item)}
+                        <button onClick={() => cart.add(item)}
                           style={{ width: 28, height: 28, borderRadius: 7, background: '#7c3aed', border: 'none', color: '#fff', fontSize: 17, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                           +
                         </button>
@@ -182,15 +143,15 @@ export default function MeseroHome() {
             )}
 
             {/* Cart */}
-            {cart.length > 0 && (
+            {cart.lines.length > 0 && (
               <div style={{ background: '#111118', border: '1px solid rgba(124,58,237,.3)', borderRadius: 12, padding: 16, marginTop: 8 }}>
                 <div style={{ fontWeight: 700, fontSize: 14, color: '#f1f5f9', marginBottom: 12 }}>Pedido actual</div>
-                {cart.map(item => (
+                {cart.lines.map(item => (
                   <div key={item.menu_item_id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, fontSize: 13 }}>
                     <span style={{ color: '#cbd5e1' }}>{item.name} x{item.quantity}</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <span style={{ color: '#059669', fontWeight: 700 }}>{formatCOP(item.price_cents * item.quantity)}</span>
-                      <button onClick={() => removeFromCart(item.menu_item_id)}
+                      <span style={{ color: '#059669', fontWeight: 700 }}>{formatCOP(lineTotal(item))}</span>
+                      <button onClick={() => cart.remove(item.menu_item_id)}
                         style={{ background: 'rgba(220,38,38,.15)', border: '1px solid rgba(220,38,38,.25)', borderRadius: 5, color: '#f87171', fontSize: 11, padding: '2px 7px', cursor: 'pointer' }}>
                         Quitar
                       </button>
@@ -199,7 +160,7 @@ export default function MeseroHome() {
                 ))}
                 <div style={{ borderTop: '1px solid rgba(255,255,255,.08)', marginTop: 10, paddingTop: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontWeight: 700, color: '#f1f5f9' }}>Total</span>
-                  <span style={{ fontWeight: 800, fontSize: 18, color: '#059669' }}>{formatCOP(cartTotal)}</span>
+                  <span style={{ fontWeight: 800, fontSize: 18, color: '#059669' }}>{formatCOP(cart.total)}</span>
                 </div>
                 {saleError && <p style={{ color: '#f87171', fontSize: 12, marginTop: 8 }}>{saleError}</p>}
                 <button onClick={submitSale} disabled={submitting}

@@ -1,9 +1,14 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Package, AlertTriangle, RefreshCw, Check, X, Pencil, Infinity } from 'lucide-react'
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3001'
+import { api } from '@/lib/api'
+import { groupBy } from '@/lib/collections'
+
 interface InventoryItem { id: string; name: string; category: string; stock_qty: number; min_stock: number; is_active: number; is_low_stock: number }
-function token() { return localStorage.getItem('skpat_access') ?? '' }
+
+function parseOptionalInt(value: string): number | undefined {
+  return value !== '' ? Number.parseInt(value, 10) : undefined
+}
 
 export default function AdminInventoryPage() {
   const [items, setItems] = useState<InventoryItem[]>([])
@@ -14,8 +19,7 @@ export default function AdminInventoryPage() {
 
   const load = useCallback(async () => {
     setLoading(true)
-    const res = await fetch(`${API_URL}/inventory`, { headers: { Authorization: `Bearer ${token()}` } })
-    if (res.ok) setItems(await res.json())
+    await api.get<InventoryItem[]>('/inventory').then(setItems).catch(() => {})
     setLoading(false)
   }, [])
 
@@ -23,14 +27,12 @@ export default function AdminInventoryPage() {
 
   const save = async (id: string) => {
     setSaving(true)
-    await fetch(`${API_URL}/inventory/${id}/stock`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token()}` },
-      body: JSON.stringify({
-        stock_qty: editVals.stock_qty !== '' ? parseInt(editVals.stock_qty) : undefined,
-        min_stock: editVals.min_stock !== '' ? parseInt(editVals.min_stock) : undefined,
-      }),
-    })
+    await api
+      .put(`/inventory/${id}/stock`, {
+        stock_qty: parseOptionalInt(editVals.stock_qty),
+        min_stock: parseOptionalInt(editVals.min_stock),
+      })
+      .catch(() => {})
     setSaving(false)
     setEditing(null)
     load()
@@ -38,10 +40,7 @@ export default function AdminInventoryPage() {
 
   const alertCount = items.filter(i => i.is_low_stock).length
   const categories = [...new Set(items.map(i => i.category))]
-  const grouped = items.reduce<Record<string, InventoryItem[]>>((acc, i) => {
-    (acc[i.category] ??= []).push(i)
-    return acc
-  }, {})
+  const grouped = groupBy(items, (item) => item.category)
 
   return (
     <div className="p-6 max-w-5xl">

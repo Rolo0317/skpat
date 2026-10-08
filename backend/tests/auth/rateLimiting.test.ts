@@ -1,15 +1,10 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { buildServer } from '../../src/app.js'
-import { db } from '../../src/lib/db.js'
-
-function cleanDb() {
-  db.exec('DELETE FROM refresh_tokens')
-  db.exec('DELETE FROM users')
-}
+import { resetDb } from '../helpers.js'
 
 describe('Auth rate limiting', () => {
-  beforeEach(() => {
-    cleanDb()
+  beforeEach(async () => {
+    await resetDb()
   })
 
   it('returns 429 after 5 POST /auth/login attempts in 15 minutes from same IP', async () => {

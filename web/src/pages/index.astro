@@ -1,4 +1,49 @@
 ---
 import BaseLayout from '~/layouts/BaseLayout.astro'
+import '~/components/landing/landing.css'
+import Cabecera from '~/components/landing/secciones/Cabecera.astro'
+import Portada from '~/components/landing/secciones/Portada.astro'
+import Tarifas from '~/components/landing/secciones/Tarifas.astro'
+import Cartelera from '~/components/landing/secciones/Cartelera.astro'
+import Palcos from '~/components/landing/secciones/Palcos.astro'
+import EntradaQr from '~/components/landing/secciones/EntradaQr.astro'
+import TuMesa from '~/components/landing/secciones/TuMesa.astro'
+import Ubicacion from '~/components/landing/secciones/Ubicacion.astro'
+import Preguntas from '~/components/landing/secciones/Preguntas.astro'
+import PiePagina from '~/components/landing/secciones/PiePagina.astro'
+import { RUTAS_APP } from '~/components/landing/contenido/negocio'
+import { armarCartelera } from '~/components/landing/utilidades/agenda'
+import { datosEstructurados } from '~/components/landing/utilidades/datosEstructurados'
+import { obtenerDatosLanding } from '~/lib/data'
+import { AiChatWidget } from '@/features/landing/AiChatWidget'
+
+export const prerender = false
+
+Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300')
+
+const ahora = new Date()
+const { eventos, carta } = await obtenerDatosLanding()
+const cartelera = armarCartelera(eventos, ahora)
+const enlaceCompra = cartelera.proximo ? RUTAS_APP.comprar(cartelera.proximo.id) : RUTAS_APP.registro
+const jsonLd = datosEstructurados(cartelera.eventos, Astro.url.origin)
 ---
-<BaseLayout><h1 class="gradient-text text-5xl p-10">Skpat VIP</h1></BaseLayout>
+<BaseLayout
+  title="Skpat VIP · Electrónica y guaracha en Bogotá"
+  description="Viernes y sábado de 9 PM a 4 AM en la Cra. 15 #93-47. Entradas con QR, palcos VIP y cover más barato si llegas temprano."
+>
+  <script slot="head" type="application/ld+json" set:html={jsonLd} />
+  <a href="#contenido" class="saltar-contenido">Saltar al contenido</a>
+  <Cabecera enlaceCompra={enlaceCompra} />
+  <main id="contenido">
+    <Portada proximo={cartelera.proximo} ahora={ahora} />
+    <Tarifas ahora={ahora} />
+    <Cartelera cartelera={cartelera} />
+    <Palcos enlaceReserva={enlaceCompra} />
+    <EntradaQr enlaceCompra={enlaceCompra} />
+    <TuMesa carta={carta} />
+    <Ubicacion />
+    <Preguntas />
+  </main>
+  <PiePagina />
+  <AiChatWidget client:idle />
+</BaseLayout>

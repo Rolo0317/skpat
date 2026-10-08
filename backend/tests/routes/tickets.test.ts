@@ -3,6 +3,7 @@ import { buildServer } from '../../src/app.js'
 import type { FastifyInstance } from 'fastify'
 import { db } from '../../src/lib/db.js'
 import { createUser, resetDb } from '../helpers.js'
+import { PALCO_PRICES_CENTS } from '../../src/lib/ticketPrices.js'
 
 let app: FastifyInstance
 let porteroToken: string
@@ -119,7 +120,7 @@ describe('POST /tickets/purchase', () => {
     expect(res.statusCode).toBe(201)
     const body = res.json()
     expect(body.ticket_type).toBe('palco_gold')
-    expect(body.price_cents).toBe(40000_00) // $400.000 COP
+    expect(body.price_cents).toBe(PALCO_PRICES_CENTS.palco_gold)
   })
 })
 

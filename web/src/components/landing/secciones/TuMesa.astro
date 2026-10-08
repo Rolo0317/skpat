@@ -1,0 +1,109 @@
+---
+import type { ItemCarta } from '~/lib/data'
+import Seccion from '../ui/Seccion.astro'
+import ListaPasos, { type Paso } from '../ui/ListaPasos.astro'
+import { formatoCOP } from '../utilidades/formato'
+
+interface Props {
+  carta: ItemCarta[]
+}
+
+const MAX_CATEGORIAS = 3
+const MAX_ITEMS_POR_CATEGORIA = 3
+const MESA_DE_EJEMPLO = 7
+const MEDIOS_DE_PAGO = ['Efectivo', 'Nequi', 'Transferencia']
+
+const { carta } = Astro.props
+
+function agruparPorCategoria(items: ItemCarta[]): [string, ItemCarta[]][] {
+  const grupos = new Map<string, ItemCarta[]>()
+  for (const item of items) grupos.set(item.categoria, [...(grupos.get(item.categoria) ?? []), item])
+  return [...grupos.entries()]
+    .slice(0, MAX_CATEGORIAS)
+    .map(([categoria, productos]) => [categoria, productos.slice(0, MAX_ITEMS_POR_CATEGORIA)])
+}
+
+const categorias = agruparPorCategoria(carta)
+const PASOS: readonly Paso[] = [
+  { icono: 'qr', titulo: 'Escanea tu mesa', texto: 'Cada mesa tiene su QR. Apuntas la cámara y se abre la carta, sin descargar nada.' },
+  { icono: 'copa', titulo: 'Mira la carta real', texto: 'Precios claros y lo que hay disponible esta noche, actualizado por el bar.' },
+  { icono: 'celular', titulo: 'Pide y paga en la mesa', texto: `Tu mesero toma el pedido y el pago: ${MEDIOS_DE_PAGO.join(', ')}.` },
+]
+---
+<Seccion id="tu-mesa" titulo="Tu mesa, tu carta" intro="Nada de cartas plastificadas ni de gritarle al mesero por encima del bajo.">
+  <div class="mesa">
+    <ListaPasos pasos={PASOS} />
+    <div class="celular" role="img" aria-label={`Vista previa de la carta digital en la mesa ${MESA_DE_EJEMPLO}`}>
+      <div class="celular__pantalla" aria-hidden="true">
+        <div class="celular__barra">
+          <span class="celular__mesa">Mesa {MESA_DE_EJEMPLO}</span>
+          <span class="celular__marca">Skpat VIP</span>
+        </div>
+        {
+          categorias.length > 0 ? (
+            categorias.map(([categoria, productos]) => (
+              <div class="celular__grupo">
+                <p class="celular__categoria">{categoria}</p>
+                {productos.map((producto) => (
+                  <p class="celular__item">
+                    <span>{producto.nombre}</span>
+                    <span class="cifra">{formatoCOP(producto.precioCentavos)}</span>
+                  </p>
+                ))}
+              </div>
+            ))
+          ) : (
+            <p class="celular__vacio">La carta de la noche aparece aquí en cuanto el bar la publica.</p>
+          )
+        }
+        <div class="celular__pagos">
+          {MEDIOS_DE_PAGO.map((medio) => <span>{medio}</span>)}
+        </div>
+      </div>
+    </div>
+  </div>
+</Seccion>
+
+<style>
+  .mesa { display: grid; gap: 3.5rem; align-items: center; }
+
+  .celular {
+    justify-self: center;
+    width: min(100%, 19rem);
+    padding: 0.6rem;
+    border-radius: 2.5rem;
+    background: linear-gradient(150deg, var(--color-skpat-border), var(--fondo-3));
+    box-shadow: 0 2.5rem 5rem -2rem color-mix(in oklab, var(--cian) 45%, transparent), var(--sombra-profunda);
+  }
+  .celular__pantalla {
+    display: grid;
+    gap: 1rem;
+    min-height: 30rem;
+    padding: 1.25rem 1rem 1rem;
+    border-radius: 2rem;
+    background: var(--fondo);
+    align-content: start;
+  }
+  .celular__barra { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 0.75rem; border-bottom: 1px solid var(--linea); }
+  .celular__mesa { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--violeta-claro); }
+  .celular__marca { font-family: var(--fuente-display); font-weight: 900; font-size: 1.15rem; color: var(--tinta); }
+  .celular__grupo { display: grid; gap: 0.4rem; }
+  .celular__categoria { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--cian-claro); }
+  .celular__item {
+    display: flex; justify-content: space-between; gap: 0.75rem;
+    padding: 0.6rem 0.75rem;
+    border-radius: 0.6rem;
+    background: var(--fondo-3);
+    font-size: 0.875rem;
+    color: var(--tinta);
+  }
+  .celular__item span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .celular__vacio { padding: 2rem 0.5rem; text-align: center; color: var(--tinta-suave); }
+  .celular__pagos { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; margin-top: auto; padding-top: 0.75rem; }
+  .celular__pagos span { padding: 0.25rem 0.6rem; border-radius: 0.4rem; border: 1px solid var(--linea); font-size: 0.75rem; color: var(--tinta-suave); }
+
+  @media (min-width: 56rem) {
+    .mesa { grid-template-columns: 1fr 1.2fr; gap: 4rem; }
+    .celular { order: -1; }
+  }
+</style>

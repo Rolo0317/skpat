@@ -1,7 +1,7 @@
 import { hash, verify } from '@node-rs/argon2'
 
 // Password hashing using argon2id (OWASP 2024 baseline).
-// Used for: user password storage in SQLite users table.
+// Used for: user passwords and refresh-token hashes.
 // Algorithm.Argon2id = 2 (cannot use const enum with isolatedModules)
 const ARGON2_OPTS = {
   algorithm: 2 as 2, // Argon2id

@@ -1,41 +1,56 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { buildServer } from '../../src/app.js'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import type { FastifyInstance } from 'fastify'
+import FormData from 'form-data'
+import { buildServer } from '../../src/app.js'
 import { db } from '../../src/lib/db.js'
-import { signAccessToken } from '../../src/lib/jwt.js'
+import { createEvent, createUser, resetDb } from '../helpers.js'
+
+const UNKNOWN_UUID = '00000000-0000-4000-8000-000000000000'
 
 let app: FastifyInstance
 let adminToken: string
 let userToken: string
 
+const asAdmin = () => ({ authorization: `Bearer ${adminToken}` })
+
+function eventForm(fields: Record<string, string>) {
+  const form = new FormData()
+  for (const [name, value] of Object.entries(fields)) form.append(name, value)
+  return form
+}
+
+const postJson = (payload: Record<string, unknown>) =>
+  app.inject({ method: 'POST', url: '/events', headers: asAdmin(), payload })
+
 beforeAll(async () => {
   app = await buildServer()
   await app.ready()
-  db.exec('DELETE FROM events')
-  adminToken = await signAccessToken({ sub: 'test-admin', email: 'admin@test.co', role: 'admin' })
-  userToken  = await signAccessToken({ sub: 'test-user',  email: 'user@test.co',  role: 'cliente' })
+})
+
+beforeEach(async () => {
+  await resetDb()
+  adminToken = (await createUser('admin')).token
+  userToken = (await createUser('cliente')).token
 })
 
 afterAll(async () => {
+  await resetDb()
   await app.close()
 })
 
 describe('GET /events', () => {
   it('returns empty array when no events exist', async () => {
-    db.exec('DELETE FROM events')
     const res = await app.inject({ method: 'GET', url: '/events' })
     expect(res.statusCode).toBe(200)
-    expect(JSON.parse(res.body)).toEqual([])
+    expect(res.json()).toEqual([])
   })
 
-  it('returns only is_active=1 events', async () => {
-    db.exec('DELETE FROM events')
-    db.prepare("INSERT INTO events (title,date,price,is_active) VALUES ('Live', '2026-06-01T22:00:00Z', 30000, 1)").run()
-    db.prepare("INSERT INTO events (title,date,price,is_active) VALUES ('Hidden', '2026-06-02T22:00:00Z', 30000, 0)").run()
-    const res = await app.inject({ method: 'GET', url: '/events' })
-    const body = JSON.parse(res.body)
+  it('returns only active events, with flags as 0/1 and lineup/genre', async () => {
+    await createEvent({ title: 'Live', is_active: true })
+    await createEvent({ title: 'Hidden', is_active: false })
+    const body = (await app.inject({ method: 'GET', url: '/events' })).json()
     expect(body).toHaveLength(1)
-    expect(body[0].title).toBe('Live')
+    expect(body[0]).toMatchObject({ title: 'Live', is_active: 1, is_vip: 0, lineup: [], genre: null })
   })
 })
 
@@ -56,59 +71,111 @@ describe('POST /events', () => {
   })
 
   it('creates event with admin token (multipart, no file)', async () => {
-    const FormData = (await import('form-data')).default
-    const form = new FormData()
-    form.append('title', 'Guaracha Night')
-    form.append('date', '2026-06-15T22:00:00Z')
-    form.append('description', 'Test event')
-    form.append('price', '3000000')
-    form.append('available_spots', '120')
-    form.append('is_vip', '0')
-
+    const form = eventForm({
+      title: 'Guaracha Night', date: '2026-06-15T22:00:00Z', description: 'Test event',
+      price: '3000000', available_spots: '120', is_vip: '0', lineup: 'DJ Uno, DJ Dos', genre: 'guaracha',
+    })
     const res = await app.inject({
       method: 'POST',
       url: '/events',
-      headers: { authorization: `Bearer ${adminToken}`, ...form.getHeaders() },
+      headers: { ...asAdmin(), ...form.getHeaders() },
       payload: form,
     })
     expect(res.statusCode).toBe(201)
-    const body = JSON.parse(res.body)
-    expect(body.title).toBe('Guaracha Night')
-    expect(body.price).toBe(3000000)
-    expect(body.is_active).toBe(1)
+    expect(res.json()).toMatchObject({
+      title: 'Guaracha Night', price: 3000000, available_spots: 120, is_active: 1, is_vip: 0,
+      lineup: ['DJ Uno', 'DJ Dos'], genre: 'guaracha', image_url: null,
+    })
+  })
+
+  it('creates event from JSON with image_url, lineup array and genre', async () => {
+    const res = await postJson({
+      title: 'Techno Bunker', date: '2026-07-04T03:00:00Z', price: 5000000, is_vip: true,
+      image_url: '/flyers/techno-bunker.jpg', lineup: ['Artista A', 'Artista B'], genre: 'techno',
+    })
+    expect(res.statusCode).toBe(201)
+    expect(res.json()).toMatchObject({
+      title: 'Techno Bunker', is_vip: 1, available_spots: 100,
+      image_url: '/flyers/techno-bunker.jpg', lineup: ['Artista A', 'Artista B'], genre: 'techno',
+    })
+  })
+
+  it('rejects an image_url that is neither http(s) nor root-relative', async () => {
+    const res = await postJson({ title: 'Bad Image', date: '2026-07-04T03:00:00Z', price: 0, image_url: 'javascript:alert(1)' })
+    expect(res.statusCode).toBe(400)
+    expect(res.json().error).toBe('ValidationError')
+  })
+
+  it('returns 400 ValidationError for missing required fields', async () => {
+    const res = await postJson({ title: 'No date' })
+    expect(res.statusCode).toBe(400)
+    expect(res.json().error).toBe('ValidationError')
+  })
+
+  describe('on Vercel (no persistent disk)', () => {
+    beforeEach(() => { process.env.VERCEL = '1' })
+    afterEach(() => { delete process.env.VERCEL })
+
+    it('rejects a file upload and asks for image_url', async () => {
+      const form = eventForm({ title: 'Upload Night', date: '2026-06-15T22:00:00Z', price: '1000' })
+      form.append('image', Buffer.from('fake-image'), { filename: 'flyer.jpg', contentType: 'image/jpeg' })
+      const res = await app.inject({
+        method: 'POST',
+        url: '/events',
+        headers: { ...asAdmin(), ...form.getHeaders() },
+        payload: form,
+      })
+      expect(res.statusCode).toBe(400)
+      expect(res.json().error).toBe('ImageUploadUnavailable')
+    })
   })
 })
 
 describe('PUT /events/:id', () => {
   it('updates event with admin token', async () => {
-    db.exec('DELETE FROM events')
-    const inserted = db.prepare(
-      "INSERT INTO events (title,date,price) VALUES ('Old', '2026-06-01T22:00:00Z', 1000) RETURNING id"
-    ).get() as { id: string }
+    const id = await createEvent({ title: 'Old' })
+    const res = await app.inject({ method: 'PUT', url: `/events/${id}`, headers: asAdmin(), payload: { title: 'New' } })
+    expect(res.statusCode).toBe(200)
+    expect(res.json().title).toBe('New')
+  })
+
+  it('updates lineup, genre and image_url', async () => {
+    const id = await createEvent()
     const res = await app.inject({
       method: 'PUT',
-      url: `/events/${inserted.id}`,
-      headers: { authorization: `Bearer ${adminToken}`, 'content-type': 'application/json' },
-      payload: JSON.stringify({ title: 'New' }),
+      url: `/events/${id}`,
+      headers: asAdmin(),
+      payload: { lineup: ['Nuevo DJ'], genre: 'afro house', image_url: 'https://cdn.example.com/f.jpg' },
     })
     expect(res.statusCode).toBe(200)
-    expect(JSON.parse(res.body).title).toBe('New')
+    expect(res.json()).toMatchObject({ lineup: ['Nuevo DJ'], genre: 'afro house', image_url: 'https://cdn.example.com/f.jpg' })
+  })
+
+  it('returns 400 NoFieldsToUpdate for an empty body', async () => {
+    const id = await createEvent()
+    const res = await app.inject({ method: 'PUT', url: `/events/${id}`, headers: asAdmin(), payload: {} })
+    expect(res.statusCode).toBe(400)
+    expect(res.json().error).toBe('NoFieldsToUpdate')
+  })
+
+  it.each(['not-a-uuid', UNKNOWN_UUID])('returns 404 for unknown id %s', async (id) => {
+    const res = await app.inject({ method: 'PUT', url: `/events/${id}`, headers: asAdmin(), payload: { title: 'Nope' } })
+    expect(res.statusCode).toBe(404)
+    expect(res.json().error).toBe('EventNotFound')
   })
 })
 
 describe('DELETE /events/:id', () => {
-  it('soft-deletes event (is_active=0)', async () => {
-    db.exec('DELETE FROM events')
-    const inserted = db.prepare(
-      "INSERT INTO events (title,date,price) VALUES ('Bye', '2026-06-01T22:00:00Z', 1000) RETURNING id"
-    ).get() as { id: string }
-    const res = await app.inject({
-      method: 'DELETE',
-      url: `/events/${inserted.id}`,
-      headers: { authorization: `Bearer ${adminToken}` },
-    })
+  it('soft-deletes event (is_active=false)', async () => {
+    const id = await createEvent({ title: 'Bye' })
+    const res = await app.inject({ method: 'DELETE', url: `/events/${id}`, headers: asAdmin() })
     expect(res.statusCode).toBe(200)
-    const row = db.prepare('SELECT is_active FROM events WHERE id=?').get(inserted.id) as { is_active: number }
-    expect(row.is_active).toBe(0)
+    const row = await db.one<{ is_active: boolean }>('select is_active from events where id = $1', [id])
+    expect(row!.is_active).toBe(false)
+  })
+
+  it.each(['not-a-uuid', UNKNOWN_UUID])('returns 404 for unknown id %s', async (id) => {
+    const res = await app.inject({ method: 'DELETE', url: `/events/${id}`, headers: asAdmin() })
+    expect(res.statusCode).toBe(404)
   })
 })

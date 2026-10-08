@@ -1,0 +1,44 @@
+---
+import Seccion from '../ui/Seccion.astro'
+import Icono from '../ui/Icono.astro'
+import { PREGUNTAS_FRECUENTES } from '../contenido/preguntas'
+---
+<Seccion id="preguntas" titulo="Preguntas frecuentes" class="preguntas-seccion">
+  <div class="preguntas">
+    {
+      PREGUNTAS_FRECUENTES.map(({ pregunta, respuesta }) => (
+        <details class="pregunta" name="preguntas-frecuentes">
+          <summary class="pregunta__resumen">
+            <span>{pregunta}</span>
+            <Icono nombre="chevron" class="pregunta__flecha" />
+          </summary>
+          <p class="pregunta__respuesta">{respuesta}</p>
+        </details>
+      ))
+    }
+  </div>
+</Seccion>
+
+<style>
+  :global(.preguntas-seccion) { background: var(--fondo-2); border-top: 1px solid var(--linea); }
+  .preguntas { max-width: 50rem; border-top: 1px solid var(--linea); }
+  .pregunta { border-bottom: 1px solid var(--linea); }
+  .pregunta__resumen {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem 0;
+    min-height: 3.5rem;
+    cursor: pointer;
+    list-style: none;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--tinta);
+  }
+  .pregunta__resumen::-webkit-details-marker { display: none; }
+  .pregunta__resumen:hover { color: var(--rosa-claro); }
+  .pregunta :global(.pregunta__flecha) { flex: none; transition: rotate 0.3s var(--curva-salida); color: var(--violeta-claro); }
+  .pregunta[open] :global(.pregunta__flecha) { rotate: 180deg; }
+  .pregunta__respuesta { padding-bottom: 1.5rem; max-width: 65ch; color: var(--tinta-suave); }
+</style>

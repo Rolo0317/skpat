@@ -1,21 +1,15 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { buildServer } from '../../src/app.js'
 import { db } from '../../src/lib/db.js'
+import { resetDb } from '../helpers.js'
 
-// Each test gets a clean DB (in-memory via DATABASE_PATH=:memory: in setup.ts)
-// BUT in-memory :memory: is opened fresh each time db.ts is imported.
-// Since db is a module singleton, we need to clean tables between tests.
-function cleanDb() {
-  db.exec('DELETE FROM refresh_tokens')
-  db.exec('DELETE FROM users')
-}
 
 describe('POST /auth/register', () => {
-  beforeEach(() => {
-    cleanDb()
+  beforeEach(async () => {
+    await resetDb()
   })
 
-  it('creates a user in SQLite with hashed password for valid email+password', async () => {
+  it('creates a user with hashed password for valid email+password', async () => {
     const app = await buildServer()
     const res = await app.inject({
       method: 'POST',
@@ -36,7 +30,7 @@ describe('POST /auth/register', () => {
     expect(body.refresh_token).toBeTruthy()
 
     // Verify user exists in DB with hashed password (not plaintext)
-    const user = db.prepare('SELECT * FROM users WHERE email = ?').get('new@skpat.com') as any
+    const user = await db.one<any>('select * from users where email = $1', ['new@skpat.com'])
     expect(user).toBeTruthy()
     expect(user.password_hash).not.toBe('longenough1')
     expect(user.password_hash.startsWith('$argon2id$')).toBe(true)
@@ -120,7 +114,7 @@ describe('POST /auth/register', () => {
     expect(res.statusCode).toBe(201)
 
     // Verify role is 'cliente', NOT 'admin'
-    const user = db.prepare('SELECT role FROM users WHERE email = ?').get('escalate@skpat.com') as any
+    const user = await db.one<any>('select role from users where email = $1', ['escalate@skpat.com'])
     expect(user.role).toBe('cliente')
 
     await app.close()

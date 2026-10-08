@@ -1,16 +1,11 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { buildServer } from '../../src/app.js'
-import { db } from '../../src/lib/db.js'
-import { signAccessToken } from '../../src/lib/jwt.js'
+import { resetDb } from '../helpers.js'
 
-function cleanDb() {
-  db.exec('DELETE FROM refresh_tokens')
-  db.exec('DELETE FROM users')
-}
 
 describe('POST /auth/login (issues tokens)', () => {
-  beforeEach(() => {
-    cleanDb()
+  beforeEach(async () => {
+    await resetDb()
   })
 
   async function registerUser(email = 'test@skpat.com', password = 'longenough1') {
@@ -67,8 +62,8 @@ describe('POST /auth/login (issues tokens)', () => {
 })
 
 describe('POST /auth/refresh', () => {
-  beforeEach(() => {
-    cleanDb()
+  beforeEach(async () => {
+    await resetDb()
   })
 
   it('returns new tokens for valid refresh_token', async () => {
@@ -99,6 +94,23 @@ describe('POST /auth/refresh', () => {
     await app.close()
   })
 
+  it('rejects reusing a refresh_token that was already rotated', async () => {
+    const app = await buildServer()
+    const regRes = await app.inject({
+      method: 'POST',
+      url: '/auth/register',
+      payload: { email: 'reuse@skpat.com', password: 'longenough1', nombre: 'R', cedula: '12345', telefono: '1234567' },
+    })
+    const { refresh_token } = regRes.json()
+
+    const first = await app.inject({ method: 'POST', url: '/auth/refresh', payload: { refresh_token } })
+    expect(first.statusCode).toBe(200)
+    const reused = await app.inject({ method: 'POST', url: '/auth/refresh', payload: { refresh_token } })
+    expect(reused.statusCode).toBe(401)
+    expect(reused.json().error).toBe('InvalidRefreshToken')
+    await app.close()
+  })
+
   it('returns 401 for invalid refresh_token', async () => {
     const app = await buildServer()
     const res = await app.inject({
@@ -112,8 +124,8 @@ describe('POST /auth/refresh', () => {
 })
 
 describe('GET /auth/me', () => {
-  beforeEach(() => {
-    cleanDb()
+  beforeEach(async () => {
+    await resetDb()
   })
 
   it('returns 401 without Authorization header', async () => {

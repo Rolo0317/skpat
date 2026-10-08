@@ -1,0 +1,53 @@
+---
+import { hashTexto } from '../utilidades/arteGenerativo'
+
+/** Patrón con forma de QR, solo ilustrativo: no codifica nada. */
+interface Props {
+  semilla: string
+  class?: string
+}
+
+const MODULOS = 21
+const TAMANO_LOCALIZADOR = 7
+const MARGEN_LOCALIZADOR = 1
+const ESQUINAS_LOCALIZADOR = [
+  [0, 0],
+  [MODULOS - TAMANO_LOCALIZADOR, 0],
+  [0, MODULOS - TAMANO_LOCALIZADOR],
+] as const
+
+const { semilla, class: clase } = Astro.props
+
+function zonaDeLocalizador(x: number, y: number): boolean {
+  const limite = TAMANO_LOCALIZADOR + MARGEN_LOCALIZADOR
+  return ESQUINAS_LOCALIZADOR.some(([ex, ey]) => {
+    const inicioX = ex === 0 ? 0 : ex - MARGEN_LOCALIZADOR
+    const inicioY = ey === 0 ? 0 : ey - MARGEN_LOCALIZADOR
+    return x >= inicioX && x < inicioX + limite && y >= inicioY && y < inicioY + limite
+  })
+}
+
+function moduloEncendido(x: number, y: number): boolean {
+  return hashTexto(`${semilla}:${x}:${y}`) % 2 === 0
+}
+
+const modulos = Array.from({ length: MODULOS * MODULOS }, (_, indice) => ({
+  x: indice % MODULOS,
+  y: Math.floor(indice / MODULOS),
+})).filter(({ x, y }) => !zonaDeLocalizador(x, y) && moduloEncendido(x, y))
+---
+<svg class={clase} viewBox={`0 0 ${MODULOS} ${MODULOS}`} aria-hidden="true" shape-rendering="crispEdges">
+  {modulos.map(({ x, y }) => <rect x={x} y={y} width="1" height="1" />)}
+  {
+    ESQUINAS_LOCALIZADOR.map(([x, y]) => (
+      <g>
+        <rect x={x + 0.5} y={y + 0.5} width={TAMANO_LOCALIZADOR - 1} height={TAMANO_LOCALIZADOR - 1} fill="none" stroke="currentColor" />
+        <rect x={x + 2} y={y + 2} width="3" height="3" />
+      </g>
+    ))
+  }
+</svg>
+
+<style>
+  svg { fill: currentColor; }
+</style>

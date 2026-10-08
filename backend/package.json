@@ -8,7 +8,8 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "db:seed": "tsx src/scripts/seed.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.96.0",

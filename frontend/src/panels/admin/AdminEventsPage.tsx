@@ -2,23 +2,14 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { SkpatEvent } from '@/features/landing/types'
-
-const API_URL = (import.meta.env.VITE_API_URL ?? '') as string
-
-function getAccessToken(): string | null {
-  return localStorage.getItem('skpat_access')
-}
+import { api, isApiError } from '@/lib/api'
 
 export default function AdminEventsPage() {
   const navigate = useNavigate()
   const qc = useQueryClient()
   const { data: events = [], isLoading } = useQuery({
     queryKey: ['events'],
-    queryFn: async (): Promise<SkpatEvent[]> => {
-      const res = await fetch(`${API_URL}/events`)
-      if (!res.ok) throw new Error('fetch fail')
-      return res.json()
-    },
+    queryFn: () => api.get<SkpatEvent[]>('/events'),
   })
 
   const [title, setTitle] = useState('')
@@ -40,16 +31,9 @@ export default function AdminEventsPage() {
       fd.append('available_spots', availableSpots)
       fd.append('is_vip', isVip ? '1' : '0')
       if (image) fd.append('image', image)
-      const res = await fetch(`${API_URL}/events`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${getAccessToken()}` },
-        body: fd,
+      return api.post('/events', fd).catch((error: unknown) => {
+        throw new Error(isApiError(error) ? error.error : 'create failed')
       })
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}))
-        throw new Error(body.error ?? 'create failed')
-      }
-      return res.json()
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['events'] })
@@ -59,13 +43,7 @@ export default function AdminEventsPage() {
   })
 
   const deleteMut = useMutation({
-    mutationFn: async (id: string) => {
-      const res = await fetch(`${API_URL}/events/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${getAccessToken()}` },
-      })
-      if (!res.ok) throw new Error('delete failed')
-    },
+    mutationFn: (id: string) => api.del(`/events/${id}`),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['events'] }),
   })
 

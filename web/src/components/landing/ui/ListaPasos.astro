@@ -1,0 +1,63 @@
+---
+import Icono, { type NombreIcono } from './Icono.astro'
+
+export interface Paso {
+  icono: NombreIcono
+  titulo: string
+  texto: string
+}
+
+interface Props {
+  pasos: readonly Paso[]
+  class?: string
+}
+
+const TAMANO_ICONO = 22
+const { pasos, class: clase } = Astro.props
+---
+<ol class:list={['pasos', clase]}>
+  {
+    pasos.map((paso) => (
+      <li class="paso">
+        <span class="paso__icono"><Icono nombre={paso.icono} tamano={TAMANO_ICONO} /></span>
+        <div>
+          <h3 class="paso__titulo">{paso.titulo}</h3>
+          <p class="paso__texto">{paso.texto}</p>
+        </div>
+      </li>
+    ))
+  }
+</ol>
+
+<style>
+  .pasos { display: grid; gap: 1.5rem; padding: 0; margin: 0; list-style: none; counter-reset: paso; }
+  .paso { position: relative; display: grid; grid-template-columns: auto 1fr; gap: 1rem; align-items: start; counter-increment: paso; }
+  .paso__icono {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    border: 1px solid color-mix(in oklab, var(--violeta) 60%, transparent);
+    background: color-mix(in oklab, var(--violeta) 18%, var(--fondo));
+    color: var(--violeta-claro);
+  }
+  .paso__icono::after {
+    content: counter(paso);
+    position: absolute;
+    top: -0.35rem;
+    right: -0.35rem;
+    display: grid;
+    place-items: center;
+    width: 1.35rem;
+    height: 1.35rem;
+    border-radius: 50%;
+    background: var(--rosa);
+    color: var(--fondo);
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+  .paso__titulo { font-family: var(--fuente-display); font-weight: 900; font-size: 1.6rem; line-height: 1.05; text-transform: uppercase; color: var(--tinta); }
+  .paso__texto { margin-top: 0.25rem; color: var(--tinta-suave); max-width: 40ch; }
+</style>

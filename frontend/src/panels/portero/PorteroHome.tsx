@@ -1,7 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
+import { api } from '@/lib/api'
 import { QrScannerWidget } from './QrScannerWidget'
-
-const API_URL = (import.meta.env.VITE_API_URL ?? 'http://localhost:3001') as string
 
 type ScanMode = 'camera' | 'manual'
 
@@ -42,15 +41,7 @@ export default function PorteroHome() {
     setScannerActive(false)
 
     try {
-      const res = await fetch(`${API_URL}/tickets/scan`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('skpat_access') ?? ''}`,
-        },
-        body: JSON.stringify({ qr_token: trimmed }),
-      })
-      const data = (await res.json()) as ScanResult
+      const data = await api.post<ScanResult>('/tickets/scan', { qr_token: trimmed })
       setResult(data)
       setStats((s) => ({
         ingresados: s.ingresados + (data.valid ? 1 : 0),

@@ -1,18 +1,28 @@
 import { useRef, useState } from 'react'
+import { API_BASE_URL } from '@/lib/api'
 
 type Msg = { role: 'user' | 'ai'; text: string }
 
-const API_URL = (import.meta.env.VITE_API_URL ?? '') as string
+/** El backend acepta como máximo 10 mensajes previos para dar contexto a la conversación. */
+const MAX_HISTORY_MESSAGES = 10
+
+function toHistory(messages: Msg[]) {
+  return messages.slice(-MAX_HISTORY_MESSAGES).map((m) => ({
+    role: m.role === 'user' ? ('user' as const) : ('assistant' as const),
+    content: m.text,
+  }))
+}
 
 async function streamChat(
   message: string,
+  history: Msg[],
   onChunk: (token: string) => void,
   onError: (msg: string) => void
 ): Promise<void> {
-  const res = await fetch(`${API_URL}/ai/chat`, {
+  const res = await fetch(`${API_BASE_URL}/ai/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message }),
+    body: JSON.stringify({ message, history: toHistory(history) }),
   })
   if (!res.ok || !res.body) {
     onError(res.status === 503 ? 'Servicio IA no disponible. Intenta más tarde.' : 'Error de red.')
@@ -64,12 +74,14 @@ export function AiChatWidget() {
     const message = input.trim()
     if (!message || busy) return
     setBusy(true)
+    const history = messages
     setMessages((prev) => [...prev, { role: 'user', text: message }])
     setInput('')
     setStreaming('')
     let accumulated = ''
     await streamChat(
       message,
+      history,
       (token) => {
         accumulated += token
         setStreaming(accumulated)

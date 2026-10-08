@@ -28,7 +28,7 @@ export const ALL: APIRoute = async ({ request, params, clientAddress }) => {
     if (value === undefined || name === 'content-length' || name === 'transfer-encoding') continue
     for (const item of Array.isArray(value) ? value : [value]) headers.append(name, String(item))
   }
-  return new Response(method === 'HEAD' ? null : response.rawPayload, {
+  return new Response(method === 'HEAD' ? null : new Uint8Array(response.rawPayload), {
     status: response.statusCode,
     headers,
   })

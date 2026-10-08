@@ -1,8 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useAuth } from '@/features/auth/useAuth'
+import { api, isApiError } from '@/lib/api'
+import { formatCOP } from '@/lib/format'
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3001'
+const ATTENDEES_POLL_INTERVAL_MS = 5_000
+const HTTP_NOT_FOUND = 404
 
 interface Attendee {
   id: string
@@ -32,8 +35,9 @@ const TICKET_LABELS: Record<string, string> = {
   palco_platinum: 'Palco Platinum',
 }
 
-function formatCOP(cents: number) {
-  return (cents / 100).toLocaleString('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 })
+function attendeesErrorMessage(error: unknown): string {
+  if (!isApiError(error)) return 'Error de conexión'
+  return error.status === HTTP_NOT_FOUND ? 'Evento no encontrado' : 'Error al cargar asistentes'
 }
 
 export default function AttendeeListPage() {
@@ -45,19 +49,11 @@ export default function AttendeeListPage() {
 
   const fetchAttendees = useCallback(async () => {
     if (!event_id) return
-    const token = localStorage.getItem('skpat_access')
     try {
-      const res = await fetch(`${API_URL}/tickets/event/${event_id}`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      })
-      if (!res.ok) {
-        setError(res.status === 404 ? 'Evento no encontrado' : 'Error al cargar asistentes')
-        return
-      }
-      setData(await res.json())
+      setData(await api.get<AttendeeData>(`/tickets/event/${event_id}`))
       setError(null)
-    } catch {
-      setError('Error de conexión')
+    } catch (error) {
+      setError(attendeesErrorMessage(error))
     } finally {
       setLoading(false)
     }
@@ -66,9 +62,8 @@ export default function AttendeeListPage() {
   // Initial fetch
   useEffect(() => { fetchAttendees() }, [fetchAttendees])
 
-  // Poll every 5 seconds (refetchInterval: 5000)
   useEffect(() => {
-    const refetchInterval = setInterval(fetchAttendees, 5000)
+    const refetchInterval = setInterval(fetchAttendees, ATTENDEES_POLL_INTERVAL_MS)
     return () => clearInterval(refetchInterval)
   }, [fetchAttendees])
 

@@ -1,0 +1,16 @@
+---
+/** Logotipo tipográfico. El tamaño lo decide quien lo usa vía font-size. */
+interface Props {
+  variante?: 'solida' | 'contorno'
+  class?: string
+}
+
+const { variante = 'solida', class: clase } = Astro.props
+---
+<span class:list={['marca', `marca--${variante}`, clase]}>SKPAT<span class="marca__vip">VIP</span></span>
+
+<style>
+  .marca { font-family: var(--fuente-display); font-weight: 900; line-height: 1; letter-spacing: 0.02em; color: var(--tinta); }
+  .marca__vip { margin-left: 0.25em; color: var(--rosa-claro); }
+  .marca--contorno .marca__vip { color: transparent; -webkit-text-stroke: 1.5px var(--rosa-claro); }
+</style>

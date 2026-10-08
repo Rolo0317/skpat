@@ -1,0 +1,57 @@
+---
+import Icono, { type NombreIcono } from './Icono.astro'
+
+interface Props {
+  href: string
+  variante?: 'primario' | 'secundario'
+  icono?: NombreIcono
+  externo?: boolean
+  class?: string
+}
+
+const TAMANO_ICONO = 18
+const { href, variante = 'primario', icono, externo = false, class: clase } = Astro.props
+const atributosExternos = externo ? { target: '_blank', rel: 'noopener noreferrer' } : {}
+---
+<a href={href} class:list={['boton', `boton--${variante}`, clase]} {...atributosExternos}>
+  <slot />
+  {icono && <Icono nombre={icono} tamano={TAMANO_ICONO} />}
+</a>
+
+<style>
+  .boton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    min-height: 3.25rem;
+    padding: 0.85rem 1.5rem;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 0.01em;
+    text-decoration: none;
+    text-align: center;
+    transition: transform 0.35s var(--curva-salida), box-shadow 0.35s var(--curva-salida), background-color 0.2s;
+  }
+  .boton :global(svg) { transition: transform 0.35s var(--curva-salida); }
+  .boton:hover :global(svg) { transform: translateX(3px); }
+  .boton:active { transform: scale(0.98); }
+
+  .boton--primario {
+    color: var(--fondo);
+    background: var(--tinta);
+    box-shadow: 0 0.5rem 1.5rem -0.5rem color-mix(in oklab, var(--rosa) 70%, transparent);
+  }
+  .boton--primario:hover {
+    background: var(--rosa-claro);
+    box-shadow: 0 0.75rem 2rem -0.5rem color-mix(in oklab, var(--rosa) 90%, transparent);
+  }
+
+  .boton--secundario {
+    color: var(--tinta);
+    border: 1px solid color-mix(in oklab, var(--tinta) 30%, transparent);
+    background: color-mix(in oklab, var(--fondo) 60%, transparent);
+  }
+  .boton--secundario:hover { border-color: var(--violeta-claro); background: color-mix(in oklab, var(--violeta) 18%, var(--fondo)); }
+</style>

@@ -2,6 +2,7 @@ import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import TicketPurchasePage from '../TicketPurchasePage'
+import { jsonResponse } from '../../../../tests/utils'
 
 const mockEvent = {
   id: 'evt-1',
@@ -18,10 +19,7 @@ const mockEvent = {
 
 describe('TicketPurchasePage', () => {
   beforeEach(() => {
-    vi.stubGlobal('fetch', vi.fn(async () => ({
-      ok: true,
-      json: async () => [mockEvent],
-    })))
+    vi.stubGlobal('fetch', vi.fn(async () => jsonResponse([mockEvent])))
   })
   afterEach(() => {
     vi.unstubAllGlobals()

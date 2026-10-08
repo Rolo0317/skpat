@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Link } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { Mail, Lock, LogIn } from 'lucide-react'
 import { loginFormSchema, type LoginForm } from './schemas'
 import { useAuth } from './useAuth'
+import { PANEL_PATH_BY_ROLE } from '@/routes/panelPaths'
 
 export default function LoginPage() {
-  const { signIn } = useAuth()
+  const { signIn, user } = useAuth()
   const [serverError, setServerError] = useState<string | null>(null)
   const {
     register,
@@ -20,6 +21,8 @@ export default function LoginPage() {
     const { error } = await signIn(data.email, data.password)
     if (error) setServerError(error)
   }
+
+  if (user) return <Navigate to={PANEL_PATH_BY_ROLE[user.role]} replace />
 
   return (
     <div className="min-h-screen bg-skpat-bg text-skpat-text flex items-center justify-center p-6">

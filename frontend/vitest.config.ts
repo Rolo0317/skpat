@@ -1,17 +1,16 @@
-import { defineConfig } from 'vitest/config'
-import react from '@vitejs/plugin-react'
-import path from 'node:path'
+import { defineConfig, mergeConfig } from 'vitest/config'
+import viteConfig from './vite.config'
 
-export default defineConfig({
-  plugins: [react()],
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    setupFiles: ['./tests/setup.ts'],
-    include: ['tests/**/*.test.{ts,tsx}', 'src/**/*.test.{ts,tsx}'],
-    testTimeout: 10000,
-  },
-  resolve: {
-    alias: { '@': path.resolve(__dirname, './src') },
-  },
-})
+// Reutiliza plugins y alias de vite.config.ts; aquí solo va lo propio de las pruebas.
+export default mergeConfig(
+  viteConfig,
+  defineConfig({
+    test: {
+      globals: true,
+      environment: 'jsdom',
+      setupFiles: ['./tests/setup.ts'],
+      include: ['tests/**/*.test.{ts,tsx}', 'src/**/*.test.{ts,tsx}'],
+      testTimeout: 10000,
+    },
+  }),
+)

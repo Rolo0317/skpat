@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/features/auth/useAuth'
 import { Link } from 'react-router-dom'
-
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3001'
+import { api } from '@/lib/api'
+import { formatCOP } from '@/lib/format'
 
 interface MyTicket {
   id: string
@@ -24,10 +24,6 @@ const TYPE_LABELS: Record<string, string> = {
   palco_platinum: 'Palco Platinum',
 }
 
-function formatCOP(cents: number) {
-  return (cents / 100).toLocaleString('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 })
-}
-
 export default function ClienteHome() {
   const { user } = useAuth()
   const [tickets, setTickets] = useState<MyTicket[]>([])
@@ -36,12 +32,8 @@ export default function ClienteHome() {
   const [openQr, setOpenQr] = useState<string | null>(null)
 
   useEffect(() => {
-    const token = localStorage.getItem('skpat_access')
-    if (!token) { setLoading(false); return }
-    fetch(`${API_URL}/tickets/mine`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(r => r.json())
+    api
+      .get<MyTicket[]>('/tickets/mine')
       .then(data => setTickets(Array.isArray(data) ? data : []))
       .catch(() => setError('No se pudieron cargar tus tiquetes'))
       .finally(() => setLoading(false))
@@ -64,7 +56,7 @@ export default function ClienteHome() {
       {!loading && tickets.length === 0 && (
         <div style={{ background: '#1c1c2e', border: '1px solid rgba(255,255,255,.08)', borderRadius: 12, padding: 32, textAlign: 'center' }}>
           <p style={{ color: '#64748b', marginBottom: 16 }}>Aún no tienes tiquetes comprados.</p>
-          <Link to="/" style={{ color: '#8b5cf6', fontWeight: 600, textDecoration: 'none', fontSize: 14 }}>
+          <Link to="/" reloadDocument style={{ color: '#8b5cf6', fontWeight: 600, textDecoration: 'none', fontSize: 14 }}>
             Ver eventos disponibles
           </Link>
         </div>

@@ -1,8 +1,8 @@
-import { createBrowserRouter } from 'react-router-dom'
+import type { ReactNode } from 'react'
+import { createBrowserRouter, type RouteObject } from 'react-router-dom'
 import { RoleGuard } from './guards/RoleGuard'
 import UnauthorizedPage from './UnauthorizedPage'
 import NotFoundPage from './NotFoundPage'
-import LandingPage from '@/features/landing/LandingPage'
 import TicketPurchasePage from '@/features/tickets/TicketPurchasePage'
 import AdminEventsPage from '@/panels/admin/AdminEventsPage'
 import AdminMenuPage from '@/panels/admin/AdminMenuPage'
@@ -24,8 +24,8 @@ import ClienteLayout from '@/panels/cliente/ClienteLayout'
 import ClienteHome from '@/panels/cliente/ClienteHome'
 import CartaPage from '@/features/carta/CartaPage'
 
-export const router = createBrowserRouter([
-  { path: '/', element: <LandingPage /> },
+/** Rutas de la app sin la portada: quien monta la app decide qué se muestra en '/'. */
+const appRoutes: RouteObject[] = [
   { path: '/login', element: <LoginPage /> },
   { path: '/register', element: <RegisterPage /> },
   { path: '/recover', element: <RecoverPage /> },
@@ -63,4 +63,9 @@ export const router = createBrowserRouter([
     children: [{ element: <ClienteLayout />, children: [{ index: true, element: <ClienteHome /> }] }],
   },
   { path: '*', element: <NotFoundPage /> },
-])
+]
+
+/** Se crea al montar (no al importar) porque el router del navegador lee window. */
+export function createAppRouter(homeElement: ReactNode) {
+  return createBrowserRouter([{ path: '/', element: homeElement }, ...appRoutes])
+}

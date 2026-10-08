@@ -9,7 +9,7 @@ function wrap(executor: Executor): SqlClient {
 
   return {
     many: (sql, params) => query(sql, params),
-    one: async (sql, params) => (await query(sql, params))[0],
+    one: async <T>(sql: string, params?: unknown[]) => (await query<T>(sql, params))[0],
     run: async (sql, params) => {
       const result = (await query(sql, params)) as unknown as { count: number }
       return result.count

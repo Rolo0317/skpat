@@ -1,0 +1,59 @@
+---
+import Marca from '../ui/Marca.astro'
+import { RUTAS_APP } from '../contenido/negocio'
+
+interface Props {
+  enlaceCompra: string
+}
+
+const { enlaceCompra } = Astro.props
+const ANCLAS = [
+  { href: '#tarifas', texto: 'Tarifas' },
+  { href: '#cartelera', texto: 'Cartelera' },
+  { href: '#palcos', texto: 'Palcos' },
+  { href: '#ubicacion', texto: 'Cómo llegar' },
+]
+---
+<header class="cabecera">
+  <div class="contenedor cabecera__fila">
+    <a href="/" class="cabecera__marca" aria-label="Skpat VIP, inicio"><Marca /></a>
+    <nav aria-label="Secciones" class="cabecera__anclas">
+      {ANCLAS.map(({ href, texto }) => <a href={href}>{texto}</a>)}
+    </nav>
+    <div class="cabecera__acciones">
+      <a href={RUTAS_APP.login} class="cabecera__entrar">Entrar</a>
+      <a href={enlaceCompra} class="cabecera__comprar">Comprar</a>
+    </div>
+  </div>
+</header>
+
+<style>
+  .cabecera {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 50;
+    background: linear-gradient(var(--fondo), color-mix(in oklab, var(--fondo) 70%, transparent) 70%, transparent);
+  }
+  .cabecera__fila { display: flex; align-items: center; gap: 1rem; min-height: 4rem; }
+  .cabecera__marca { font-size: 1.6rem; text-decoration: none; }
+  .cabecera__anclas { display: none; gap: 1.75rem; margin-inline: auto; }
+  .cabecera__anclas a, .cabecera__entrar { color: var(--tinta-suave); text-decoration: none; font-weight: 500; transition: color 0.2s; }
+  .cabecera__anclas a:hover, .cabecera__entrar:hover { color: var(--tinta); }
+  .cabecera__acciones { display: flex; align-items: center; gap: 1.25rem; margin-left: auto; }
+  .cabecera__entrar { padding-block: 0.75rem; }
+  .cabecera__comprar {
+    padding: 0.6rem 1.15rem;
+    border-radius: 999px;
+    background: var(--tinta);
+    color: var(--fondo);
+    font-weight: 700;
+    text-decoration: none;
+    transition: background-color 0.2s;
+  }
+  .cabecera__comprar:hover { background: var(--rosa-claro); }
+
+  @media (min-width: 60rem) {
+    .cabecera__anclas { display: flex; }
+    .cabecera__acciones { margin-left: 0; }
+  }
+</style>

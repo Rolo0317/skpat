@@ -1,7 +1,12 @@
 import { SignJWT, jwtVerify, type JWTPayload } from 'jose'
 import { env } from './env.js'
+import type { SkpatRole } from './schemas.js'
 
-export type SkpatRole = 'cliente' | 'mesero' | 'portero' | 'admin'
+export type { SkpatRole } from './schemas.js'
+
+const SECONDS_PER_DAY = 24 * 60 * 60
+export const ACCESS_TOKEN_TTL_SECONDS = 15 * 60
+export const REFRESH_TOKEN_TTL_SECONDS = 7 * SECONDS_PER_DAY
 
 export interface AccessTokenPayload extends JWTPayload {
   sub: string       // user id (uuid)
@@ -31,7 +36,7 @@ export async function signAccessToken(payload: {
     .setProtectedHeader({ alg: 'HS256' })
     .setSubject(payload.sub)
     .setIssuedAt()
-    .setExpirationTime('15m')
+    .setExpirationTime(`${ACCESS_TOKEN_TTL_SECONDS}s`)
     .sign(accessKey())
 }
 
@@ -43,7 +48,7 @@ export async function signRefreshToken(payload: {
     .setProtectedHeader({ alg: 'HS256' })
     .setSubject(payload.sub)
     .setIssuedAt()
-    .setExpirationTime('7d')
+    .setExpirationTime(`${REFRESH_TOKEN_TTL_SECONDS}s`)
     .sign(refreshKey())
 }
 

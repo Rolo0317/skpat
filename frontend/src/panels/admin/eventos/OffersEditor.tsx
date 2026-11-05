@@ -1,7 +1,7 @@
 import { useState, type KeyboardEvent } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Plus, X } from 'lucide-react'
-import { ticketLabel } from '@skpat/backend/src/lib/ticketPrices'
+import { ticketLabel } from '@skpat/backend/contrato'
 import { api } from '@/lib/api'
 import { apiErrorMessage } from '@/lib/apiErrors'
 import { centsToPesos, pesosToCents } from '@/lib/format'

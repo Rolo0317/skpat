@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { ticketLabel } from '@skpat/backend/src/lib/ticketPrices'
+import { ticketLabel } from '@skpat/backend/contrato'
 import { useAuth } from '@/features/auth/useAuth'
 import { api } from '@/lib/api'
 import { formatCOP, formatDateTime } from '@/lib/format'

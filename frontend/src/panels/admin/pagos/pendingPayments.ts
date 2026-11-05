@@ -1,4 +1,4 @@
-import { ticketLabel } from '@skpat/backend/src/lib/ticketPrices'
+import { ticketLabel } from '@skpat/backend/contrato'
 import type {
   PagosPendientes, ReservaPendiente, TiqueteEmitido, TiquetePendiente,
 } from '@/lib/operacion'

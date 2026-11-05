@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { useAuth } from '@/features/auth/useAuth'
 import { api, isApiError } from '@/lib/api'
 import { formatCOP } from '@/lib/format'
-import { ticketLabel } from '@skpat/backend/src/lib/ticketPrices'
+import { ticketLabel } from '@skpat/backend/contrato'
 
 const ATTENDEES_POLL_INTERVAL_MS = 5_000
 const HTTP_NOT_FOUND = 404

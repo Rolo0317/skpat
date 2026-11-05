@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { api } from '@/lib/api'
 import type { OfertaEvento } from '@/lib/operacion'
-import type { SkpatEvent } from '@/features/landing/types'
+import type { SkpatEvent } from '@/features/events/types'
 
 export const EVENTS_PATH = '/events'
 export const EVENTS_QUERY_KEY = [EVENTS_PATH]

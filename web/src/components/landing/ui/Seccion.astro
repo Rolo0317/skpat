@@ -13,6 +13,7 @@ const idTitulo = `${id}-titulo`
   <div class="contenedor">
     <header class="seccion__cabecera">
       <h2 id={idTitulo} class="titulo-display seccion__titulo">{titulo}</h2>
+      <span class="seccion__riel" aria-hidden="true"></span>
       {intro && <p class="seccion__intro">{intro}</p>}
       <slot name="cabecera" />
     </header>
@@ -22,15 +23,41 @@ const idTitulo = `${id}-titulo`
 
 <style>
   .seccion {
+    position: relative;
     padding-block: var(--ritmo-seccion);
-    scroll-margin-top: 4rem;
+    scroll-margin-top: 4.5rem;
   }
-  .seccion__cabecera { margin-bottom: clamp(2rem, 6vw, 3.5rem); max-width: 46rem; }
-  .seccion__titulo { font-size: clamp(2.75rem, 11vw, 5.5rem); }
+  .seccion__cabecera { margin-bottom: clamp(2.25rem, 6vw, 4rem); max-width: 52rem; }
+  .seccion__titulo { font-size: clamp(2rem, 7.4vw, 4.6rem); }
+
+  /* Riel de luz bajo el título: una franja LED que respira con el pulso de la pista. */
+  .seccion__riel {
+    display: block;
+    width: min(100%, 14rem);
+    height: 3px;
+    margin-top: 1.25rem;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--primario), var(--acento) 45%, var(--azul) 80%, transparent);
+    box-shadow: 0 0.35rem 1.1rem -0.2rem color-mix(in oklab, var(--primario) 70%, transparent);
+    transform-origin: left center;
+  }
   .seccion__intro {
-    margin-top: 1rem;
+    margin-top: 1.25rem;
     max-width: 60ch;
     color: var(--tinta-suave);
     font-size: clamp(1.05rem, 2.6vw, 1.2rem);
   }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .seccion__riel { animation: riel-pulso calc(var(--tiempo) * 4) ease-out infinite; }
+    @supports (animation-timeline: view()) {
+      .seccion__riel {
+        animation: riel-entra linear both, riel-pulso calc(var(--tiempo) * 4) ease-out infinite;
+        animation-timeline: view(), auto;
+        animation-range: entry 10% cover 35%, normal;
+      }
+    }
+  }
+  @keyframes riel-entra { from { scale: 0 1; } to { scale: 1 1; } }
+  @keyframes riel-pulso { 0% { opacity: 1; } 25% { opacity: 0.55; } 100% { opacity: 0.8; } }
 </style>

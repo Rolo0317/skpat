@@ -1,0 +1,320 @@
+---
+/**
+ * Escenario de la portada. Dos capas que comparten el mismo pulso (140 BPM simulados, sin micrófono):
+ * - 2.5D en HTML y CSS: viene en el HTML, es lo que ve el celular y quien pide menos movimiento,
+ *   y hace de póster mientras carga el 3D;
+ * - 3D con React Three Fiber: isla `client:escenario`, solo en escritorio y después del LCP.
+ */
+import EscenarioIsla from './isla/EscenarioIsla'
+import { armarFila, type Silueta } from './siluetas'
+import { BPM_SKPAT } from './pulso'
+
+interface Props {
+  class?: string
+}
+
+const { class: clase } = Astro.props
+const ANCHO = 1000
+const filaLejos = armarFila({ cantidad: 30, ancho: ANCHO, alto: 160, escala: 0.62, semilla: 7 })
+const filaCerca = armarFila({ cantidad: 13, ancho: ANCHO, alto: 230, escala: 1.55, semilla: 21 })
+const HACES = [
+  { x: 8, color: 'azul', retraso: 0 },
+  { x: 24, color: 'oro', retraso: 1 },
+  { x: 41, color: 'champan', retraso: 2 },
+  { x: 59, color: 'champan', retraso: 3 },
+  { x: 76, color: 'oro', retraso: 4 },
+  { x: 92, color: 'azul', retraso: 5 },
+] as const
+/** Ángulos del abanico de láser, hacia arriba y a los lados desde la cabina. */
+const LASERES = Array.from({ length: 8 }, (_, indice) => Math.round(-168 + indice * 22))
+const tiempo = `${(60 / BPM_SKPAT).toFixed(4)}s`
+const filas: { id: string; siluetas: Silueta[]; alto: number }[] = [
+  { id: 'lejos', siluetas: filaLejos, alto: 160 },
+  { id: 'cerca', siluetas: filaCerca, alto: 230 },
+]
+---
+<div class:list={['escenario', clase]} data-escenario aria-hidden="true" style={`--tiempo: ${tiempo}`}>
+  <div class="escenario__plano">
+    <div class="capa capa--fondo"></div>
+
+    <div class="capa capa--led" style="--profundidad: 0.25">
+      <div class="led">
+        <span class="led__patron"></span>
+        <span class="led__marca">SKPAT</span>
+      </div>
+      <span class="led__columna led__columna--izq"></span>
+      <span class="led__columna led__columna--der"></span>
+    </div>
+
+    <div class="capa capa--haces" style="--profundidad: 0.45">
+      {HACES.map((haz) => <i class:list={['haz', `haz--${haz.color}`]} style={`--x: ${haz.x}%; --retraso: ${haz.retraso}`}></i>)}
+      <span class="truss"></span>
+    </div>
+
+    <div class="capa capa--laseres" style="--profundidad: 0.55">
+      {LASERES.map((angulo, indice) => <i class="laser" style={`--angulo: ${angulo}deg; --retraso: ${indice}`}></i>)}
+    </div>
+
+    <div class="capa capa--cabina" style="--profundidad: 0.6">
+      <svg class="cabina" viewBox="0 0 400 170" preserveAspectRatio="xMidYMax meet">
+        <g class="cabina__dj">
+          <circle cx="206" cy="38" r="15" />
+          <path d="M189 40a17 17 0 0 1 34 0" fill="none" stroke="currentColor" stroke-width="5" />
+          <path d="M176 70c0-14 13-22 30-22s30 8 30 22v30h-60z" />
+          <path class="cabina__brazo" d="M233 62l30-44" stroke="currentColor" stroke-width="10" stroke-linecap="round" />
+        </g>
+        <path d="M40 96h320l-14 74H54z" class="cabina__mesa" />
+        <rect x="70" y="84" width="74" height="12" rx="2" class="cabina__equipo" />
+        <rect x="163" y="82" width="74" height="14" rx="2" class="cabina__equipo" />
+        <rect x="256" y="84" width="74" height="12" rx="2" class="cabina__equipo" />
+        <rect x="58" y="118" width="284" height="4" class="cabina__franja" />
+        <rect x="120" y="140" width="160" height="2" class="cabina__franja cabina__franja--fina" />
+      </svg>
+    </div>
+
+    <div class="capa capa--humo" style="--profundidad: 0.7">
+      <span class="humo humo--1"></span>
+      <span class="humo humo--2"></span>
+      <span class="humo humo--3"></span>
+    </div>
+
+    {
+      filas.map((fila, indiceFila) => (
+        <div class:list={['capa', 'capa--publico', `capa--publico-${fila.id}`]} style={`--profundidad: ${indiceFila === 0 ? 0.8 : 1.15}`}>
+          <svg class="publico" viewBox={`0 0 ${ANCHO} ${fila.alto}`} preserveAspectRatio="xMidYMax slice">
+            {fila.siluetas.map((silueta) => (
+              <g class="persona" style={`--retraso: ${silueta.retraso}`}>
+                <circle cx={silueta.cabeza.cx} cy={silueta.cabeza.cy} r={silueta.cabeza.r} />
+                <rect x={silueta.torso.x} y={silueta.torso.y} width={silueta.torso.ancho} height={silueta.torso.alto} rx={silueta.torso.radio} />
+                {silueta.brazos.map((brazo) => (
+                  <line x1={brazo.x1} y1={brazo.y1} x2={brazo.x2} y2={brazo.y2} stroke-width={brazo.grosor} stroke-linecap="round" />
+                ))}
+              </g>
+            ))}
+          </svg>
+        </div>
+      ))
+    }
+  </div>
+
+  <div class="escenario__3d">
+    <EscenarioIsla client:escenario />
+  </div>
+</div>
+
+<script>
+  import { escucharParalaje, suavizar, type Vector2 } from './paralaje'
+
+  const SUAVIDAD = 0.08
+  const movimientoReducido = window.matchMedia('(prefers-reduced-motion: reduce)')
+
+  /** Paralaje de las capas 2.5D: escribe --px y --py; se apaga cuando entra el 3D o la portada sale de pantalla. */
+  function iniciarParalaje(contenedor: HTMLElement) {
+    if (movimientoReducido.matches) return
+    const entrada: Vector2 = { x: 0, y: 0 }
+    const actual: Vector2 = { x: 0, y: 0 }
+    const dejarDeEscuchar = escucharParalaje(entrada)
+    let visible = true
+    let anterior = performance.now()
+    let cuadro = 0
+
+    const animar = (ahora: number) => {
+      const delta = Math.min(0.1, (ahora - anterior) / 1000)
+      anterior = ahora
+      actual.x = suavizar(actual.x, entrada.x, SUAVIDAD, delta)
+      actual.y = suavizar(actual.y, entrada.y, SUAVIDAD, delta)
+      contenedor.style.setProperty('--px', actual.x.toFixed(4))
+      contenedor.style.setProperty('--py', actual.y.toFixed(4))
+      if (contenedor.classList.contains('escenario--3d')) return dejarDeEscuchar()
+      if (visible) cuadro = requestAnimationFrame(animar)
+    }
+    new IntersectionObserver(([registro]) => {
+      visible = Boolean(registro?.isIntersecting)
+      cancelAnimationFrame(cuadro)
+      if (visible) {
+        anterior = performance.now()
+        cuadro = requestAnimationFrame(animar)
+      }
+    }).observe(contenedor)
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-escenario]').forEach(iniciarParalaje)
+</script>
+
+<style>
+  .escenario {
+    --px: 0;
+    --py: 0;
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    background: var(--sala);
+    contain: strict;
+  }
+  .escenario__plano, .capa { position: absolute; inset: 0; }
+  .capa {
+    translate: calc(var(--px) * var(--profundidad, 0) * -1.6rem) calc(var(--py) * var(--profundidad, 0) * -0.7rem);
+    will-change: translate;
+  }
+
+  /* Fondo: sala con luz UV que sube desde la tarima. */
+  .capa--fondo {
+    background:
+      radial-gradient(60% 40% at 50% 62%, color-mix(in oklab, var(--luz-uv) 55%, transparent), transparent 70%),
+      radial-gradient(90% 60% at 50% 110%, color-mix(in oklab, var(--color-skpat-oro) 22%, transparent), transparent 70%),
+      var(--sala);
+  }
+
+  /* Pantalla LED con píxeles redondos: la máscara de puntos es la que la hace parecer pantalla. */
+  .led {
+    position: absolute;
+    left: 50%;
+    top: 14%;
+    width: min(92%, 64rem);
+    aspect-ratio: 15 / 6.4;
+    translate: -50% 0;
+    overflow: hidden;
+    background: #050409;
+    mask-image: radial-gradient(circle at center, #000 52%, transparent 58%);
+    mask-size: 5px 5px;
+    box-shadow: 0 0 6rem color-mix(in oklab, var(--color-skpat-oro) 25%, transparent);
+  }
+  .led__patron {
+    position: absolute;
+    inset: -20%;
+    background:
+      repeating-linear-gradient(115deg, transparent 0 3.5rem, color-mix(in oklab, var(--color-skpat-azul) 80%, transparent) 3.5rem 5rem, transparent 5rem 8rem),
+      repeating-linear-gradient(65deg, transparent 0 4rem, color-mix(in oklab, var(--color-skpat-oro) 70%, transparent) 4rem 5.25rem, transparent 5.25rem 9rem);
+    opacity: 0.3;
+    animation: led-avance calc(var(--tiempo) * 16) linear infinite;
+  }
+  .led__marca {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-family: var(--fuente-display);
+    font-weight: 900;
+    font-size: clamp(3rem, 15vw, 11rem);
+    letter-spacing: 0.02em;
+    color: var(--color-skpat-champan);
+    animation: led-golpe var(--tiempo) ease-out infinite;
+  }
+  .led__columna {
+    position: absolute;
+    top: 10%;
+    width: 7%;
+    height: 62%;
+    background: linear-gradient(to top, var(--color-skpat-oro), var(--color-skpat-azul));
+    mask-image: radial-gradient(circle at center, #000 52%, transparent 58%);
+    mask-size: 5px 5px;
+    opacity: 0.55;
+    animation: led-golpe var(--tiempo) ease-out infinite;
+  }
+  .led__columna--izq { left: 1%; }
+  .led__columna--der { right: 1%; }
+
+  /* Haces de los cabezales: triángulos con degradado que barren en 8 tiempos. */
+  .haz {
+    position: absolute;
+    top: 6%;
+    left: var(--x);
+    width: 30%;
+    height: 105%;
+    translate: -50% 0;
+    transform-origin: 50% 0;
+    clip-path: polygon(50% 0, 100% 100%, 0 100%);
+    background: linear-gradient(to bottom, var(--color-haz) 0%, color-mix(in oklab, var(--color-haz) 30%, transparent) 45%, transparent 85%);
+    mix-blend-mode: screen;
+    opacity: 0.42;
+    animation:
+      haz-barrido calc(var(--tiempo) * 8) ease-in-out calc(var(--tiempo) * var(--retraso) * -1.5) infinite alternate,
+      haz-golpe var(--tiempo) ease-out infinite;
+  }
+  .haz--oro { --color-haz: var(--color-skpat-oro); }
+  .haz--champan { --color-haz: var(--color-skpat-champan); }
+  .haz--azul { --color-haz: var(--color-skpat-azul); }
+  .truss {
+    position: absolute;
+    top: 5%;
+    left: 2%;
+    right: 2%;
+    height: 0.55rem;
+    background: repeating-linear-gradient(45deg, #1a1720 0 4px, #08070b 4px 8px);
+    border-block: 1px solid #24202c;
+  }
+
+  /* Láseres: líneas finas que salen de la cabina y cortan en contratiempo. */
+  .laser {
+    position: absolute;
+    left: 50%;
+    top: 62%;
+    width: 140%;
+    height: 1.5px;
+    transform-origin: 0 50%;
+    rotate: var(--angulo);
+    background: linear-gradient(to right, var(--color-skpat-azul), color-mix(in oklab, var(--color-skpat-azul) 20%, transparent) 70%, transparent);
+    box-shadow: 0 0 6px var(--color-skpat-azul);
+    opacity: 0;
+    animation: laser-corte calc(var(--tiempo) * 2) steps(1) calc(var(--tiempo) * var(--retraso) * -0.25) infinite;
+  }
+
+  .cabina {
+    position: absolute;
+    left: 50%;
+    bottom: 22%;
+    width: min(46%, 26rem);
+    translate: -50% 0;
+    color: #040306;
+    fill: #040306;
+  }
+  .cabina__mesa { fill: #0a090e; }
+  .cabina__equipo { fill: #15121b; }
+  .cabina__franja { fill: var(--color-skpat-oro); animation: led-golpe var(--tiempo) ease-out infinite; }
+  .cabina__franja--fina { fill: var(--color-skpat-azul); }
+  .cabina__dj { transform-origin: 206px 100px; animation: cabeceo var(--tiempo) ease-out infinite; }
+
+  .humo {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(2.5rem);
+    opacity: 0.5;
+    animation: humo-deriva 22s ease-in-out infinite alternate;
+  }
+  .humo--1 { left: -10%; bottom: 14%; width: 70%; height: 30%; background: color-mix(in oklab, var(--luz-uv) 60%, transparent); }
+  .humo--2 { right: -15%; bottom: 20%; width: 65%; height: 26%; background: color-mix(in oklab, var(--color-skpat-azul) 35%, transparent); animation-delay: -8s; }
+  .humo--3 { left: 20%; bottom: 8%; width: 60%; height: 22%; background: color-mix(in oklab, var(--color-skpat-champan) 22%, transparent); animation-delay: -15s; }
+
+  .publico { position: absolute; left: -4%; width: 108%; bottom: 0; }
+  .capa--publico-lejos .publico { height: 24%; fill: #120d1b; stroke: #120d1b; }
+  .capa--publico-cerca .publico { height: 30%; fill: #010103; stroke: #010103; bottom: -2%; }
+  .persona { animation: rebote var(--tiempo) cubic-bezier(0.2, 0.8, 0.3, 1) calc(var(--tiempo) * var(--retraso) * -0.4) infinite; }
+
+  /* Capa 3D: aparece cuando la isla avisa que ya pinta; la 2.5D se apaga para no gastar. */
+  .escenario__3d { position: absolute; inset: 0; opacity: 0; transition: opacity 1.2s var(--curva-salida); }
+  :global(.escenario--3d) .escenario__3d { opacity: 1; }
+  :global(.escenario--3d) .escenario__plano { opacity: 0; transition: opacity 1.2s var(--curva-salida) 0.4s; }
+  :global(.escenario--3d) .escenario__plano * { animation-play-state: paused; }
+
+  /* Celular: píxeles más finos para que la marca se lea en una pantalla chica. */
+  @media (max-width: 47.99rem) {
+    .led, .led__columna { mask-size: 3px 3px; }
+    .led { top: 16%; }
+  }
+
+  @keyframes led-avance { to { translate: 8rem 0; } }
+  @keyframes led-golpe { 0% { opacity: 1; } 35% { opacity: 0.72; } 100% { opacity: 0.6; } }
+  @keyframes haz-barrido { from { rotate: -22deg; } to { rotate: 22deg; } }
+  @keyframes haz-golpe { 0% { opacity: 0.62; } 100% { opacity: 0.34; } }
+  @keyframes laser-corte { 0% { opacity: 0.85; } 50% { opacity: 0; } }
+  @keyframes cabeceo { 0% { transform: translateY(2px); } 40% { transform: none; } }
+  @keyframes rebote { 0% { transform: translateY(-3px); } 45% { transform: none; } }
+  @keyframes humo-deriva { from { transform: translateX(-4%); } to { transform: translateX(6%) scale(1.08); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .escenario *, .escenario *::before { animation: none !important; }
+    .laser { opacity: 0.5; }
+    .capa { translate: none; }
+  }
+</style>

@@ -3,6 +3,7 @@ import BaseLayout from '~/layouts/BaseLayout.astro'
 import '~/components/landing/landing.css'
 import Cabecera from '~/components/landing/secciones/Cabecera.astro'
 import Portada from '~/components/landing/secciones/Portada.astro'
+import Marquesina from '~/components/landing/ui/Marquesina.astro'
 import Historias from '~/components/landing/secciones/Historias.astro'
 import Etapas from '~/components/landing/secciones/Etapas.astro'
 import Cartelera from '~/components/landing/secciones/Cartelera.astro'
@@ -48,6 +49,7 @@ const descripcion = `${NEGOCIO.eslogan}: ${NEGOCIO.horario.dias.toLowerCase()}, 
   <Cabecera enlaceCompra={enlaceCompra} />
   <main id="contenido">
     <Portada activo={activo} ajustes={ajustes} ahora={ahora} />
+    <Marquesina />
     <Historias historias={historias} />
     <Cartelera cartelera={cartelera} />
     <Etapas activo={activo} detalle={detallePrincipal} ajustes={ajustes} ahora={ahora} />

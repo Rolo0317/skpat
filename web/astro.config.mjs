@@ -7,10 +7,20 @@ import { fileURLToPath } from 'node:url'
 
 const frontendSrc = fileURLToPath(new URL('../frontend/src', import.meta.url))
 
+/** `client:escenario`: la isla 3D de la portada se hidrata solo en escritorio y con el hilo principal libre. */
+const directivaEscenario = {
+  name: 'skpat-directiva-escenario',
+  hooks: {
+    'astro:config:setup': ({ addClientDirective }) => {
+      addClientDirective({ name: 'escenario', entrypoint: fileURLToPath(new URL('./src/directivas/escenario.ts', import.meta.url)) })
+    },
+  },
+}
+
 export default defineConfig({
   output: 'server',
   adapter: vercel(),
-  integrations: [react()],
+  integrations: [react(), directivaEscenario],
   vite: {
     plugins: [tailwindcss()],
     // Las islas React del frontend existente usan el alias "@" y variables VITE_.

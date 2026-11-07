@@ -20,11 +20,16 @@ export default function EscenarioIsla() {
   const alEstarListo = () => {
     document.querySelector('[data-escenario]')?.classList.add(CLASE_LISTO)
   }
+  // Sin rendimiento o sin contexto WebGL: vuelve la 2.5D y se libera la GPU desmontando el lienzo.
+  const alRendirse = () => {
+    document.querySelector('[data-escenario]')?.classList.remove(CLASE_LISTO)
+    setMontar(false)
+  }
 
   if (!montar) return null
   return (
     <Suspense fallback={null}>
-      <Lienzo alEstarListo={alEstarListo} />
+      <Lienzo alEstarListo={alEstarListo} alRendirse={alRendirse} />
     </Suspense>
   )
 }

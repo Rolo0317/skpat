@@ -40,7 +40,7 @@ function armarPublico(): Persona[] {
       z,
       escala: 0.88 + azar() * 0.22,
       fase: azar(),
-      brazos: sorteo > 0.82 ? 2 : sorteo > 0.6 ? 1 : 0,
+      brazos: (sorteo > 0.82 ? 2 : sorteo > 0.6 ? 1 : 0) as 0 | 1 | 2,
       giro: (azar() - 0.5) * 0.6,
     }
   }).filter((persona) => !(persona.z > 4.6 && Math.abs(persona.x) < 1.1))

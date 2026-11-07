@@ -10,6 +10,8 @@ const LARGO_HAZ = 13
 const RADIO_HAZ = 1.35
 const GROSOR_TRUSS = 0.16
 const ABAJO = new Vector3(0, -1, 0)
+/** Fracción del giro hacia el objetivo que recorre un cabezal en un cuadro de 60 fps. */
+const SEGUIMIENTO_A_60FPS = 0.18
 
 interface Barrido {
   /** Hacia dónde mira el haz en reposo (punto del piso o del público). */
@@ -67,9 +69,10 @@ export function Rig({ paleta }: { paleta: Paleta }) {
     [geometriaHaz, haces, lentes],
   )
 
-  useFrame(({ clock }) => {
+  useFrame(({ clock }, delta) => {
     const segundos = clock.elapsedTime
     const pulso = estadoPulso(segundos)
+    const seguimiento = 1 - Math.pow(1 - SEGUIMIENTO_A_60FPS, Math.min(delta, 0.1) * 60)
     const intensidad = 0.22 + 0.55 * pulso.energia * (0.55 + 0.45 * pulso.golpe) + 0.5 * pulso.destello
     lentes.emissiveIntensity = 1 + 4 * intensidad
     cabezales.current.forEach((cabezal, indice) => {
@@ -77,7 +80,7 @@ export function Rig({ paleta }: { paleta: Paleta }) {
       objetivoDe(barridos[indice]!, segundos, pulso, temporal.objetivo)
       temporal.direccion.copy(temporal.objetivo).sub(cabezal.position).normalize()
       temporal.giro.setFromUnitVectors(ABAJO, temporal.direccion)
-      cabezal.quaternion.slerp(temporal.giro, 0.18)
+      cabezal.quaternion.slerp(temporal.giro, seguimiento)
       const haz = haces[indice]!
       // En el valle se apagan cabezales alternos: el rig respira con la frase.
       const apagado = pulso.energia < 1 && pulso.subida === 0 && indice % 2 === 1

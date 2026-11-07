@@ -46,7 +46,7 @@ function texturaVacia(): Texture {
   return textura
 }
 
-function crearMaterial(paleta: Paleta, marca: Texture, pixeles: Vector2): ShaderMaterial {
+function crearMaterial(paleta: Paleta, pixeles: Vector2): ShaderMaterial {
   return new ShaderMaterial({
     vertexShader: VERTICE_UV,
     fragmentShader: FRAGMENTO_LED,
@@ -73,8 +73,8 @@ export function PantallaLed({ paleta }: { paleta: Paleta }) {
   const { central, columna, texturas } = useMemo(() => {
     const marca = pintarMarca()
     const vacia = texturaVacia()
-    const central = crearMaterial(paleta, marca, PIXELES_CENTRAL)
-    const columna = crearMaterial(paleta, vacia, PIXELES_COLUMNA)
+    const central = crearMaterial(paleta, PIXELES_CENTRAL)
+    const columna = crearMaterial(paleta, PIXELES_COLUMNA)
     // UniformsUtils.merge clona las texturas: se asignan después para conservar la referencia que se repinta.
     central.uniforms.uMarca!.value = marca
     columna.uniforms.uMarca!.value = vacia

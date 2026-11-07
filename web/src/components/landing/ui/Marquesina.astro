@@ -70,9 +70,14 @@ const REPETICIONES = 2
     box-shadow: 0 0 0.75rem var(--azul);
   }
 
-  @media (prefers-reduced-motion: no-preference) {
+  /* Solo corre con puntero fino y sin movimiento reducido; en pantallas táctiles queda quieta y se desliza a mano. */
+  @media (prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) {
     .marquesina__pista { animation: correr calc(var(--tiempo) * 64) linear infinite; }
-    .marquesina:hover .marquesina__pista { animation-play-state: paused; }
+    .marquesina:hover .marquesina__pista,
+    .marquesina:focus-within .marquesina__pista { animation-play-state: paused; }
+  }
+  @media not ((hover: hover) and (pointer: fine)) {
+    .marquesina { overflow-x: auto; scrollbar-width: none; }
   }
   @keyframes correr { to { translate: -50% 0; } }
 </style>

@@ -27,7 +27,7 @@ const escenario: ClientDirective = (cargar) => {
     await montar()
   }
   const cuandoHayaCalma = () => {
-    if ('requestIdleCallback' in window) window.requestIdleCallback(() => void hidratar(), { timeout: ESPERA_MAXIMA_MS })
+    if (typeof window.requestIdleCallback === 'function') window.requestIdleCallback(() => void hidratar(), { timeout: ESPERA_MAXIMA_MS })
     else window.setTimeout(() => void hidratar(), ESPERA_SIN_IDLE_MS)
   }
   if (document.readyState === 'complete') cuandoHayaCalma()

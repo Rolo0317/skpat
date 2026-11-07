@@ -71,6 +71,8 @@ export const FRAGMENTO_LED = /* glsl */ `
     // Viñeta del panel y respiración del bombo.
     color *= (0.72 + 0.28 * uGolpe) * smoothstep(1.15, 0.55, length((vUv - 0.5) * vec2(1.4, 1.0)));
     gl_FragColor = vec4(color * led * 1.6, 1.0);
+    #include <tonemapping_fragment>
+    #include <colorspace_fragment>
     #include <fog_fragment>
   }
 `
@@ -105,6 +107,8 @@ export const FRAGMENTO_HAZ = /* glsl */ `
     float humo = 0.55 + 0.45 * fbm(vMundo.xy * 0.45 + vec2(uTiempo * 0.08, -uTiempo * 0.05));
     float alfa = cuerpo * caida * humo * uIntensidad;
     gl_FragColor = vec4(uColor * alfa, 1.0);
+    #include <tonemapping_fragment>
+    #include <colorspace_fragment>
   }
 `
 
@@ -124,5 +128,7 @@ export const FRAGMENTO_NIEBLA = /* glsl */ `
     float pegadoAlPiso = mix(1.0, smoothstep(0.85, 0.0, vUv.y), uBajo);
     float alfa = smoothstep(0.35, 0.85, n) * bordes * pegadoAlPiso * uIntensidad;
     gl_FragColor = vec4(uColor * alfa, 1.0);
+    #include <tonemapping_fragment>
+    #include <colorspace_fragment>
   }
 `

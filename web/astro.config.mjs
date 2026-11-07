@@ -7,7 +7,10 @@ import { fileURLToPath } from 'node:url'
 
 const frontendSrc = fileURLToPath(new URL('../frontend/src', import.meta.url))
 
-/** `client:escenario`: la isla 3D de la portada se hidrata solo en escritorio y con el hilo principal libre. */
+/**
+ * `client:escenario`: la isla 3D de la portada se hidrata solo en escritorio y con el hilo principal libre.
+ * @type {import('astro').AstroIntegration}
+ */
 const directivaEscenario = {
   name: 'skpat-directiva-escenario',
   hooks: {

@@ -106,17 +106,25 @@ const filas: { id: string; siluetas: Silueta[]; alto: number }[] = [
   import { escucharParalaje, suavizar, type Vector2 } from './paralaje'
 
   const SUAVIDAD = 0.08
+  /** Por debajo de esta distancia al objetivo la capa ya llegó y el bucle se detiene. */
+  const REPOSO = 0.0015
+  const CLASE_3D = 'escenario--3d'
+  const CLASE_FUERA = 'escenario--fuera'
   const movimientoReducido = window.matchMedia('(prefers-reduced-motion: reduce)')
 
-  /** Paralaje de las capas 2.5D: escribe --px y --py; se apaga cuando entra el 3D o la portada sale de pantalla. */
-  function iniciarParalaje(contenedor: HTMLElement) {
-    if (movimientoReducido.matches) return
+  /**
+   * Paralaje de las capas 2.5D (--px, --py). El bucle solo corre mientras la capa persigue al puntero:
+   * al llegar se detiene y lo despierta el siguiente pointermove o deviceorientation.
+   * También marca la escena como fuera de pantalla para pausar sus animaciones CSS.
+   */
+  function iniciar(contenedor: HTMLElement) {
     const entrada: Vector2 = { x: 0, y: 0 }
     const actual: Vector2 = { x: 0, y: 0 }
-    const dejarDeEscuchar = escucharParalaje(entrada)
     let visible = true
-    let anterior = performance.now()
     let cuadro = 0
+    let anterior = 0
+
+    const puedeAnimar = () => visible && !movimientoReducido.matches && !contenedor.classList.contains(CLASE_3D)
 
     const animar = (ahora: number) => {
       const delta = Math.min(0.1, (ahora - anterior) / 1000)
@@ -125,20 +133,30 @@ const filas: { id: string; siluetas: Silueta[]; alto: number }[] = [
       actual.y = suavizar(actual.y, entrada.y, SUAVIDAD, delta)
       contenedor.style.setProperty('--px', actual.x.toFixed(4))
       contenedor.style.setProperty('--py', actual.y.toFixed(4))
-      if (contenedor.classList.contains('escenario--3d')) return dejarDeEscuchar()
-      if (visible) cuadro = requestAnimationFrame(animar)
+      const llego = Math.abs(entrada.x - actual.x) < REPOSO && Math.abs(entrada.y - actual.y) < REPOSO
+      cuadro = !llego && puedeAnimar() ? requestAnimationFrame(animar) : 0
     }
+    const despertar = () => {
+      if (cuadro || !puedeAnimar()) return
+      anterior = performance.now()
+      cuadro = requestAnimationFrame(animar)
+    }
+
+    escucharParalaje(entrada)
+    window.addEventListener('pointermove', despertar, { passive: true })
+    window.addEventListener('deviceorientation', despertar, { passive: true })
+
     new IntersectionObserver(([registro]) => {
       visible = Boolean(registro?.isIntersecting)
-      cancelAnimationFrame(cuadro)
-      if (visible) {
-        anterior = performance.now()
-        cuadro = requestAnimationFrame(animar)
+      contenedor.classList.toggle(CLASE_FUERA, !visible)
+      if (!visible) {
+        cancelAnimationFrame(cuadro)
+        cuadro = 0
       }
     }).observe(contenedor)
   }
 
-  document.querySelectorAll<HTMLElement>('[data-escenario]').forEach(iniciarParalaje)
+  document.querySelectorAll<HTMLElement>('[data-escenario]').forEach(iniciar)
 </script>
 
 <style>
@@ -155,7 +173,10 @@ const filas: { id: string; siluetas: Silueta[]; alto: number }[] = [
   .escenario__plano, .capa { position: absolute; inset: 0; }
   .capa {
     translate: calc(var(--px) * var(--profundidad, 0) * -1.6rem) calc(var(--py) * var(--profundidad, 0) * -0.7rem);
-    will-change: translate;
+  }
+  /* Capa de composición solo mientras la 2.5D es la que se ve y se mueve. */
+  @media (prefers-reduced-motion: no-preference) {
+    .escenario:not(:global(.escenario--3d)) .capa { will-change: translate; }
   }
 
   /* Fondo: sala con luz UV que sube desde la tarima. */
@@ -296,6 +317,10 @@ const filas: { id: string; siluetas: Silueta[]; alto: number }[] = [
   :global(.escenario--3d) .escenario__3d { opacity: 1; }
   :global(.escenario--3d) .escenario__plano { opacity: 0; transition: opacity 1.2s var(--curva-salida) 0.4s; }
   :global(.escenario--3d) .escenario__plano * { animation-play-state: paused; }
+  /* Cuando el 3D ya cubre todo, la 2.5D deja de pintarse (después del fundido). */
+  :global(.escenario--3d) .escenario__plano { visibility: hidden; transition: opacity 1.2s var(--curva-salida) 0.4s, visibility 0s linear 1.6s; }
+  /* Fuera de pantalla las animaciones CSS no gastan. */
+  :global(.escenario--fuera) .escenario__plano * { animation-play-state: paused; }
 
   /* Celular: píxeles más finos para que la marca se lea en una pantalla chica. */
   @media (max-width: 47.99rem) {

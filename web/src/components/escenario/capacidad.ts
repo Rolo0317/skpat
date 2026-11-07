@@ -22,7 +22,10 @@ export function debeCargar3D({ coincideConsulta, ahorroDeDatos, nucleos }: Entor
 export function soportaWebGL2(): boolean {
   try {
     const lienzo = document.createElement('canvas')
-    return Boolean(lienzo.getContext('webgl2'))
+    const contexto = lienzo.getContext('webgl2')
+    // Se libera el contexto de prueba: los navegadores limitan cuántos contextos WebGL viven a la vez.
+    contexto?.getExtension('WEBGL_lose_context')?.loseContext()
+    return Boolean(contexto)
   } catch {
     return false
   }

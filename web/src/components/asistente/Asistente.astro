@@ -34,7 +34,7 @@ const { datos } = Astro.props
     </ul>
   </section>
 
-  <button type="button" class="asistente__lanzador" aria-expanded="false" aria-controls="asistente-panel" data-asistente-lanzador>
+  <button type="button" class="asistente__lanzador" aria-expanded="false" aria-controls="asistente-panel" aria-label="¿Dudas?" data-asistente-lanzador>
     <Icono nombre="chat" tamano={TAMANO_ICONO} />
     <span>¿Dudas?</span>
   </button>
@@ -48,6 +48,8 @@ const { datos } = Astro.props
 </script>
 
 <style>
+  /* Alto que ocupa el lanzador desde el borde inferior (posición + botón + aire): la portada lo reserva para no quedar debajo. */
+  :global(:root) { --reserva-asistente: calc(max(1rem, env(safe-area-inset-bottom)) + 4rem); }
   .asistente {
     position: fixed;
     right: max(1rem, env(safe-area-inset-right));
@@ -71,6 +73,11 @@ const { datos } = Astro.props
     font-weight: 700;
     box-shadow: 0 0.75rem 2rem -0.5rem color-mix(in oklab, var(--primario) 70%, transparent);
     cursor: pointer;
+  }
+  /* Celular: solo el ícono, para no tapar el contenido; el nombre lo da aria-label. */
+  @media (max-width: 47.99rem) {
+    .asistente__lanzador { justify-content: center; width: 3.25rem; padding: 0; }
+    .asistente__lanzador > span { display: none; }
   }
   .asistente__panel {
     display: grid;

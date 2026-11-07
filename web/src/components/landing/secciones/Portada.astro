@@ -74,7 +74,7 @@ const enlaceProximaFecha = whatsappPrincipal(ajustes, 'Hola Skpat VIP, ¿cuándo
     display: flex;
     align-items: flex-end;
     min-height: 100svh;
-    padding-block: 52svh 2.5rem;
+    padding-block: 52svh max(2.5rem, var(--reserva-asistente, 0px));
     background: var(--sala);
   }
   .portada :global(.portada__escenario) { inset: 0 0 auto; height: 72svh; }

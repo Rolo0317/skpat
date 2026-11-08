@@ -11,8 +11,6 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(3001),
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   CORS_ORIGINS: z.string().default('http://localhost:5173'),
-  ANTHROPIC_API_KEY: z.string().min(10, 'ANTHROPIC_API_KEY is required for /ai/chat').optional(),
-  AI_MODEL: z.string().default('claude-sonnet-5-5'),
   // Email / SMTP (all optional — if missing, emails are logged to console only)
   SMTP_HOST: z.string().optional(),
   SMTP_PORT: z.coerce.number().int().positive().default(587),

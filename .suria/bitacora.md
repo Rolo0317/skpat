@@ -1,22 +1,11 @@
 # Bitácora
 
 ## 2026-11-07 20:40 · suria-devops · T-07 Publicar web-2027 en producción
-- Hecho: merge  de  en  (commit , aprobado por William) y push por SSH (f05fdb1..3616b69). Incluye  (768328a y 4a2d312), porque  sale de esa rama y la web usa . El árbol fusionado es idéntico al de . Vercel (, Root Directory , conectado a Rolo0317/skpat, rama de producción ) desplegó solo:  READY, alias https://skpat-vip.vercel.app. No se corrió  para no duplicar.
+- Hecho: merge `--no-ff` de `web-2027` en `main` (commit `3616b69`, aprobado por William) y push por SSH (f05fdb1..3616b69). Incluye `refactor/workspaces` (768328a y 4a2d312), porque `web-2027` sale de esa rama y la web usa `backend/src/contrato`. El árbol fusionado es idéntico al de `web-2027`. Vercel (`skpat-vip`, Root Directory `web`, conectado a Rolo0317/skpat, rama de producción `main`) desplegó solo: `skpat-i9j2355kh-william-danilo-solano-alvarez-s-projects.vercel.app` READY, alias https://skpat-vip.vercel.app. No se corrió `vercel deploy --prod` para no duplicar.
+- Incidente menor: el commit 58dc0ed dejó esta entrada dañada porque la escribí con comillas dobles en bash y las comillas invertidas se ejecutaron como comandos. Entre ellos un `npx vercel rollback` que falló (nombre del despliegue mal formado), así que producción no cambió (verificado justo después). Esta entrada se corrigió en un commit aparte, sin reescribir historia.
 - Archivos: .suria/plan.md, .suria/bitacora.md (el código llegó con el merge).
-- Verificación: antes del push, Unknown command: "test"
-
-
-Did you mean this?
-  npm test # Test a package
-To see a list of supported npm commands, run:
-  npm help en la raíz: frontend 59/59, backend 197/197, web 15/15;  0/0/0;  OK. Diff revisado: sin .env, credenciales ni variables nuevas (las 7 de producción ya existían). Humo en producción: / y /login responden 200; Playwright Firefox 1440: escenario 3D con 1 canvas, marquesina, 7 enlaces de WhatsApp, sin desborde y 0 errores de consola, de página o HTTP; WebKit 390: 2.5D sin canvas, sin desborde y 0 errores.
-- Pendiente: 1) los commits de  no tuvieron revisión propia (T-05 revisó contra esa rama); pasaron las pruebas y ya están en producción. 2) En 390 px, al cargar, el botón "¿Dudas?" queda sobre el borde derecho del título de la tarjeta (pendiente conocido de T-06). 3) La tarjeta dice "Maratoneados en Springfield · Sábado" con fecha martes 10 de noviembre: es dato del evento, revisarlo con el cliente. 4) fps reales con GPU y en celular de gama media. 5) Unknown command: "audit"
-
-
-Did you mean this?
-  npm audit # Run a security audit
-To see a list of supported npm commands, run:
-  npm help: 31 vulnerabilidades sin revisar. Para volver atrás:  (producción anterior, f05fdb1).
+- Verificación: antes del push, `npm test` en la raíz: frontend 59/59, backend 197/197, web 15/15; `astro check` 0/0/0; `npm run build` OK. Diff revisado: sin .env, credenciales ni variables nuevas (las 7 de producción ya existían). Humo en producción: / y /login responden 200; Playwright Firefox 1440: escenario 3D con 1 canvas, marquesina, 7 enlaces de WhatsApp, sin desborde y 0 errores de consola, de página o HTTP; WebKit 390: 2.5D sin canvas, sin desborde y 0 errores.
+- Pendiente: 1) los commits de `refactor/workspaces` no tuvieron revisión propia (T-05 revisó contra esa rama); pasaron las pruebas y ya están en producción. 2) En 390 px, al cargar, el botón "¿Dudas?" queda sobre el borde derecho del título de la tarjeta (pendiente conocido de T-06). 3) La tarjeta dice "Maratoneados en Springfield · Sábado" con fecha martes 10 de noviembre: es dato del evento, revisarlo con el cliente. 4) fps reales con GPU y en celular de gama media. 5) `npm audit`: 31 vulnerabilidades sin revisar. Para volver atrás: `npx vercel rollback skpat-jo8jzan8h-william-danilo-solano-alvarez-s-projects.vercel.app` (producción anterior, f05fdb1).
 - Para: suria-revisor — revisión a posteriori de 768328a y 4a2d312; suria-qa — fps reales en producción; suria-documentador — nota de la publicación.
 
 ## 2026-11-07 13:25 · suria-junior · T-06 Botón "¿Dudas?" sobre la tarjeta del evento

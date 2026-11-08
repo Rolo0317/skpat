@@ -8,3 +8,4 @@
 | T-04 | Web 2027: escenario 3D (R3F) en la portada, versión 2.5D para celular y movimiento reducido, y dirección de arte de fiesta | suria-3d | hecha | T-02 | Rama `web-2027` con pruebas y build en verde, capturas en 1440 y 390 (Firefox/WebKit) y vista previa en Vercel sin --prod |
 | T-05 | Revisión de código de `web-2027` (3D, directiva, shaders, 2.5D) | suria-revisor | hecha | T-04 | Hallazgos con archivo:línea en la bitácora; sin cambios de código |
 | T-06 | Botón "¿Dudas?" no tapa la tarjeta del evento a 390 px | suria-junior | hecha | T-04 | Botón compacto en celular con aria-label, padding inferior con safe-area, WebKit 390 sin superposición, pruebas, build y `astro check` 0 |
+| T-07 | Publicar web-2027 en producción (merge a main, deploy por integración Git de Vercel y prueba de humo) | suria-devops | hecha | T-05, T-06 | main con el merge, despliegue de producción READY y prueba de humo en Firefox 1440 y WebKit 390 sin errores |

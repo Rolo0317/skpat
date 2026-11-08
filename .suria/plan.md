@@ -9,3 +9,4 @@
 | T-05 | Revisión de código de `web-2027` (3D, directiva, shaders, 2.5D) | suria-revisor | hecha | T-04 | Hallazgos con archivo:línea en la bitácora; sin cambios de código |
 | T-06 | Botón "¿Dudas?" no tapa la tarjeta del evento a 390 px | suria-junior | hecha | T-04 | Botón compacto en celular con aria-label, padding inferior con safe-area, WebKit 390 sin superposición, pruebas, build y `astro check` 0 |
 | T-07 | Publicar web-2027 en producción (merge a main, deploy por integración Git de Vercel y prueba de humo) | suria-devops | hecha | T-05, T-06 | main con el merge, despliegue de producción READY y prueba de humo en Firefox 1440 y WebKit 390 sin errores |
+| T-08 | Revisión a posteriori de `768328a` y `4a2d312` (contrato y landing vieja) | suria-revisor | hecha | T-07 | Hallazgos con archivo:línea en la bitácora; sin cambios de código |

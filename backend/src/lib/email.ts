@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer'
+import { createTransport, type Transporter } from 'nodemailer'
 import { env } from './env.js'
 import { ticketLabel } from './ticketPrices.js'
 
@@ -12,11 +12,29 @@ export interface TicketEmailData {
   qrToken: string
 }
 
-function getTransporter(): nodemailer.Transporter | null {
+/**
+ * Escapa texto para meterlo en HTML (contenido o atributo entre comillas dobles).
+ * El nombre lo escribe el usuario: sin esto se podría inyectar HTML en el correo.
+ */
+export function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+/** Solo se aceptan imágenes PNG en base64 (lo que genera lib/qr); cualquier otra cosa se descarta. */
+function safeQrSrc(dataUrl: string): string {
+  return /^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(dataUrl) ? dataUrl : ''
+}
+
+function getTransporter(): Transporter | null {
   if (!env.SMTP_HOST || !env.SMTP_USER || !env.SMTP_PASS) {
     return null
   }
-  return nodemailer.createTransport({
+  return createTransport({
     host: env.SMTP_HOST,
     port: env.SMTP_PORT,
     secure: env.SMTP_PORT === 465,
@@ -27,12 +45,16 @@ function getTransporter(): nodemailer.Transporter | null {
   })
 }
 
-export async function sendTicketEmail(data: TicketEmailData): Promise<void> {
-  const transporter = getTransporter()
+/** Arma el HTML del tiquete con todos los datos variables escapados. */
+export function renderTicketEmailHtml(data: TicketEmailData): string {
+  const nombre = escapeHtml(data.nombre)
+  const eventTitle = escapeHtml(data.eventTitle)
+  const eventDate = escapeHtml(data.eventDate)
+  const label = escapeHtml(ticketLabel(data.ticketType))
+  const qrToken = escapeHtml(data.qrToken)
+  const qrSrc = safeQrSrc(data.qrDataUrl)
 
-  const label = ticketLabel(data.ticketType)
-
-  const html = `
+  return `
     <!DOCTYPE html>
     <html lang="es">
     <head>
@@ -48,16 +70,16 @@ export async function sendTicketEmail(data: TicketEmailData): Promise<void> {
         </div>
 
         <div style="background:#221c14;border:1px solid #3a3022;border-radius:16px;padding:24px;margin-bottom:24px;">
-          <p style="margin:0 0 8px 0;color:#a89f8f;font-size:13px;">Hola, <strong style="color:#faf7f0;">${data.nombre}</strong></p>
-          <h2 style="margin:0 0 4px 0;color:#faf7f0;font-size:20px;">${data.eventTitle}</h2>
-          <p style="margin:0 0 16px 0;color:#2f80ff;font-size:14px;">📅 ${data.eventDate}</p>
+          <p style="margin:0 0 8px 0;color:#a89f8f;font-size:13px;">Hola, <strong style="color:#faf7f0;">${nombre}</strong></p>
+          <h2 style="margin:0 0 4px 0;color:#faf7f0;font-size:20px;">${eventTitle}</h2>
+          <p style="margin:0 0 16px 0;color:#2f80ff;font-size:14px;">📅 ${eventDate}</p>
           <span style="background:#d4a63a;color:white;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">${label}</span>
         </div>
 
         <div style="text-align:center;margin-bottom:24px;">
           <p style="color:#a89f8f;font-size:13px;margin-bottom:12px;">Presenta este QR en la entrada:</p>
-          <img src="${data.qrDataUrl}" alt="QR Tiquete" style="width:220px;height:220px;border:4px solid #3a3022;border-radius:12px;background:white;" />
-          <p style="color:#6b7280;font-size:11px;margin-top:8px;font-family:monospace;word-break:break-all;">${data.qrToken}</p>
+          <img src="${qrSrc}" alt="QR Tiquete" style="width:220px;height:220px;border:4px solid #3a3022;border-radius:12px;background:white;" />
+          <p style="color:#6b7280;font-size:11px;margin-top:8px;font-family:monospace;word-break:break-all;">${qrToken}</p>
         </div>
 
         <div style="background:#1b1711;border:1px solid #3a3022;border-radius:12px;padding:16px;margin-bottom:24px;">
@@ -72,6 +94,12 @@ export async function sendTicketEmail(data: TicketEmailData): Promise<void> {
     </body>
     </html>
   `
+}
+
+export async function sendTicketEmail(data: TicketEmailData): Promise<void> {
+  const transporter = getTransporter()
+  const label = ticketLabel(data.ticketType)
+  const html = renderTicketEmailHtml(data)
 
   if (!transporter) {
     // No SMTP configured — log to console for dev/test environments

@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify'
-import { buildServer } from '@skpat/backend/src/app.ts'
+import { buildServer } from '@skpat/backend/app'
 
 let appPromise: Promise<FastifyInstance> | undefined
 

@@ -11,23 +11,31 @@
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",
-    "astro": "astro"
+    "astro": "astro",
+    "test": "vitest run"
   },
   "dependencies": {
-    "@skpat/backend": "*",
-    "@skpat/frontend": "*",
     "@astrojs/react": "^7.0.1",
     "@astrojs/vercel": "^11.0.12",
+    "@fontsource-variable/figtree": "^5.3.0",
+    "@fontsource-variable/unbounded": "^5.3.0",
+    "@fontsource/big-shoulders-display": "^5.3.0",
+    "@react-three/fiber": "^9.8.2",
+    "@skpat/backend": "*",
+    "@skpat/frontend": "*",
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.3.7",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
-    "tailwindcss": "^4.3.0"
+    "tailwindcss": "^4.3.0",
+    "three": "^0.187.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "typescript": "^5.9.3"
+    "@types/three": "^0.187.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.6"
   }
 }

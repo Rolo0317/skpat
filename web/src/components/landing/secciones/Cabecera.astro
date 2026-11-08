@@ -33,26 +33,65 @@ const ANCLAS = [
     position: fixed;
     inset: 0 0 auto;
     z-index: 50;
-    background: linear-gradient(var(--fondo), color-mix(in oklab, var(--fondo) 70%, transparent) 70%, transparent);
+    border-bottom: 1px solid transparent;
   }
-  .cabecera__fila { display: flex; align-items: center; gap: 1rem; min-height: 4rem; }
+  /* Sobre el escenario es transparente; al bajar se vuelve una barra sólida con canto de luz. */
+  .cabecera::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: color-mix(in oklab, var(--sala) 92%, transparent);
+    border-bottom: 1px solid var(--linea);
+    opacity: 1;
+  }
+  @supports (animation-timeline: scroll()) {
+    .cabecera::before {
+      animation: cabecera-solida linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 22rem;
+    }
+  }
+  @keyframes cabecera-solida { from { opacity: 0; } to { opacity: 1; } }
+
+  .cabecera__fila { display: flex; align-items: center; gap: 1rem; min-height: 4.25rem; }
   .cabecera__marca { text-decoration: none; }
-  .cabecera :global(.cabecera__logo) { width: 7.5rem; }
-  .cabecera__anclas { display: none; gap: 1.75rem; margin-inline: auto; }
-  .cabecera__anclas a, .cabecera__entrar { color: var(--tinta-suave); text-decoration: none; font-weight: 500; transition: color 0.2s; }
+  .cabecera :global(.cabecera__logo) { width: 7rem; }
+  .cabecera__anclas { display: none; gap: 2rem; margin-inline: auto; }
+  .cabecera__anclas a, .cabecera__entrar {
+    position: relative;
+    padding-block: 0.75rem;
+    color: var(--tinta-suave);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: color 0.2s;
+  }
+  .cabecera__anclas a::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0.35rem;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--acento);
+    box-shadow: 0 0 0.6rem var(--acento);
+    scale: 0 1;
+    transition: scale 0.35s var(--curva-salida);
+  }
   .cabecera__anclas a:hover, .cabecera__entrar:hover { color: var(--tinta); }
+  .cabecera__anclas a:hover::after { scale: 1 1; }
   .cabecera__acciones { display: flex; align-items: center; gap: 1.25rem; margin-left: auto; }
-  .cabecera__entrar { padding-block: 0.75rem; }
   .cabecera__comprar {
-    padding: 0.6rem 1.15rem;
+    padding: 0.6rem 1.25rem;
     border-radius: 999px;
     background: var(--degradado-oro);
-    color: var(--fondo);
+    color: #120c02;
     font-weight: 700;
     text-decoration: none;
-    transition: background-color 0.2s;
+    box-shadow: var(--brillo-oro);
+    transition: box-shadow 0.3s var(--curva-salida), translate 0.3s var(--curva-salida);
   }
-  .cabecera__comprar:hover { background: var(--acento-claro); }
+  .cabecera__comprar:hover { translate: 0 -1px; box-shadow: 0 0.9rem 2.2rem -0.7rem color-mix(in oklab, var(--acento) 95%, transparent); }
 
   @media (min-width: 60rem) {
     .cabecera__anclas { display: flex; }

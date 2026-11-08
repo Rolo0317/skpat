@@ -1,4 +1,4 @@
-import type { SkpatEvent } from '@/features/landing/types'
+import type { SkpatEvent } from '@/features/events/types'
 import { centsToPesos, fromDatetimeLocal, pesosToCents, toDatetimeLocal } from '@/lib/format'
 
 const DEFAULT_AVAILABLE_SPOTS = '100'

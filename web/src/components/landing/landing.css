@@ -1,31 +1,49 @@
-/* Sistema visual de la landing: deriva todo de los tokens --color-skpat-* del frontend. */
+/* Sistema visual de la landing "la pista 2027": deriva de los tokens --color-skpat-* del frontend. */
+@import '@fontsource-variable/unbounded';
+@import '@fontsource-variable/figtree';
+/* Big Shoulders en pesos estáticos: la variable cae al peso delgado en algunos WebKit. */
+@import '@fontsource/big-shoulders-display/700';
+@import '@fontsource/big-shoulders-display/900';
+
 :root {
+  /* Unbounded: titulares de impacto. Big Shoulders: cifras, fechas y nombres condensados. Figtree: texto. */
+  --fuente-impacto: 'Unbounded Variable', 'Arial Black', sans-serif;
   --fuente-display: 'Big Shoulders Display', 'Arial Narrow', sans-serif;
-  --fuente-texto: 'Figtree', system-ui, sans-serif;
+  --fuente-texto: 'Figtree Variable', system-ui, sans-serif;
+
+  /* La sala: negro frío para que el oro del logo y el azul del láser se lean como luz. */
+  --sala: #08070c;
+  --luz-uv: #5b2bd6;
 
   --tinta: var(--color-skpat-white);
-  --tinta-suave: var(--color-skpat-muted);
+  --tinta-suave: #b4adbd;
   --primario: var(--color-skpat-oro);
   --primario-claro: color-mix(in oklab, var(--color-skpat-oro) 55%, white);
   --acento: var(--color-skpat-champan);
   --acento-claro: color-mix(in oklab, var(--color-skpat-champan) 60%, white);
-  /* Brillo metálico del logo: champán → oro → bronce. */
+  /* Brillo metálico del logo: champán → oro → bronce. Solo en superficies (botón principal), nunca en texto. */
   --degradado-oro: linear-gradient(135deg, var(--color-skpat-champan), var(--color-skpat-oro) 50%, var(--color-skpat-bronce));
   --azul: var(--color-skpat-azul);
-  --azul-claro: color-mix(in oklab, var(--color-skpat-azul) 65%, white);
+  --azul-claro: color-mix(in oklab, var(--color-skpat-azul) 60%, white);
   --oro: var(--color-skpat-gold);
-  --fondo: var(--color-skpat-bg);
-  --fondo-2: var(--color-skpat-bg2);
-  --fondo-3: var(--color-skpat-bg3);
-  --linea: var(--color-skpat-border);
+  --fondo: var(--sala);
+  --fondo-2: #0e0c14;
+  --fondo-3: #16131e;
+  --linea: #2a2533;
+  --linea-luz: color-mix(in oklab, var(--color-skpat-oro) 38%, var(--linea));
 
-  --ancho-max: 72rem;
-  --margen-lateral: 1rem;
-  --ritmo-seccion: clamp(4.5rem, 12vw, 8.5rem);
-  --radio: 1.25rem;
-  --radio-pequeno: 0.75rem;
-  --sombra-profunda: 0 1.5rem 3rem -1rem rgb(0 0 0 / 0.6);
+  --ancho-max: 76rem;
+  --margen-lateral: 1.25rem;
+  --ritmo-seccion: clamp(5rem, 13vw, 9rem);
+  --radio: 1rem;
+  --radio-pequeno: 0.5rem;
+  --sombra-profunda: 0 1.75rem 3rem -1.25rem rgb(0 0 0 / 0.75);
+  /* Resplandor con caída hacia abajo, como luz de cabina sobre la tarima. */
+  --brillo-oro: 0 0.75rem 2rem -0.75rem color-mix(in oklab, var(--color-skpat-oro) 80%, transparent);
+  --brillo-azul: 0 0.75rem 2rem -0.75rem color-mix(in oklab, var(--color-skpat-azul) 80%, transparent);
   --curva-salida: cubic-bezier(0.16, 1, 0.3, 1);
+  /* 140 BPM: el mismo pulso del escenario para las microinteracciones. */
+  --tiempo: 0.4286s;
 }
 
 @media (min-width: 48rem) {
@@ -41,7 +59,7 @@ body {
   overflow-x: clip;
 }
 
-::selection { background: var(--acento); color: var(--fondo); }
+::selection { background: var(--color-skpat-azul); color: var(--tinta); }
 html { scrollbar-color: var(--primario) var(--fondo); accent-color: var(--primario); caret-color: var(--acento); }
 
 :focus-visible {
@@ -60,10 +78,10 @@ a { text-underline-offset: 0.2em; }
 }
 
 .titulo-display {
-  font-family: var(--fuente-display);
-  font-weight: 900;
-  line-height: 0.92;
-  letter-spacing: -0.01em;
+  font-family: var(--fuente-impacto);
+  font-weight: 800;
+  line-height: 0.98;
+  letter-spacing: -0.03em;
   text-transform: uppercase;
   text-wrap: balance;
   color: var(--tinta);

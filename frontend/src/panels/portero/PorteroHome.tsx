@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { api } from '@/lib/api'
 import { QrScannerWidget } from './QrScannerWidget'
-import { ticketLabel } from '@skpat/backend/src/lib/ticketPrices'
+import { ticketLabel } from '@skpat/backend/contrato'
 
 type ScanMode = 'camera' | 'manual'
 

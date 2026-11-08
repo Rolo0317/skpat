@@ -1,4 +1,4 @@
-import type { SkpatEvent } from '@/features/landing/types'
+import type { SkpatEvent } from '@/features/events/types'
 import type { Gestor, ListaInvitados, OfertaEvento, PagosPendientes } from '@/lib/operacion'
 
 /** Datos reales del evento activo, en centavos COP como los entrega el backend. */

@@ -1,0 +1,83 @@
+---
+/**
+ * Franja LED que corre bajo el escenario, como la fascia de una tarima.
+ * Solo repite datos públicos del negocio; el texto real está una vez para lectores de pantalla.
+ */
+import { NEGOCIO } from '../contenido/negocio'
+
+const FRASES = [
+  NEGOCIO.eslogan,
+  NEGOCIO.horario.dias,
+  NEGOCIO.horario.texto,
+  `Sector ${NEGOCIO.direccion.sector}`,
+  'Entradas con QR',
+  'Palcos y mesas VIP',
+  'Agencia de DJs',
+]
+const REPETICIONES = 2
+---
+<div class="marquesina">
+  <p class="solo-lector">{FRASES.join('. ')}.</p>
+  <div class="marquesina__pista" aria-hidden="true">
+    {
+      Array.from({ length: REPETICIONES }, () => (
+        <ul class="marquesina__tramo">
+          {FRASES.map((frase) => (
+            <li>{frase}</li>
+          ))}
+        </ul>
+      ))
+    }
+  </div>
+</div>
+
+<style>
+  .marquesina {
+    position: relative;
+    overflow: hidden;
+    border-block: 1px solid var(--linea-luz);
+    background:
+      linear-gradient(90deg, var(--fondo) 0%, transparent 8%, transparent 92%, var(--fondo) 100%),
+      #0b0910;
+  }
+  .marquesina__pista { display: flex; width: max-content; }
+  .marquesina__tramo {
+    display: flex;
+    gap: 0;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+  .marquesina__tramo li {
+    display: flex;
+    align-items: center;
+    gap: 2.25rem;
+    padding: 0.95rem 1.125rem;
+    font-family: var(--fuente-impacto);
+    font-weight: 700;
+    font-size: clamp(0.85rem, 2.4vw, 1.05rem);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--acento);
+  }
+  .marquesina__tramo li::after {
+    content: '';
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 50%;
+    background: var(--azul);
+    box-shadow: 0 0 0.75rem var(--azul);
+  }
+
+  /* Solo corre con puntero fino y sin movimiento reducido; en pantallas táctiles queda quieta y se desliza a mano. */
+  @media (prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) {
+    .marquesina__pista { animation: correr calc(var(--tiempo) * 64) linear infinite; }
+    .marquesina:hover .marquesina__pista,
+    .marquesina:focus-within .marquesina__pista { animation-play-state: paused; }
+  }
+  @media not ((hover: hover) and (pointer: fine)) {
+    .marquesina { overflow-x: auto; scrollbar-width: none; }
+  }
+  @keyframes correr { to { translate: -50% 0; } }
+</style>
